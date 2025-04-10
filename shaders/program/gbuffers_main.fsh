@@ -31,19 +31,26 @@ layout(location = 1) out vec4 GBuffer0;
 layout(location = 2) out vec4 GBuffer1;
 
 void main() {
+    Color = vec4(vertColor.rgb, 1) * texture(gtexture, texCoord);
+	if (Color.a < alphaTestRef) {
+		discard;
+	}
+
+#ifdef FORWARD
+    // forward render// TODONOW: do smth similar to `deferred.fsh` and preferably consolidate into 1 file
+    // we have texCoord, vertColor, vertNormal
+    // Material material = Mat(GBuffer0, GBuffer1);
+    // shade(Color, material, viewPos, texCoord, lightLevel);
+#else
     GBuffer0 = texture(specular, texCoord, -3); // TODOLATER: arbitrary mip map bias? questionable
     GBuffer1 = texture(normals, texCoord, -3); // TODOLATER: arbitrary mip map bias? questionable
     
     const vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 
-    Color = vec4(vertColor.rgb, 1) * texture(gtexture, texCoord);
-	if (Color.a < alphaTestRef) {
-		discard;
-	}
-
-    #include "/snippets/debug.fsh"
     if (renderStage != MC_RENDER_STAGE_TERRAIN_TRANSLUCENT) {
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
     }
+#endif
+    #include "/snippets/debug.fsh"
 }

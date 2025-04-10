@@ -73,7 +73,7 @@ vec3 normalsRead(vec2 f) {
 }
 
 // Reflectance
-vec3 reflectanceRead(float reflectance, int medium) {
+vec3 reflectanceRead(float reflectance, vec3 albedo, int medium) {
     if (reflectance < 0.9) { // is non metal
         return vec3(reflectance) * 1.10869565218;
     } else {
@@ -103,6 +103,8 @@ vec3 reflectanceRead(float reflectance, int medium) {
                 return vec3(0.6116827726364136, 0.548520565032959, 0.5741969347000122);
             case 239: // Brass
                 return vec3(0.8771779537200928, 0.49339383840560913, 0.7472696304321289);
+            default:
+                return albedo*reflectance;
             }
         case 1: // Water IOR: 1.333
             switch(value) {
@@ -126,12 +128,14 @@ vec3 reflectanceRead(float reflectance, int medium) {
                 return vec3(0.526247501373291, 0.4593830704689026, 0.48603615164756775);
             case 239: // Brass
                 return vec3(0.8475667834281921, 0.4316805899143219, 0.7012713551521301);
+            default:
+                return albedo*reflectance*0.7501875468867217; // Nerf by 1/1.333(Arbitrary)
             }
         }
     }
 }
-vec3 reflectanceRead(float reflectance) {
-    return reflectanceRead(reflectance, 0);
+vec3 reflectanceRead(float reflectance, vec3 albedo) {
+    return reflectanceRead(reflectance, albedo, 0);
 }
 float reflectanceWriteFromF0(float f0) {
     return f0*0.8980392156862745;

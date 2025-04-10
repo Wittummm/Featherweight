@@ -66,6 +66,7 @@ void shade(inout vec4 color, inout Material material, vec3 viewPos, vec2 fragCoo
     #endif
     const vec3 viewDir = normalize(viewPos);
 
+    const vec3 albedo = color.rgb;
     const vec3 normals = material.normals;
     const float roughness = material.roughness;
     const float porosity = material.porosity;
@@ -76,10 +77,10 @@ void shade(inout vec4 color, inout Material material, vec3 viewPos, vec2 fragCoo
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
     vec3 kS = vec3(0.0);
     vec3 colorSpecular = specular(lightDir, outDir, normals, roughness, f0, kS);
-    colorSpecular = color.rgb*(1-kS) + colorSpecular;
+    colorSpecular = albedo*(1-kS) + colorSpecular;
 
     const vec3 colorDiffuse = diffuse(colorSpecular, lightDir, outDir, normals, roughness);
-    color.rgb = mix(colorDiffuse, colorSpecular, emission);
+    color.rgb = colorDiffuse + albedo*emission;
 
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris
