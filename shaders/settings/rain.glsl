@@ -1,3 +1,5 @@
+#ifndef RAIN_INTENSITY
+
 #define RAIN_INTENSITY 0.75 // [0.25 0.5 0.75 1 1.25 1.5 1.75 2]
 
 // Puddles
@@ -23,3 +25,5 @@ const vec3 PUDDLE_COLOR = vec3(PUDDLE_R, PUDDLE_G, PUDDLE_B)*0.00392156862745098
 #define PUDDLE_EXPOSURE_MIN 0.7 // [0.4 0.5 0.6 0.7 0.75 0.8 0.85] // Bottom edge of fading
 #define PUDDLE_EXPOSURE_MAX 0.91 // [0.75 0.8 0.85 0.88 0.91 0.93] // Top Edge of fading
 #define PUDDLE_WATER_F0 0.2 // [0.02 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9] // {0.02 is the realistic value}
+
+#endif

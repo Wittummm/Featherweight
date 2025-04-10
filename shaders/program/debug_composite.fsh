@@ -51,8 +51,9 @@ bool clip(ivec2 coord) {
 void main() {
     const ivec2 coord = ivec2(floor(texCoord*vec2(viewWidth,viewHeight)));
     const ivec2 squareCoord = ivec2(coord * vec2(aspectRatio, 1));
+    const vec4 color = texture(colortex0, texCoord);
 
-    Color = texture(colortex0, texCoord);
+    Color = color;
    
     const ivec2 A = moveTo(_SHOW_SHADOWMAP, squareCoord);
     if (clip(A)) { Color.rgb = vec3(texelFetch(shadowtex0, A, 0).r); }
@@ -69,7 +70,7 @@ void main() {
     if (clip(C)) { Color.rgb = vec3(roughnessRead(texelFetch(colortex1, C, 0).r)); }
 
     const ivec2 D = moveTo(_SHOW_REFLECTANCE, coord);
-    if (clip(D)) { Color.rgb = reflectanceRead(texelFetch(colortex1, D, 0).g); }
+    if (clip(D)) { Color.rgb = reflectanceRead(texelFetch(colortex1, D, 0).g, color.rgb); }
 
     const ivec2 E = moveTo(_SHOW_POROSITY_SSS, coord);
     if (clip(E)) { 
