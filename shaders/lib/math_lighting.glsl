@@ -1,3 +1,5 @@
+// Required Uniforms: shadowModelView, shadowProjection
+
 #include "/settings/lighting.glsl"
 #include "/settings/rain.glsl"
 #include "/lib/pbr.glsl"
@@ -7,6 +9,8 @@
 #include "/func/noise/noiseSimplex.glsl"
 #include "/func/noise/noise.glsl"
 #include "/func/depthToViewPos.glsl"
+#include "/settings/shadows.glsl"
+#include "/lib/shadow.glsl"
 
 uniform float rain;
 uniform float wetness;
@@ -71,13 +75,29 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 view
     const float emission = material.emission;
     const vec3 outDir = -viewDir;
 
+    /// Shadow Handling, NOTE: I should probably move this somewhere cuz here is just ugly + bad organization
+    // TODONOW: fix the shadow jittering when you move/crouch
+    const vec3 playerPos = (gbufferModelViewInverse * vec4(viewPos, 1)).xyz;
+    vec3 roundedWorldPos = playerPos + cameraPosition;
+	if (SHADOW_PIXELIZATION < 1 && SHADOW_PIXELIZATION > 0) {
+		roundedWorldPos += 0.01; // Bias to fix jittering cuz floating point imprecision
+		roundedWorldPos = floor(roundedWorldPos/SHADOW_PIXELIZATION)*SHADOW_PIXELIZATION;
+	}
+    const vec3 shadowView = (shadowModelView * vec4(roundedWorldPos - cameraPosition, 1)).xyz;
+    const vec4 shadowClip = shadowProjection * vec4(shadowView, 1);
+    const vec3 shadowNdc = distortShadow(shadowClip.xyz / shadowClip.w);
+    const vec3 shadowScreen = shadowNdc * 0.5 + 0.5;
+    const float shadow = sampleShadow(shadowScreen, playerPos, 0.001); // TODONOWBUTLATER: remember to replace this with ZBIAS
+    const vec3 shadowColor = mix(vec3(1), AMBIENT, shadow);
+    ///
+
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
     vec3 kS = vec3(0.0);
     vec3 colorSpecular = calcSpecular(lightDir, outDir, normals, roughness, f0, kS);
     colorSpecular = albedo*(1-kS) + colorSpecular;
 
     const vec3 colorDiffuse = diffuse(colorSpecular, lightDir, outDir, normals, roughness);
-    color.rgb = colorDiffuse + albedo*emission;
+    color.rgb = colorDiffuse*shadowColor + albedo*emission;
 
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris

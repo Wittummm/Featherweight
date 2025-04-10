@@ -24,6 +24,7 @@ Search for these keywords to see what extra features you can toggle, most are di
     - "TODOMAYBE" maybe do
     - "TODONOW" ongoing code
     - "TODOLATER" should do eventually
+    - "TODONOWBUTLATER" should do at the end of the session/feature.
     - "NOTE" a note for readers, including oneself
     - "PIN" likely will come back to, usually to edit/add features
   - **Notes**

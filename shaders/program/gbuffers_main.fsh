@@ -3,6 +3,8 @@
 uniform vec3 upPosition;
 uniform vec3 shadowLightPosition;
 uniform vec3 cameraPosition;
+uniform mat4 shadowModelView;
+uniform mat4 shadowProjection;
 
 #include "/common/const.glsl"
 #include "/settings/main.glsl"
