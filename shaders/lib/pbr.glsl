@@ -1,15 +1,14 @@
+// Required Uniforms: normalMatrix, gbufferModelViewInverse
+
 #ifndef pbr_glsl
 #define pbr_glsl
 #include "/settings/pbr.glsl"
-
-uniform mat3 normalMatrix;
-uniform mat4 gbufferModelView;
-uniform mat4 gbufferModelViewInverse;
 
 vec3 reconstructZ(vec2 normals) {
     return vec3(normals, sqrt(1.0 - clamp(dot(normals, normals), 0, 1)));
 }
 
+#ifndef DISTANT_HORIZONS_SHADER // DH has no normal matrix
 mat3 tbnNormalTangentPlayerSpace(vec3 vertNormal, vec4 tangent) {
     mat3 tbnMatrix;
     tbnMatrix[0] = normalize(mat3(gbufferModelViewInverse) * normalMatrix * tangent.xyz);
@@ -17,6 +16,7 @@ mat3 tbnNormalTangentPlayerSpace(vec3 vertNormal, vec4 tangent) {
     tbnMatrix[1] = normalize(cross(tbnMatrix[0], tbnMatrix[2]) * tangent.w);
     return tbnMatrix;
 }
+#endif
 
 ///////////////////////////////////////
 
@@ -58,10 +58,12 @@ vec2 normalsWrite(vec3 n) {
     n.xy = n.z > 0.0 ? n.xy : octWrap( n.xy );
     return n.xy * 0.5 + 0.5;
 }
+#ifndef DISTANT_HORIZONS_SHADER
 vec2 normalsWrite(vec3 normal, vec4 tangent, vec3 texNormal) { 
     const vec3 newNormal = normalize(tbnNormalTangentPlayerSpace(normal, tangent) * texNormal);
     return normalsWrite(newNormal);
 }
+#endif
 vec3 normalsRead(vec2 f) {
     f = f * 2.0 - 1.0;
     // https://twitter.com/Stubbesaurus/status/937994790553227264

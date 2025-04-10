@@ -1,5 +1,8 @@
 #include "/snippets/version.glsl"
 
+uniform vec3 upPosition;
+uniform vec3 shadowLightPosition;
+
 #include "/settings/shadows.glsl"
 #include "/func/distortShadow.glsl"
 
