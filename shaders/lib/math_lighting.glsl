@@ -6,11 +6,11 @@
 #include "/func/clearcoat.glsl"
 #include "/func/noise/noiseSimplex.glsl"
 #include "/func/noise/noise.glsl"
+#include "/func/depthToViewPos.glsl"
 
 uniform vec3 shadowLightPosition;
 uniform vec3 cameraPosition;
 uniform vec3 upPosition;
-uniform sampler2D noisetex;
 uniform float rain;
 uniform float wetness;
 
@@ -32,16 +32,16 @@ vec3 viewToPlayerSpace(vec3 normals) {
 struct Material {
     float roughness;
     vec3 normals;
-    float porosity; // Partially implemented, NOT physically based
+    float porosity; 
     float sss; // Currently unimplemented
-    float emission; // Currently unimplemented
+    float emission;
     float ao; // Currently unsupported
     float height; // Currently unsupported
     vec3 f0;
 };
 
 // PIN: This parses the gbuffers into actual useable data
-Material Mat(vec4 gbuffer0, vec4 gbuffer1) {
+Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
     const float roughness = roughnessRead(gbuffer0.r);
     const float reflectance = gbuffer0.g;
     bool isPorosity = false;
@@ -50,15 +50,16 @@ Material Mat(vec4 gbuffer0, vec4 gbuffer1) {
     // Cannot `eyePlayerSpace -> viewSpace` have to `eyePlayerSpace -> playerSpace -> viewSpace`
     const vec3 normals = playerToViewSpace(normalsRead(gbuffer1.rg));
 
-    return Material(roughness, normals, isPorosity ? porosity : -1, !isPorosity ? porosity : -1, emission,0,0.0, reflectanceRead(reflectance));
+    return Material(roughness, normals, isPorosity ? porosity : -1, !isPorosity ? porosity : -1, emission,0,0.0, reflectanceRead(reflectance, albedo));
 }
 
 //////////////////////////////
 
 // PIN!
-void shade(inout vec4 color, inout Material material, vec3 viewPos, vec2 fragCoord, vec2 lightLevel) {
+void shade(inout vec4 color, inout Material material, vec2 fragCoord, float depth, vec2 lightLevel) {
     const float skylight = lightLevel.y;
 
+    vec3 viewPos = depthToViewPos(fragCoord, depth); // This could be exported so it isnt recalculated in deferred
     vec3 worldPos = (mat3(gbufferModelViewInverse) * viewPos) + cameraPosition;
     #if PBR_PIXELATE != Off
     worldPos = (floor((worldPos*PBR_PIXELATE)+0.00001)/PBR_PIXELATE);
@@ -76,7 +77,7 @@ void shade(inout vec4 color, inout Material material, vec3 viewPos, vec2 fragCoo
 
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
     vec3 kS = vec3(0.0);
-    vec3 colorSpecular = specular(lightDir, outDir, normals, roughness, f0, kS);
+    vec3 colorSpecular = calcSpecular(lightDir, outDir, normals, roughness, f0, kS);
     colorSpecular = albedo*(1-kS) + colorSpecular;
 
     const vec3 colorDiffuse = diffuse(colorSpecular, lightDir, outDir, normals, roughness);

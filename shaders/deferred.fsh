@@ -34,11 +34,9 @@ void main() {
 	const float depth = texture(depthtex0, texCoord).r;
 	    
 	if (depth < 1) {
-		const vec3 viewPos = depthToViewPos(texCoord, depth);
-		const vec3 viewDir = normalize(viewPos);
-		Material material = Mat(GBuffer0, GBuffer1);
+		Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
 
-		shade(Color, material, viewPos, texCoord, lightLevel);
+		shade(Color, material, texCoord, depth, lightLevel);
         GBuffer0.r = roughnessWrite(material.roughness);
 		GBuffer1.rg = normalsWrite(material.normals); 
 		GBuffer0.g = reflectanceWriteFromF0(material.f0.x);

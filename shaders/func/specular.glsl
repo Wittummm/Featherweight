@@ -28,7 +28,7 @@ float geometric(float NdotM, float alpha) {
 vec3 fresnelSchlick(float cosTheta, vec3 f0) {
     return f0 + (1.0 - f0) * pow(1.0 - cosTheta, 5.0);
 }
-vec3 specular(vec3 inDir, vec3 outDir, vec3 normal, float roughness, vec3 f0, out vec3 kS) {
+vec3 calcSpecular(vec3 inDir, vec3 outDir, vec3 normal, float roughness, vec3 f0, out vec3 kS) {
     const float alpha = roughness*roughness;
     const vec3 halfway = normalize(inDir + outDir);
 
@@ -43,7 +43,5 @@ vec3 specular(vec3 inDir, vec3 outDir, vec3 normal, float roughness, vec3 f0, ou
     kS += fresnel;
     return max(radiance, 0);
 }
-
-
 
 #endif
