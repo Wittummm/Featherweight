@@ -2,7 +2,6 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
-- Consolidate forward into deferred into same file via a `FORWARD` define -> gbuffers_main
 - Deferred rendering
     - Reimplement previous features(shadows, etc)
     - Integrated pbr

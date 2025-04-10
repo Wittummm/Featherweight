@@ -1,6 +1,7 @@
 #include "/settings/shadows.glsl"
 #include "/settings/lighting.glsl"
 #include "/func/fade.glsl"
+#include "/func/distortShadow.glsl"
 uniform sampler2D noisetex;
 const float minShadow = 0.005;
 

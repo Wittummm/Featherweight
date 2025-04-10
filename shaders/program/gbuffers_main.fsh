@@ -1,5 +1,9 @@
 #include "/snippets/version.glsl"
 
+uniform vec3 upPosition;
+uniform vec3 shadowLightPosition;
+uniform vec3 cameraPosition;
+
 #include "/common/const.glsl"
 #include "/settings/main.glsl"
 #include "/settings/pbr.glsl"
@@ -46,7 +50,7 @@ void main() {
 
 #ifdef FORWARD
     Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
-    shade(Color, material, texCoord, gl_FragCoord.z, lightmapCoord);
+    shade(Color, material, lightmapCoord, texCoord, gl_FragCoord.z);
 #else
     Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
 #endif

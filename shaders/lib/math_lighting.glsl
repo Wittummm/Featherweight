@@ -8,9 +8,6 @@
 #include "/func/noise/noise.glsl"
 #include "/func/depthToViewPos.glsl"
 
-uniform vec3 shadowLightPosition;
-uniform vec3 cameraPosition;
-uniform vec3 upPosition;
 uniform float rain;
 uniform float wetness;
 
@@ -56,10 +53,9 @@ Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
 //////////////////////////////
 
 // PIN!
-void shade(inout vec4 color, inout Material material, vec2 fragCoord, float depth, vec2 lightLevel) {
+void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 viewPos) {
     const float skylight = lightLevel.y;
 
-    vec3 viewPos = depthToViewPos(fragCoord, depth); // This could be exported so it isnt recalculated in deferred
     vec3 worldPos = (mat3(gbufferModelViewInverse) * viewPos) + cameraPosition;
     #if PBR_PIXELATE != Off
     worldPos = (floor((worldPos*PBR_PIXELATE)+0.00001)/PBR_PIXELATE);
@@ -108,4 +104,10 @@ void shade(inout vec4 color, inout Material material, vec2 fragCoord, float dept
             material.f0 = vec3(mix(f0.x, PUDDLE_WATER_F0, puddle)*3);
         }
     }
+}
+
+void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec2 fragCoord, float depth) {
+    vec3 viewPos = depthToViewPos(fragCoord, depth); 
+
+    shade(color, material, lightLevel, viewPos);
 }

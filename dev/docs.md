@@ -38,6 +38,7 @@ Search for these keywords to see what extra features you can toggle, most are di
 ### Organization of Files
  - "program" folder stores the shader files that directly points to final shaders, usually for sharing between multiple final shaders.
  - "func" folder stores Functions, a file can have many variants of a file. It differs from libs in that the functions must have the same purpose and not a random collection of functions.
+   - `func` files should not include any uniforms as it could cause conflicts. Ideally `lib`s should also not have uniforms but this is not really enforced.
  - "lib" folder stores Libraries, where a library stores functions relating to a category.
  - "settings" stores config files.
  - "snippets" stores shader code that is embedded in other code, it is not the sole code.

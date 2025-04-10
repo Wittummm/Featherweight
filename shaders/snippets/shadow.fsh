@@ -2,6 +2,7 @@
 	const float baseSoftness = 0.002;
 	const float timeBias = 0.5;
 
+	const float lightAngle = dot(normalize(upPosition), normalize(shadowLightPosition));
 	float shadowStrength = min(((lightAngle()+timeBias)*1.5)-timeBias, 1);
 	
 if (shadowStrength > 0.05) {
