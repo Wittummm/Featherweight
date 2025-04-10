@@ -11,7 +11,8 @@
         "Featherweight/shaders/composite99.vsh": true,
         "shaders/composite10.fsh": true,
         "shaders/composite10.vsh": true,
-        "shaders/composite99.vsh": true
+        "shaders/composite99.vsh": true,
+        "shaders/composite99.fsh": true
     },
     "hide-files.files": [
         "Featherweight/shaders/composite10.fsh",
@@ -20,6 +21,7 @@
         "Featherweight/shaders/composite99.vsh",
         "shaders/composite10.fsh",
         "shaders/composite10.vsh",
-        "shaders/composite99.vsh"
+        "shaders/composite99.vsh",
+        "shaders/composite99.fsh"
     ]
 }
