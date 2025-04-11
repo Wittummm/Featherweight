@@ -1,5 +1,8 @@
 #version 460 core
 
+uniform mat3 normalMatrix;
+uniform mat4 gbufferModelViewInverse;
+
 #include "/settings/debug.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/lib/pbr.glsl"

@@ -5,6 +5,9 @@ uniform vec3 shadowLightPosition;
 uniform vec3 cameraPosition;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
+uniform mat3 normalMatrix;
+uniform mat4 gbufferModelViewInverse;
+uniform mat4 gbufferModelView;
 
 #include "/common/const.glsl"
 #include "/lib/math.glsl"

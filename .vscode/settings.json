@@ -12,11 +12,7 @@
         "shaders/composite10.fsh": true,
         "shaders/composite10.vsh": true,
         "shaders/composite99.vsh": true,
-        "shaders/composite99.fsh": true,
-        "shaders/dh_terrain.vsh_d": true,
-        "shaders/dh_shadow.fsh_d": true,
-        "shaders/dh_shadow.vsh_d": true,
-        "shaders/dh_terrain.fsh_d": true
+        "shaders/composite99.fsh": true
     },
     "hide-files.files": [
         "Featherweight/shaders/composite10.fsh",
@@ -26,10 +22,6 @@
         "shaders/composite10.fsh",
         "shaders/composite10.vsh",
         "shaders/composite99.vsh",
-        "shaders/composite99.fsh",
-        "shaders/dh_terrain.vsh_d",
-        "shaders/dh_shadow.fsh_d",
-        "shaders/dh_shadow.vsh_d",
-        "shaders/dh_terrain.fsh_d"
+        "shaders/composite99.fsh"
     ]
 }

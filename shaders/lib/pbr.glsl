@@ -1,10 +1,8 @@
+// Required Uniforms: normalMatrix, gbufferModelViewInverse
+
 #ifndef pbr_glsl
 #define pbr_glsl
 #include "/settings/pbr.glsl"
-
-uniform mat3 normalMatrix;
-uniform mat4 gbufferModelView;
-uniform mat4 gbufferModelViewInverse;
 
 vec3 reconstructZ(vec2 normals) {
     return vec3(normals, sqrt(1.0 - clamp(dot(normals, normals), 0, 1)));

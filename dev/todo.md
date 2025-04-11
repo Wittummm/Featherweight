@@ -3,7 +3,7 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Deferred rendering
-    - reimplement DH support
+    - reimplement DH support -> edit `gbuffers_main.fsh` to work with dh
     - Integrated pbr
 - Sky
     - sky + metals support sky reflections
