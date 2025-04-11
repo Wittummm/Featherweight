@@ -3,7 +3,7 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Deferred rendering
-    - Reimplement previous features(shadows, etc)
+    - reimplement DH support
     - Integrated pbr
 - Sky
     - sky + metals support sky reflections
@@ -31,6 +31,7 @@ It is meant to be a self note, but is **not** private.
 - In caves, make the skybox black/dark(should not have ANY false positives)
 - Use a better shadow distortion algo, as this one makes the far chunks super thin
 - (?) Distort PCF's offset, and maybe also PCSS
+- Fix or deprecate PCSS as its hard to tune
 
 ### Issues
  - (!) Entity shadows disappear at certain angles, may be iris bug? (1.21.4)

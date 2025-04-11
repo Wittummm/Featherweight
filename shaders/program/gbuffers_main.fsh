@@ -3,6 +3,8 @@
 uniform vec3 upPosition;
 uniform vec3 shadowLightPosition;
 uniform vec3 cameraPosition;
+uniform mat4 shadowModelView;
+uniform mat4 shadowProjection;
 
 #include "/common/const.glsl"
 #include "/settings/main.glsl"
@@ -33,24 +35,25 @@ layout(location = 0) out vec4 Color;
 layout(location = 1) out vec4 GBuffer0;
 layout(location = 2) out vec4 GBuffer1;
 
+const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 
 void main() {
 
-    Color = vec4(vertColor.rgb, 1) * texture(gtexture, texCoord);
+    Color = vec4(vertColor.rgb, 1) * texture(gtexture, texCoord, MIP_MAP_BIAS);
 	if (Color.a < alphaTestRef) {
 		discard;
         return;
 	}
 
-    GBuffer0 = texture(specular, texCoord, -3); // TODOLATER: arbitrary mip map bias? questionable
-    GBuffer1 = texture(normals, texCoord, -3); // TODOLATER: arbitrary mip map bias? questionable
+    GBuffer0 = texture(specular, texCoord, MIP_MAP_BIAS); 
+    GBuffer1 = texture(normals, texCoord, MIP_MAP_BIAS); 
     
     const vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 
 #ifdef FORWARD
     Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
-    shade(Color, material, lightmapCoord, texCoord, gl_FragCoord.z);
+    shade(Color, material, lightmapCoord, gl_FragCoord.xy*pixelSize, gl_FragCoord.z);
 #else
     Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
 #endif

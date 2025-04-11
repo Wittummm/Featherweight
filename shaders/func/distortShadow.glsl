@@ -1,3 +1,5 @@
+// Required Uniforms: upPosition, shadowLightPosition
+
 #ifndef SHADOWS
 #include "/settings/shadows.glsl"
 #endif
