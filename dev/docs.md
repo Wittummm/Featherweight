@@ -16,6 +16,9 @@ Search for these keywords to see what extra features you can toggle, most are di
  - Light level = [0, 1]
  - Light Brightness = [0, ∞) adjusted for brightness
  - "Light" with no context refers to directional light ie sun/moon light
+ - To avoid ambiguity we should avoid naming things with vague relation **especially** for objects. Examples:
+  (Object) `playerPosition` could be intepreted likely as "position of the player" or unlikely "player space position". (Non-Object )`worldPosition` could be intepreted likely as "the position in the world" or unlikely "position of the world"(this is the unlikely case as we cant *usually* move worlds but objects such as players are moveable)
+  Instead we should name things like `posPlayer` `posWorld` meaning "position in player (space)" and "position in world (space)".
 
 ### Dev 
   - **Keywords**
@@ -25,6 +28,7 @@ Search for these keywords to see what extra features you can toggle, most are di
     - "TODONOW" ongoing code
     - "TODOLATER" should do eventually
     - "TODONOWBUTLATER" should do at the end of the session/feature.
+    - "TODOEVENTUALLY" should do eventually
     - "NOTE" a note for readers, including oneself
     - "PIN" likely will come back to, usually to edit/add features
   - **Notes**

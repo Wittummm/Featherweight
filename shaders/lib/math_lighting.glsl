@@ -58,15 +58,15 @@ Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
 //////////////////////////////
 
 // PIN!
-void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 viewPos) {
+void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {
     const float skylight = lightLevel.y;
-
-    vec3 worldPos = (mat3(gbufferModelViewInverse) * viewPos) + cameraPosition;
-    #if PIXELATE != Off
-    worldPos = (floor((worldPos*PIXELATE)+0.001)/PIXELATE);
-    viewPos = (gbufferModelView * vec4(worldPos - cameraPosition, 1)).xyz;
+    
+    vec3 posWorld = (mat3(gbufferModelViewInverse) * posView) + cameraPosition;
+    #if PIXELIZATION != Off
+    posWorld = (floor((posWorld*PIXELIZATION)+0.002)/PIXELIZATION);
+    posView = (gbufferModelView * vec4(posWorld - cameraPosition, 1)).xyz;
     #endif
-    const vec3 viewDir = normalize(viewPos);
+    const vec3 viewDir = normalize(posView);
 
     const vec3 albedo = color.rgb;
     const vec3 normals = material.normals;
@@ -75,23 +75,20 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 view
     const vec3 f0 = material.f0;
     const float emission = material.emission;
     const vec3 outDir = -viewDir;
-
-    /// Shadow Handling, NOTE: I should probably move this somewhere cuz here is just ugly + bad organization
-    const vec3 playerPos = worldPos - cameraPosition;
-    const vec3 shadowView = (shadowModelView * vec4(playerPos, 1)).xyz;
-    const vec4 shadowClip = shadowProjection * vec4(shadowView, 1);
-    const vec3 shadowNdc = distortShadow(shadowClip.xyz / shadowClip.w);
-    const vec3 shadowScreen = shadowNdc * 0.5 + 0.5;
-    const float shadow = sampleShadow(shadowScreen, playerPos, 0.001); // TODONOWBUTLATER: remember to replace this with ZBIAS
-    ///
+    /////////////////////////////////////////
+    const float shadow = calcShadow(posWorld - cameraPosition, viewToPlayerSpace(normals));
 
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
-    vec3 kS = vec3(0.0);
-    vec3 colorSpecular = calcSpecular(lightDir, outDir, normals, roughness, f0, kS);
-    colorSpecular = albedo*(1-kS) + colorSpecular;
+    const vec3 emissive = albedo*emission;
 
-    const float diffuseFactor = calcDiffuseFactor(colorSpecular, lightDir, outDir, normals, roughness);
-    color.rgb = (colorSpecular*AMBIENT) + (colorSpecular*min(diffuseFactor,(1-shadow))*LIGHT_BRIGHTNESS) + albedo*emission;
+    const float diffuseFactor = calcDiffuseFactor(color.rgb, lightDir, outDir, normals, roughness);
+    const float lit = min(diffuseFactor,1-shadow)*LIGHT_BRIGHTNESS;
+
+    vec3 kS = vec3(0.0);
+    const vec3 colorSpecular = calcSpecular(lightDir, outDir, normals, roughness, f0, kS);
+
+    color.rgb = (albedo*diffuseFactor*(1-kS) + colorSpecular*lit);
+    color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit);
     
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris
@@ -100,7 +97,7 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 view
         const float upness = dot(normals, upDir);
         const float skyExposure = clamp(smoothstep(PUDDLE_EXPOSURE_MIN, PUDDLE_EXPOSURE_MAX, skylight), 0, 1);
         
-        const vec3 noiseCoord = worldPos*puddleScale;
+        const vec3 noiseCoord = posWorld*puddleScale;
         const float distortion = noise(noiseCoord*PUDDLE_DISTORT_SCALE);
         const vec3 distort = max(vec3(-distortion, 0, distortion), 0);
         float puddle = (noiseSimplex(noiseCoord * (1-PUDDLE_DISTORT_STRENGTH) + distort*PUDDLE_DISTORT_STRENGTH)*0.5 + 0.5);
@@ -109,7 +106,7 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 view
 
         const vec3 puddleNormal = upness > 0.2 ? mix(normals, upDir, clamp(puddle*PUDDLE_THICKNESS*mix(0.5,1,wetness), PUDDLE_THICKNESS*0.45, 1)) : normals;
         color.rgb *= 0.8 + ((1-puddle)*mix(0.6,0.1,porosity))*PUDDLE_COLOR;
-        color.rgb += clearcoat(PUDDLE_COLOR, lightDir, outDir, puddleNormal, PUDDLE_ROUGHNESS, PUDDLE_WATER_F0) * puddle;
+        color.rgb += clearcoat(PUDDLE_COLOR, lightDir, outDir, puddleNormal, PUDDLE_ROUGHNESS, PUDDLE_WATER_F0) * puddle * lit;
     
         // Update the material correspondingly
         material.roughness = mix(roughness, PUDDLE_ROUGHNESS, puddle);
@@ -118,10 +115,11 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 view
             material.f0 = vec3(mix(f0.x, PUDDLE_WATER_F0, puddle)*3);
         }
     }
+
 }
 
 void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec2 fragCoord, float depth) {
-    vec3 viewPos = depthToViewPos(fragCoord, depth); 
+    vec3 posView = depthToViewPos(fragCoord, depth); 
 
-    shade(color, material, lightLevel, viewPos);
+    shade(color, material, lightLevel, posView);
 }

@@ -1,4 +1,4 @@
-const float blockerSearchOffset = MAX_SOFTNESS*PCSS_SEARCH_OFFSET_BIAS*softnessStrength;
+const float blockerSearchOffset = MAX_SOFTNESS*PCSS_SEARCH_OFFSET_BIAS*softnessStrength*0.5;
 
 float blockerDepth = 0; float blockerCount = 0;
 
