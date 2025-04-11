@@ -1,5 +1,6 @@
 // Required Uniforms: shadowModelView, shadowProjection
 
+#include "/settings/main.glsl"
 #include "/settings/lighting.glsl"
 #include "/settings/rain.glsl"
 #include "/lib/pbr.glsl"
@@ -33,7 +34,7 @@ vec3 viewToPlayerSpace(vec3 normals) {
 struct Material {
     float roughness;
     vec3 normals;
-    float porosity; 
+    float porosity; // Not physically based
     float sss; // Currently unimplemented
     float emission;
     float ao; // Currently unsupported
@@ -61,8 +62,8 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 view
     const float skylight = lightLevel.y;
 
     vec3 worldPos = (mat3(gbufferModelViewInverse) * viewPos) + cameraPosition;
-    #if PBR_PIXELATE != Off
-    worldPos = (floor((worldPos*PBR_PIXELATE)+0.00001)/PBR_PIXELATE);
+    #if PIXELATE != Off
+    worldPos = (floor((worldPos*PIXELATE)+0.001)/PIXELATE);
     viewPos = (gbufferModelView * vec4(worldPos - cameraPosition, 1)).xyz;
     #endif
     const vec3 viewDir = normalize(viewPos);
@@ -76,19 +77,12 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 view
     const vec3 outDir = -viewDir;
 
     /// Shadow Handling, NOTE: I should probably move this somewhere cuz here is just ugly + bad organization
-    // TODONOW: fix the shadow jittering when you move/crouch
-    const vec3 playerPos = (gbufferModelViewInverse * vec4(viewPos, 1)).xyz;
-    vec3 roundedWorldPos = playerPos + cameraPosition;
-	if (SHADOW_PIXELIZATION < 1 && SHADOW_PIXELIZATION > 0) {
-		roundedWorldPos += 0.01; // Bias to fix jittering cuz floating point imprecision
-		roundedWorldPos = floor(roundedWorldPos/SHADOW_PIXELIZATION)*SHADOW_PIXELIZATION;
-	}
-    const vec3 shadowView = (shadowModelView * vec4(roundedWorldPos - cameraPosition, 1)).xyz;
+    const vec3 playerPos = worldPos - cameraPosition;
+    const vec3 shadowView = (shadowModelView * vec4(playerPos, 1)).xyz;
     const vec4 shadowClip = shadowProjection * vec4(shadowView, 1);
     const vec3 shadowNdc = distortShadow(shadowClip.xyz / shadowClip.w);
     const vec3 shadowScreen = shadowNdc * 0.5 + 0.5;
     const float shadow = sampleShadow(shadowScreen, playerPos, 0.001); // TODONOWBUTLATER: remember to replace this with ZBIAS
-    const vec3 shadowColor = mix(vec3(1), AMBIENT, shadow);
     ///
 
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
@@ -96,9 +90,9 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 view
     vec3 colorSpecular = calcSpecular(lightDir, outDir, normals, roughness, f0, kS);
     colorSpecular = albedo*(1-kS) + colorSpecular;
 
-    const vec3 colorDiffuse = diffuse(colorSpecular, lightDir, outDir, normals, roughness);
-    color.rgb = colorDiffuse*shadowColor + albedo*emission;
-
+    const float diffuseFactor = calcDiffuseFactor(colorSpecular, lightDir, outDir, normals, roughness);
+    color.rgb = (colorSpecular*AMBIENT) + (colorSpecular*min(diffuseFactor,(1-shadow))*LIGHT_BRIGHTNESS) + albedo*emission;
+    
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris
     */

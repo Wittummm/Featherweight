@@ -3,7 +3,6 @@
 #include "/func/fade.glsl"
 #include "/func/distortShadow.glsl"
 uniform sampler2D noisetex;
-const float minShadow = 0.005;
 
 vec2 goldenDiskSample(float index, float count) {
     const float theta = index * 2.4;
@@ -80,7 +79,7 @@ float sampleShadowPCSS(vec3 shadowScreenPos, vec3 playerPos, float zBias) {
     if (shadowStrength > 0) {
         #include "/snippets/PCSS.glsl"
     }
-	if (shadowedBy >= minShadow) { return shadowedBy*shadowStrength; }
+	return shadowedBy*shadowStrength;
 }
 #endif
 
@@ -95,7 +94,7 @@ float sampleShadowPCF(vec3 shadowScreenPos, vec3 playerPos, float zBias) {
     if (shadowStrength > 0) {
         shadowedBy = pcfSampleShadow(shadowScreenPos, SHADOW_SAMPLES, baseSoftness*SHADOW_SOFTNESS*softnessStrength); 
     }
-	if (shadowedBy >= minShadow) { return shadowedBy*shadowStrength; }
+	return shadowedBy*shadowStrength;
 }
 #endif
 
@@ -106,8 +105,9 @@ float sampleShadow(vec3 shadowScreenPos, vec3 playerPos, float zBias) {
     float shadowedBy = 0; float shadowStrength = 1;
     fadeShadows(playerPos, shadowStrength);
     if (shadowStrength > 0) {
-        shadowedBy = 1 - sampleShadowMap(shadowScreenPos); 
+        shadowedBy = 1.0 - sampleShadowMap(shadowScreenPos); 
     }
-	if (shadowedBy >= minShadow) { return shadowedBy*shadowStrength; }
+
+    return shadowedBy*shadowStrength;
 }
 #endif
