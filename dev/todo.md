@@ -4,6 +4,8 @@ It is meant to be a self note, but is **not** private.
 ### To-do:
 - Deferred rendering
     - reimplement DH support -> edit `gbuffers_main.fsh` to work with dh
+    - make `light_level.glsl` into a `packLightLevel.glsl` `func`
+    - ability to turn off: diffuse, specular, clearcoat(rain)
     - Integrated pbr
 - Sky
     - sky + metals support sky reflections
@@ -61,6 +63,7 @@ It is meant to be a self note, but is **not** private.
 - Bloom
 - Waving Plants
 - Water with absorption, etc
+    - Underwater blur
 - HBAO
 - Fast Screen Space Reflections
 - Fog

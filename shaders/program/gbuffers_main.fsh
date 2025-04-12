@@ -1,19 +1,20 @@
 #include "/snippets/version.glsl"
 #include "/snippets/core_to_compat.fsh"
 
-uniform vec3 upPosition;
-uniform vec3 shadowLightPosition;
-uniform vec3 cameraPosition;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-uniform mat4 gbufferModelView;
-uniform mat3 normalMatrix;
-
+#include "/common/const.glsl"
 // TURN_ON_DEBUG_MODE_HERE
 #include "/settings/debug.glsl" 
 
 #ifndef DISTANT_HORIZONS_SHADER
-    #include "/common/const.glsl"
+    uniform vec3 upPosition;
+    uniform vec3 shadowLightPosition;
+    uniform vec3 cameraPosition;
+    uniform mat4 shadowModelView;
+    uniform mat4 shadowProjection;
+    uniform mat4 gbufferModelView;
+    uniform mat4 gbufferModelViewInverse;
+    uniform mat3 normalMatrix;
+
     #include "/settings/main.glsl"
     #include "/settings/pbr.glsl"
     #include "/lib/pbr.glsl"
@@ -23,15 +24,13 @@ uniform mat3 normalMatrix;
     uniform sampler2D gtexture;
     uniform sampler2D normals;
     uniform sampler2D specular;
-#endif
+    uniform int renderStage;
+    uniform float viewWidth;
+    uniform float viewHeight;
 
-uniform int renderStage;
-uniform float viewWidth;
-uniform float viewHeight;
-
-#ifndef DISTANT_HORIZONS_SHADER
     in vec2 texCoord;
     in vec4 tangent;
+    const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 #endif
 in vec4 vertColor;
 in vec3 vertNormal;
@@ -41,8 +40,6 @@ in vec2 lightmapCoord;
 layout(location = 0) out vec4 Color;
 layout(location = 1) out vec4 GBuffer0;
 layout(location = 2) out vec4 GBuffer1;
-
-const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 
 void main() {
 #ifdef DISTANT_HORIZONS_SHADER

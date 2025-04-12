@@ -37,8 +37,6 @@ void main() {
 	Color = texture(colortex0, texCoord);
 	const vec2 lightLevel = unpackLightLevel(Color.a);
 
-	Color.a = 1;
-
 	const float depth = texture(depthtex0, texCoord).r;
 	    
 	if (depth < 1) {

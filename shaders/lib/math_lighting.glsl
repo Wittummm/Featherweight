@@ -20,7 +20,9 @@ const vec3 lightDir = normalize(shadowLightPosition);
 const vec3 upDir = normalize(upPosition);
 const vec3 puddleScale = vec3(PUDDLE_HORIZONTAL_SCALE, PUDDLE_VERTICAL_SCALE,PUDDLE_HORIZONTAL_SCALE);
 
-in vec2 mc_Entity;
+// #ifndef DISTANT_HORIZONS_SHADER
+// in vec2 mc_Entity;
+// #endif
 
 vec3 playerToViewSpace(vec3 normals) {
     return mat3(gbufferModelView) * normals;
@@ -93,7 +95,7 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris
     */
-    if (wetness > 0.001 && mc_Entity.y != 1.0) { // Check if is not fluid, cuz fluids cant get wet + that looks weird
+    if (wetness > 0.001 /*&& mc_Entity.y != 1.0*/) { // Check if is not fluid, cuz fluids cant get wet + that looks weird
         const float upness = dot(normals, upDir);
         const float skyExposure = clamp(smoothstep(PUDDLE_EXPOSURE_MIN, PUDDLE_EXPOSURE_MAX, skylight), 0, 1);
         

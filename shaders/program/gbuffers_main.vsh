@@ -3,9 +3,12 @@
 
 uniform vec3 chunkOffset;
 uniform sampler2D lightmap;
-uniform int renderStage;
 
 #ifndef DISTANT_HORIZONS_SHADER
+	uniform int renderStage;
+	uniform mat4 modelViewMatrix;
+	uniform mat4 projectionMatrix;
+
 	in vec2 vaUV0;
 	in ivec2 vaUV2;
 	in vec3 vaNormal;
