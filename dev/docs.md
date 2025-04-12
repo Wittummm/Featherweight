@@ -1,8 +1,5 @@
 This document is meant to document this shader, expect it to be heavily developer oriented.
 
-Formating of this document:
- - Indents are 2 spaces
-
 ### Feature Flags
 Search for these keywords to see what extra features you can toggle, most are disabled to reduce compile time.
  - `TURN_ON_DEBUG_MODE_HERE` debug features and menus
