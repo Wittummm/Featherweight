@@ -1,5 +1,4 @@
 #include "/snippets/version.glsl"
-#include "/snippets/core_to_compat.fsh"
 
 #include "/common/const.glsl"
 // TURN_ON_DEBUG_MODE_HERE
@@ -42,6 +41,8 @@ layout(location = 1) out vec4 GBuffer0;
 layout(location = 2) out vec4 GBuffer1;
 
 void main() {
+    #include "/snippets/core_to_compat.fsh"
+
 #ifdef DISTANT_HORIZONS_SHADER
     Color = vec4(vertColor.rgb, 1);
 #else

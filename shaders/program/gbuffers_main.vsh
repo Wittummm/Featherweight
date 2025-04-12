@@ -1,5 +1,4 @@
 #include "/snippets/version.glsl"
-#include "/snippets/core_to_compat.vsh"
 
 uniform vec3 chunkOffset;
 uniform sampler2D lightmap;
@@ -25,6 +24,8 @@ out vec4 vertColor;
 out vec2 lightmapCoord;
 
 void main() {
+	#include "/snippets/core_to_compat.vsh"
+	
 	const vec4 viewPos = modelViewMatrix * vec4(vaPosition + chunkOffset, 1);
 	const vec4 clipPos = projectionMatrix * viewPos;
 	lightmapCoord = (TEXTURE_MATRIX_2 * vec4(vaUV2, 0.0, 1.0)).xy;

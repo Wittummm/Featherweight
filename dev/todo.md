@@ -34,6 +34,7 @@ It is meant to be a self note, but is **not** private.
 - Use a better shadow distortion algo, as this one makes the far chunks super thin
 - (?) Distort PCF's offset, and maybe also PCSS
 - Fix or deprecate PCSS as its hard to tune
+- Make sunrays origin size consistent across fov levels either by making it use world space size OR use fov to counterscale it
 
 ### Issues
  - (!) Entity shadows disappear at certain angles, may be iris bug? (1.21.4)

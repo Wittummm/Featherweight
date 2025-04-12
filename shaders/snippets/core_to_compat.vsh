@@ -1,3 +1,6 @@
+// CAUTION: This snippet MUST be put in the top of the main function 
+// and CANNOT be outside or else it will crash :)
+
 #ifdef DISTANT_HORIZONS_SHADER  
 
     const vec3 vaNormal = gl_Normal.xyz;

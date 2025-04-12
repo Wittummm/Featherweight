@@ -35,13 +35,13 @@ void main() {
 	GBuffer0 = texture(colortex1, texCoord);
 	GBuffer1 = texture(colortex2, texCoord);
 	Color = texture(colortex0, texCoord);
-	const vec2 lightLevel = unpackLightLevel(Color.a);
 
 	const float depth = texture(depthtex0, texCoord).r;
 	    
 	if (depth < 1) {
-		Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
+		const vec2 lightLevel = unpackLightLevel(Color.a);
 		const vec3 viewPos = depthToViewPos(texCoord, depth);
+		Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
 
 		shade(Color, material, lightLevel, viewPos);
         GBuffer0.r = roughnessWrite(material.roughness);
