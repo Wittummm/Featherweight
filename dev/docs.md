@@ -1,4 +1,4 @@
-This document is meant to document this shader, expect it to be heavily developer oriented.
+This document is meant to document this shader but expect it to be heavily developer oriented.
 
 ### Feature Flags
 Search for these keywords to see what extra features you can toggle, most are disabled to reduce compile time.
