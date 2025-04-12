@@ -45,7 +45,7 @@ void main() {
 
 		shade(Color, material, lightLevel, viewPos);
         GBuffer0.r = roughnessWrite(material.roughness);
-		GBuffer1.rg = normalsWrite(material.normals); 
+		GBuffer1.rg = normalsWrite(viewToPlayerSpace(material.normals));
 		GBuffer0.g = reflectanceWriteFromF0(material.f0.x);
 	}
 }

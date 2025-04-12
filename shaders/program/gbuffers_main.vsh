@@ -17,24 +17,27 @@ uniform sampler2D lightmap;
 
 	out vec2 texCoord;
 	out vec4 tangent;
+	out vec2 lightmapCoord; // DH doesnt need as I always bake it into vert color no matter if DH or not
 #endif
 
 out vec3 vertNormal;
 out vec4 vertColor;
-out vec2 lightmapCoord;
+out vec3 vertPosition;
 
 void main() {
 	#include "/snippets/core_to_compat.vsh"
-	
+
 	const vec4 viewPos = modelViewMatrix * vec4(vaPosition + chunkOffset, 1);
 	const vec4 clipPos = projectionMatrix * viewPos;
-	lightmapCoord = (TEXTURE_MATRIX_2 * vec4(vaUV2, 0.0, 1.0)).xy;
-	const vec3 light = texture(lightmap, lightmapCoord).rgb;
+	const vec2 lightLevel = (TEXTURE_MATRIX_2 * vec4(vaUV2, 0.0, 1.0)).xy;
+	const vec3 light = texture(lightmap, lightLevel).rgb;
 
 #ifndef DISTANT_HORIZONS_SHADER
+	lightmapCoord = lightLevel;
 	texCoord = vaUV0;
 	tangent = at_tangent;
 #endif
+	vertPosition = viewPos.xyz;
 	vertNormal = vaNormal;
 	gl_Position = clipPos;
 	vertColor = vec4(vaColor.rgb * vaColor.a * light, 1);
