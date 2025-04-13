@@ -5,6 +5,9 @@ uniform vec3 shadowLightPosition;
 uniform vec3 cameraPosition;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
+uniform mat3 normalMatrix;
+uniform mat4 gbufferModelViewInverse;
+uniform mat4 gbufferModelView;
 
 #include "/common/const.glsl"
 #include "/lib/math.glsl"
@@ -20,6 +23,9 @@ uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D depthtex0;
+#ifdef DISTANT_HORIZONS
+	uniform sampler2D dhDepthTex0;
+#endif
 
 in vec2 texCoord;
 
@@ -32,19 +38,18 @@ void main() {
 	GBuffer0 = texture(colortex1, texCoord);
 	GBuffer1 = texture(colortex2, texCoord);
 	Color = texture(colortex0, texCoord);
-	const vec2 lightLevel = unpackLightLevel(Color.a);
-
-	Color.a = 1;
 
 	const float depth = texture(depthtex0, texCoord).r;
-	    
-	if (depth < 1) {
-		Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
-		const vec3 viewPos = depthToViewPos(texCoord, depth);
+	const float dhDepth = texture(dhDepthTex0, texCoord).r;
+	if (depth >= 1 && dhDepth >= 1) return;
+	const vec3 viewPos = depthToViewPos(texCoord, depth);
 
-		shade(Color, material, lightLevel, viewPos);
-        GBuffer0.r = roughnessWrite(material.roughness);
-		GBuffer1.rg = normalsWrite(material.normals); 
-		GBuffer0.g = reflectanceWriteFromF0(material.f0.x);
-	}
+
+	const vec2 lightLevel = unpackLightLevel(Color.a);
+	Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
+	
+	shade(Color, material, lightLevel, viewPos);
+	GBuffer0.r = roughnessWrite(material.roughness);
+	GBuffer1.rg = normalsWrite(viewToPlayerSpace(material.normals));
+	GBuffer0.g = reflectanceWriteFromF0(material.f0.x);
 }

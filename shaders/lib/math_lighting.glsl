@@ -20,7 +20,9 @@ const vec3 lightDir = normalize(shadowLightPosition);
 const vec3 upDir = normalize(upPosition);
 const vec3 puddleScale = vec3(PUDDLE_HORIZONTAL_SCALE, PUDDLE_VERTICAL_SCALE,PUDDLE_HORIZONTAL_SCALE);
 
-in vec2 mc_Entity;
+// #ifndef DISTANT_HORIZONS_SHADER
+// in vec2 mc_Entity;
+// #endif
 
 vec3 playerToViewSpace(vec3 normals) {
     return mat3(gbufferModelView) * normals;
@@ -33,7 +35,7 @@ vec3 viewToPlayerSpace(vec3 normals) {
 
 struct Material {
     float roughness;
-    vec3 normals;
+    vec3 normals; // NOTE!: This is in viewSpace where as gbuffers store normals in playerSpace
     float porosity; // Not physically based
     float sss; // Currently unimplemented
     float emission;
@@ -77,7 +79,6 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     const vec3 outDir = -viewDir;
     /////////////////////////////////////////
     const float shadow = calcShadow(posWorld - cameraPosition, viewToPlayerSpace(normals));
-
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
     const vec3 emissive = albedo*emission;
 
@@ -93,7 +94,7 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris
     */
-    if (wetness > 0.001 && mc_Entity.y != 1.0) { // Check if is not fluid, cuz fluids cant get wet + that looks weird
+    if (wetness > 0.001 /*&& mc_Entity.y != 1.0*/) { // Check if is not fluid, cuz fluids cant get wet + that looks weird
         const float upness = dot(normals, upDir);
         const float skyExposure = clamp(smoothstep(PUDDLE_EXPOSURE_MIN, PUDDLE_EXPOSURE_MAX, skylight), 0, 1);
         
@@ -110,7 +111,7 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     
         // Update the material correspondingly
         material.roughness = mix(roughness, PUDDLE_ROUGHNESS, puddle);
-        material.normals = viewToPlayerSpace(mix(normals, puddleNormal, puddle));
+        material.normals = mix(normals, puddleNormal, puddle);
         if (f0.x == f0.y && f0.y == f0.z) { // If non-metal, we cannot encode colored F0s :(
             material.f0 = vec3(mix(f0.x, PUDDLE_WATER_F0, puddle)*3);
         }

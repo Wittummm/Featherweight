@@ -1,7 +1,4 @@
-This document is meant to document this shader, expect it to be heavily developer oriented.
-
-Formating of this document:
- - Indents are 2 spaces
+This document is meant to document this shader but expect it to be heavily developer oriented.
 
 ### Feature Flags
 Search for these keywords to see what extra features you can toggle, most are disabled to reduce compile time.
@@ -17,8 +14,8 @@ Search for these keywords to see what extra features you can toggle, most are di
  - Light Brightness = [0, ∞) adjusted for brightness
  - "Light" with no context refers to directional light ie sun/moon light
  - To avoid ambiguity we should avoid naming things with vague relation **especially** for objects. Examples:
-  (Object) `playerPosition` could be intepreted likely as "position of the player" or unlikely "player space position". (Non-Object )`worldPosition` could be intepreted likely as "the position in the world" or unlikely "position of the world"(this is the unlikely case as we cant *usually* move worlds but objects such as players are moveable)
-  Instead we should name things like `posPlayer` `posWorld` meaning "position in player (space)" and "position in world (space)".
+  (Object) `playerPosition` could be intepreted likely as "position of the player" or unlikely "player space position". (Non-Object)`worldPosition` could be intepreted likely as "the position in the world" or unlikely "position of the world"(this is the unlikely case as we cant *usually* move worlds but objects such as players are moveable)
+  Instead we should name things like `posPlayer`, `posWorld` meaning "position in player (space)" and "position in world (space)".
 
 ### Dev 
   - **Keywords**
@@ -52,7 +49,7 @@ Search for these keywords to see what extra features you can toggle, most are di
 
 ### Citing, Sources, Referencing
  - List of "Sources" at top of file with links. Each link has an index
-    - [x] means it is purely a resource.
+    - `[x]` means it is purely a resource.
  - Cite by doing `[index/anyArbitraryPath]` for example: `[1]` `[2/#100]` `[3/5.3]`
     - `/` is used to go into deeper paths
     - `#` usually refers to page or header

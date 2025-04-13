@@ -3,7 +3,8 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Deferred rendering
-    - reimplement DH support
+    - make `light_level.glsl` into a `packLightLevel.glsl` `func`
+    - ability to turn off: diffuse, specular, clearcoat(rain)
     - Integrated pbr
 - Sky
     - sky + metals support sky reflections
@@ -32,6 +33,7 @@ It is meant to be a self note, but is **not** private.
 - Use a better shadow distortion algo, as this one makes the far chunks super thin
 - (?) Distort PCF's offset, and maybe also PCSS
 - Fix or deprecate PCSS as its hard to tune
+- Make sunrays origin size consistent across fov levels either by making it use world space size OR use fov to counterscale it
 
 ### Issues
  - (!) Entity shadows disappear at certain angles, may be iris bug? (1.21.4)
@@ -61,6 +63,7 @@ It is meant to be a self note, but is **not** private.
 - Bloom
 - Waving Plants
 - Water with absorption, etc
+    - Underwater blur
 - HBAO
 - Fast Screen Space Reflections
 - Fog
