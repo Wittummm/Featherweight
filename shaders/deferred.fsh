@@ -43,7 +43,7 @@ void main() {
 	Color = texture(colortex0, texCoord);
 
 	const float depth = texture(depthtex0, texCoord).r;
-	#if DISTANT_HORIZONS
+	#ifdef DISTANT_HORIZONS
 		const float dhDepth = texture(dhDepthTex0, texCoord).r;
 		if (depth >= 1 && dhDepth >= 1) return;
 		vec3 viewPos;
@@ -54,6 +54,7 @@ void main() {
 		}
 	#else
 		vec3 viewPos = depthToViewPos(texCoord, depth);
+		if (depth >= 1) return;
 	#endif
 
 	const vec2 lightLevel = unpackLightLevel(Color.a);

@@ -3,6 +3,7 @@
 #define RAIN_INTENSITY 0.75 // [0.25 0.5 0.75 1 1.25 1.5 1.75 2]
 
 // Puddles
+#define PUDDLES On // [Off On]
 #define PUDDLE_THICKNESS 2 // [1.5 1.7 1.8 1.9 2 2.1 2.25 2.5 3] {Arbitrary, not physically based at all}
 #define PUDDLE_SIZE 1 // [0 0.4 0.75 1 1.25 1.5 2 2.5 3] {Size of each individual puddle}
 

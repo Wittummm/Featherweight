@@ -70,8 +70,7 @@ void main() {
         discard;
         return;
     }
-    // Color = vertColor;
-    Color.rgb = vec3(dhMaterialId);
+    Color = vertColor;
 
     // TODOEVENTUALLY: Move this somewhere else for better organization
     switch (dhMaterialId) { // TODOEVENTUALLY NOTE: Not tested bc it doesnt work on 1.21.4
