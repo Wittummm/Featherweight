@@ -11,7 +11,7 @@ vec3 depthToViewPos(vec2 fragCoord, float depth, mat4 projInverse) {
 }
 
 vec3 depthToViewPos(vec2 fragCoord, float depth) {
-    return depthToViewPos(fragCoord, depth, gbufferProjectionInverse)
+    return depthToViewPos(fragCoord, depth, gbufferProjectionInverse);
 }
 
 
