@@ -3,9 +3,9 @@
 #include "/settings/shadows.glsl"
 
 #ifndef DISTANT_HORIZONS_SHADER
-uniform sampler2D gtexture;
+	uniform sampler2D gtexture;
 
-in vec2 texCoord;
+	in vec2 texCoord;
 #endif
 
 void main() {
