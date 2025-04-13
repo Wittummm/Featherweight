@@ -3,11 +3,15 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Deferred rendering
+    - DH support
+        - Cast Shadows
+        - Per Mat Id pbrs
     - make `light_level.glsl` into a `packLightLevel.glsl` `func`
     - ability to turn off: diffuse, specular, clearcoat(rain)
-    - Integrated pbr
-- Sky
+- Sky(box)
     - sky + metals support sky reflections
+- Fog
+- Integrated pbr
 - Water
     - vert displacement
     - shore foam
@@ -34,6 +38,7 @@ It is meant to be a self note, but is **not** private.
 - (?) Distort PCF's offset, and maybe also PCSS
 - Fix or deprecate PCSS as its hard to tune
 - Make sunrays origin size consistent across fov levels either by making it use world space size OR use fov to counterscale it
+- Improve translucent on dh translucent blending as you can see the sky when blending between vanilla and dh chunks on translucents
 
 ### Issues
  - (!) Entity shadows disappear at certain angles, may be iris bug? (1.21.4)

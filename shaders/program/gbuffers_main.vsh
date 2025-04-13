@@ -17,9 +17,9 @@ uniform sampler2D lightmap;
 
 	out vec2 texCoord;
 	out vec4 tangent;
-	out vec2 lightmapCoord; // DH doesnt need as I always bake it into vert color no matter if DH or not
 #endif
 
+out vec2 lightmapCoord;
 out vec3 vertNormal;
 out vec4 vertColor;
 out vec3 vertPosition;

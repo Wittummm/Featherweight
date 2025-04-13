@@ -23,8 +23,11 @@ uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D depthtex0;
+uniform float near;
+uniform float far;
 #ifdef DISTANT_HORIZONS
 	uniform sampler2D dhDepthTex0;
+	uniform mat4 dhProjectionInverse;
 #endif
 
 in vec2 texCoord;
@@ -42,12 +45,16 @@ void main() {
 	const float depth = texture(depthtex0, texCoord).r;
 	const float dhDepth = texture(dhDepthTex0, texCoord).r;
 	if (depth >= 1 && dhDepth >= 1) return;
-	const vec3 viewPos = depthToViewPos(texCoord, depth);
-
+	vec3 viewPos;
+	if (depth >= 1) {
+		viewPos = depthToViewPos(texCoord, dhDepth, dhProjectionInverse);
+	} else {
+		viewPos = depthToViewPos(texCoord, depth);
+	}
 
 	const vec2 lightLevel = unpackLightLevel(Color.a);
 	Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
-	
+
 	shade(Color, material, lightLevel, viewPos);
 	GBuffer0.r = roughnessWrite(material.roughness);
 	GBuffer1.rg = normalsWrite(viewToPlayerSpace(material.normals));

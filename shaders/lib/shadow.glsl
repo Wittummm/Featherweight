@@ -1,7 +1,10 @@
+// Required Uniforms: shadowModelView, shadowProjection
 #include "/settings/soft_shadows.glsl"
 #include "/settings/lighting.glsl"
 #include "/func/fade.glsl"
 #include "/func/distortShadow.glsl"
+
+// uniform mat4 dhProjection;
 
 vec2 goldenDiskSample(const float index, const float count) {
     const float theta = index * 2.4;
@@ -124,7 +127,11 @@ float sampleShadow(const vec3 shadowScreenPos, const vec3 posPlayer, const float
 
 float calcShadow(const vec3 posPlayer, const vec3 geoNormals) {
     const vec3 shadowView = (shadowModelView * vec4(posPlayer, 1)).xyz;
+    // #ifdef DISTANT_HORIZONS
     const vec4 oldShadowClip = shadowProjection * vec4(shadowView, 1);
+    // #elif
+    // const vec4 oldShadowClip = dhProjection * vec4(shadowView, 1);
+    // #endif
     const vec3 shadowClip = distortShadow(oldShadowClip.xyz);
     const vec3 shadowNdc = shadowClip.xyz / oldShadowClip.w;
     const vec3 shadowScreen = shadowNdc * 0.5 + 0.5;
