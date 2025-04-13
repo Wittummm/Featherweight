@@ -2,7 +2,7 @@
 
 #include "/common/const.glsl"
 #include "/func/fadeDH.glsl"
-#include "/lib/light_level.glsl"
+#include "/func/packLightLevel.glsl"
 
 uniform vec3 cameraPosition;
 uniform sampler2D colortex0;
@@ -57,18 +57,21 @@ void main() {
     #include "/snippets/core_to_compat.fsh"
     const vec2 fragCoord = gl_FragCoord.xy*pixelSize;
         
+#ifdef DISTANT_HORIZONS
     const vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
     if (fadeDH(length(posPlayer), far)) {
         discard;
         return;
     }
+#endif
 
 #ifdef DISTANT_HORIZONS_SHADER
     if (texture(depthtex0, fragCoord).r < 1.0) {
         discard;
         return;
     }
-    Color = vertColor;;
+    // Color = vertColor;
+    Color.rgb = vec3(dhMaterialId);
 
     // TODOEVENTUALLY: Move this somewhere else for better organization
     switch (dhMaterialId) { // TODOEVENTUALLY NOTE: Not tested bc it doesnt work on 1.21.4

@@ -13,7 +13,7 @@ uniform mat4 gbufferModelView;
 #include "/lib/math.glsl"
 #include "/lib/pbr.glsl"
 #include "/lib/math_lighting.glsl"
-#include "/lib/light_level.glsl"
+#include "/func/packLightLevel.glsl"
 #include "/settings/lighting.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/func/specular.glsl"
@@ -43,14 +43,18 @@ void main() {
 	Color = texture(colortex0, texCoord);
 
 	const float depth = texture(depthtex0, texCoord).r;
-	const float dhDepth = texture(dhDepthTex0, texCoord).r;
-	if (depth >= 1 && dhDepth >= 1) return;
-	vec3 viewPos;
-	if (depth >= 1) {
-		viewPos = depthToViewPos(texCoord, dhDepth, dhProjectionInverse);
-	} else {
-		viewPos = depthToViewPos(texCoord, depth);
-	}
+	#if DISTANT_HORIZONS
+		const float dhDepth = texture(dhDepthTex0, texCoord).r;
+		if (depth >= 1 && dhDepth >= 1) return;
+		vec3 viewPos;
+		if (depth >= 1) {
+			viewPos = depthToViewPos(texCoord, dhDepth, dhProjectionInverse);
+		} else {
+			viewPos = depthToViewPos(texCoord, depth);
+		}
+	#else
+		vec3 viewPos = depthToViewPos(texCoord, depth);
+	#endif
 
 	const vec2 lightLevel = unpackLightLevel(Color.a);
 	Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
