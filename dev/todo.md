@@ -3,9 +3,6 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Deferred rendering
-    - reimplement DH support
-        - in `deferred.fsh` also make it use `dhDepth` so it shades dh chunks too
-        - readd fog
     - make `light_level.glsl` into a `packLightLevel.glsl` `func`
     - ability to turn off: diffuse, specular, clearcoat(rain)
     - Integrated pbr

@@ -10,4 +10,11 @@ vec3 depthToViewPos(vec2 texCoord, float depth) {
     return viewPos.xyz / viewPos.w;
 }
 
+
+vec3 depthToViewPos(vec2 texCoord, float depth, mat4 projInverse) {
+    const vec4 ndc = vec4(texCoord, depth, 1) * 2.0 - 1.0;
+    const vec4 viewPos = projInverse * ndc;
+    return viewPos.xyz / viewPos.w;
+}
+
 #endif
