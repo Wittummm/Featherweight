@@ -83,15 +83,19 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     const float lit = min(diffuseFactor,1-shadow)*LIGHT_BRIGHTNESS;
 
     vec3 kS = vec3(0.0);
+    #if SPECULAR == On
     const vec3 colorSpecular = calcSpecular(lightDir, outDir, normals, roughness, f0, kS);
-
+    #else
+    const vec3 colorSpecular = vec3(0);
+    #endif
     color.rgb = (albedo*diffuseFactor*(1-kS) + colorSpecular*lit);
     color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit);
     
+    #if PUDDLES == On
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris
     */
-    if (wetness > 0.001 /*&& mc_Entity.y != 1.0*/) { // Check if is not fluid, cuz fluids cant get wet + that looks weird
+    if (wetness > 0.001) { // TODO: Check if is not fluid, cuz fluids cant get wet + that looks weird
         const float upness = dot(normals, upDir);
         const float skyExposure = clamp(smoothstep(PUDDLE_EXPOSURE_MIN, PUDDLE_EXPOSURE_MAX, skylight), 0, 1);
         
@@ -113,6 +117,7 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
             material.f0 = vec3(mix(f0.x, PUDDLE_WATER_F0, puddle)*3);
         }
     }
+    #endif
 }
 
 void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec2 fragCoord, float depth) {

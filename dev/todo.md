@@ -2,8 +2,6 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
-- Deferred rendering
-    - ability to turn off: diffuse, specular, clearcoat(rain)
 - Sky(box)
     - sky + metals support sky reflections
 - Fog
