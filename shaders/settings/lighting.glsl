@@ -10,16 +10,6 @@
 const float sunPathRotation = 20; // [-55 -50 -45 -40 -35 -30 -25 -20 -15 -10 0 10 15 20 25 30 35 40 45 50 55]
 
 #define LIGHT_BRIGHTNESS 1 // [0.5 0.6 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5 1.75 2]
-// Day Cycle, EXTRA_SETTINGS
-#define SUNRISE0 0
-#define SUNRISE1 1
-#define MORNING 0.125
-#define NOON 0.25
-#define AFTERNOON 0.375
-#define SUNSET 0.5
-#define NIGHT_START 0.55
-#define MIDNIGHT 0.75
-#define NIGHT_END 0.95
 
 // Handle Values
 const vec3 AMBIENT = vec3(AMBIENT_R, AMBIENT_G, AMBIENT_B)/255.0;

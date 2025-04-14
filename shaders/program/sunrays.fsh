@@ -50,11 +50,11 @@ uniform sampler2D colortex0;
 uniform vec3 shadowLightPosition;
 uniform vec3 upPosition;
 uniform float aspectRatio;
+uniform vec4 lightColor;
 
 in vec2 texCoord;
 in vec3 vertPosition;
 in vec2 lightPos;
-in vec4 sunraysColor;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
@@ -101,7 +101,7 @@ void main() {
     const vec2 uvCorrected = uv*applyAspectRatio;
 
 #if SUNRAYS_MODE == 4
-    vec3 rayColor = sunraysColor.rgb;
+    vec3 rayColor = lightColor.rgb;
     int rayColorCount = 1;
 #endif
     float rayAlpha = 0;
@@ -145,9 +145,9 @@ void main() {
         }
     }
 #if SUNRAYS_MODE == 4
-    const vec3 rayColorFactor = mix(sunraysColor.rgb, normalize(rayColor/float(rayColorCount)), SUNRAYS_MAX_TRANSPARENCY);
+    const vec3 rayColorFactor = mix(lightColor.rgb, normalize(rayColor/float(rayColorCount)), SUNRAYS_MAX_TRANSPARENCY);
 #else
-    const vec3 rayColorFactor = sunraysColor.rgb;
+    const vec3 rayColorFactor = lightColor.rgb;
 #endif
-    color.rgb += rayColorFactor*(rayAlpha*oneOverSamples)*sunraysColor.a*strength*SUNRAYS_STRENGTH;
+    color.rgb += rayColorFactor*(rayAlpha*oneOverSamples)*lightColor.a*strength*SUNRAYS_STRENGTH;
 }

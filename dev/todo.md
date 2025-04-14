@@ -3,6 +3,8 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Sky(box)
+    Attempt Preethams's atmospheric model
+    - Make skybox also contribute to ambient
     - sky + metals support sky reflections
 - Fog
 - Integrated pbr
