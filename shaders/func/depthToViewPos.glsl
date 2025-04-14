@@ -14,5 +14,8 @@ vec3 depthToViewPos(vec2 fragCoord, float depth) {
     return depthToViewPos(fragCoord, depth, gbufferProjectionInverse);
 }
 
+vec3 calcViewDir(vec2 fragCoord) {
+    return normalize(depthToViewPos(fragCoord, -1, gbufferProjectionInverse));
+}
 
 #endif

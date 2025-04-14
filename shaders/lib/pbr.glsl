@@ -30,7 +30,7 @@ float roughnessWrite(float roughness) {
 
 /// Emission
 float emissionRead(float emission) {
-    return emission >= 0.999 ? 0 : emission;
+    return emission < 1 ? emission : 0;
 }
 
 bool isPorosity(float porosity) {

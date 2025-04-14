@@ -2,9 +2,6 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
-- Sky(box)
-    - sky + metals support sky reflections
-- Fog
 - Integrated pbr
 - Water
     - vert displacement
@@ -26,7 +23,7 @@ It is meant to be a self note, but is **not** private.
     - Particles fade out when out of vanilla range due to DH sorting issues
     - Try shading specifically for water, foliage
     - Broken on 1.21.4 iris
-        - DH chunks doesnt cast shadows
+        - DH chunks doesnt cast shadows -> verify what MC version supports it by using a verified shader such as super duper vanilla
 - In caves, make the skybox black/dark(should not have ANY false positives)
 - Use a better shadow distortion algo, as this one makes the far chunks super thin
 - (?) Distort PCF's offset, and maybe also PCSS
@@ -36,6 +33,7 @@ It is meant to be a self note, but is **not** private.
 - DH support (Cant seem to do this currently, on the initial DH support since it doesnt seem to work on 1.21.4 and couldnt get to run on 1.20.1)
     - Cast Shadows
     - Per Mat Id pbrs
+- Sky reflection should be cached/precomputed like 128 directions or something instead of runtime computation
 
 ### Issues
  - (!) Entity shadows disappear at certain angles, may be iris bug? (1.21.4)
@@ -43,6 +41,7 @@ It is meant to be a self note, but is **not** private.
  - (?) Turning on Shadow Fade Out makes an unknown black fade in the distance appear
 
 ### Ideas:
+- Physically based sky via **Bruneton's** precomputed model..
 - Exponential shadow mapping(medium)
 - Temporal Shadows(medium priority). Store the history of shadow in a buffer
 - Fake Soft Clouds(medium priority)
@@ -84,3 +83,6 @@ It is meant to be a self note, but is **not** private.
 - Shadows should be softer/fainter on foliage
 - Maybe add fake sun angle by shearing shadows
 - A shortcut menu for all performance options separated into Low, Medium, High and Unknown
+
+### Scrapped(Acrhive):
+ - ~~- Make sky under the horizon same as fog color.~~

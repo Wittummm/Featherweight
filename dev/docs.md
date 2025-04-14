@@ -28,6 +28,7 @@ Search for these keywords to see what extra features you can toggle, most are di
     - "TODOEVENTUALLY" should do eventually
     - "NOTE" a note for readers, including oneself
     - "PIN" likely will come back to, usually to edit/add features
+    - "CODE: xxx" a random code(literally button mash) 
   - **Notes**
     - Put "#define DISTANT_HORIZONS_SHADER" in the top of DH shader stages
 

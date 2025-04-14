@@ -1,18 +1,12 @@
 #version 460 core
 
 uniform int renderStage;
-uniform float viewHeight;
-uniform float viewWidth;
-uniform mat4 gbufferModelView;
-uniform mat4 gbufferProjectionInverse;
-uniform vec3 fogColor;
-uniform vec3 skyColor;
-
-in vec4 vertColor;
 
 /* RENDERTARGETS: 0 */
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec4 Color;
 
 void main() {
-	color = vertColor;
+    if (renderStage != MC_RENDER_STAGE_STARS) {
+        Color.rgb = vec3(0);
+    }
 }

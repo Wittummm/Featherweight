@@ -29,14 +29,14 @@ void main() {
 
 	const vec4 viewPos = modelViewMatrix * vec4(vaPosition + chunkOffset, 1);
 	const vec4 clipPos = projectionMatrix * viewPos;
-	const vec2 lightLevel = (TEXTURE_MATRIX_2 * vec4(vaUV2, 0.0, 1.0)).xy;
+	vec2 lightLevel = (TEXTURE_MATRIX_2 * vec4(vaUV2, 0.0, 1.0)).xy;
 	const vec3 light = texture(lightmap, lightLevel).rgb;
 
 #ifndef DISTANT_HORIZONS_SHADER
-	lightmapCoord = lightLevel;
 	texCoord = vaUV0;
 	tangent = at_tangent;
 #endif
+	lightmapCoord = lightLevel;
 	vertPosition = viewPos.xyz;
 	vertNormal = vaNormal;
 	gl_Position = clipPos;
