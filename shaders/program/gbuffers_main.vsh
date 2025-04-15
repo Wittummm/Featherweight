@@ -33,10 +33,10 @@ void main() {
 	const vec3 light = texture(lightmap, lightLevel).rgb;
 
 #ifndef DISTANT_HORIZONS_SHADER
-	lightmapCoord = lightLevel;
 	texCoord = vaUV0;
 	tangent = at_tangent;
 #endif
+	lightmapCoord = lightLevel;
 	vertPosition = viewPos.xyz;
 	vertNormal = vaNormal;
 	gl_Position = clipPos;

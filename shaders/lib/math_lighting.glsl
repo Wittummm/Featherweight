@@ -1,5 +1,4 @@
-// Required Uniforms: shadowModelView, shadowProjection
-
+// Required Uniforms: shadowModelView, shadowProjection, shadowLightPosition, gbufferModelViewInverse
 #include "/settings/main.glsl"
 #include "/settings/lighting.glsl"
 #include "/settings/rain.glsl"
@@ -12,6 +11,7 @@
 #include "/func/depthToViewPos.glsl"
 #include "/settings/shadows.glsl"
 #include "/lib/shadow.glsl"
+#include "/func/atmosphere/calcSky.glsl"
 
 uniform float rain;
 uniform float wetness;
@@ -59,7 +59,8 @@ Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
 // PIN!
 void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {
     const float skylight = lightLevel.y;
-    
+    const vec3 rawPosView = posView;
+
     vec3 posWorld = (mat3(gbufferModelViewInverse) * posView) + cameraPosition;
     #if PIXELIZATION != Off
     posWorld = (floor((posWorld*PIXELIZATION)+0.002)/PIXELIZATION);
@@ -88,9 +89,22 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     #else
     const vec3 colorSpecular = vec3(0);
     #endif
-    color.rgb = (albedo*diffuseFactor*(1-kS) + colorSpecular*lit);
+
+    // TODONOW: clean this up, and note that it isnt physically based, also maybe chunk into snippets or make a function
+    const float quality = 2
+
+    const float sampleCount = floor(1+(roughness*2));
+    vec3 ambient;
+    for (int i = 0; i < int(sampleCount); i++) {
+        const vec3 currentNormals = normalize(normals + roughness*(i/sampleCount)*(mod(i, 2) == 0 ? -1 : 1));
+        ambient += calcSky(mix(reflect(viewDir, currentNormals), currentNormals, min(roughness+0.2, 0.2)))*skylight*skylight*(1-roughness);
+    }
+    ambient /= sampleCount; 
+
     color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit);
-    
+    color.rgb = (color.rgb*(1-kS) + colorSpecular*lit);
+    color.rgb += ambient*AMBIENT; // Arbitrary
+
     #if PUDDLES == On
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris

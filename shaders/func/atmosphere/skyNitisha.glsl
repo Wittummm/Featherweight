@@ -14,7 +14,7 @@ const float Hr = 7994.0;
 const vec3 betaR = vec3(3.8e-6, 13.5e-6, 33.1e-6);
 const float Hm = 1200.0;
 const vec3 betaM = vec3(21e-6);
-const float g = 0.8;
+const float g = 0.4;
 
 #define MAX 1000000
 
@@ -92,10 +92,7 @@ vec3 ACES(vec3 v) {
     return (v*(2.51*v+0.03))/(v*(2.43*v+0.59)+0.14);
 }
 
-vec3 calcSky(vec3 viewDir, vec3 lightDir, float time, float intensity, float max) {
-    viewDir = (mat3(gbufferModelViewInverse) * viewDir); // To Player Space
-    lightDir = (mat3(gbufferModelViewInverse) * lightDir); // To Player Space
-
+vec3 skyNitisha(vec3 viewDir, vec3 lightDir, float time, float intensity, float max) {
     float t0, t1, tMax = MAX;
     if (raySphereIntersect(pos, viewDir, Re, t0, t1) && t0 > 0.0) {
         tMax = t0;

@@ -9,6 +9,7 @@ uniform mat3 normalMatrix;
 uniform mat4 gbufferModelViewInverse;
 uniform mat4 gbufferModelView;
 uniform sampler2D colortex0;
+uniform float sunAngle;
 
 #include "/common/const.glsl"
 #include "/lib/math.glsl"
@@ -19,13 +20,12 @@ uniform sampler2D colortex0;
 #include "/func/depthToViewPos.glsl"
 #include "/func/specular.glsl"
 #include "/func/depthToNormals.glsl"
+#include "/func/atmosphere/calcSky.glsl"
 
-#include "/func/atmosphere/skyNitisha.glsl"
 
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D depthtex0;
-uniform float sunAngle;
 #ifdef DISTANT_HORIZONS
 	uniform sampler2D dhDepthTex0;
 	uniform mat4 dhProjectionInverse;
@@ -62,10 +62,7 @@ void main() {
 	// NOTE: Both these branches should **not** get out of hand/too big, if it does move to snippets or make into a function
 	if (isSky) {
 		// Render Sky
-		vec3 sun = calcSky(calcViewDir(texCoord), normalize(shadowLightPosition), sunAngle, 50, 1);
-		vec3 moon = calcSky(calcViewDir(texCoord), normalize(shadowLightPosition), -sunAngle, 5, 0.01);
-
-		Color.rgb = Color.rgb + mix(moon, sun, sunAngle > 0.5 ? abs(0.75 - sunAngle)*0.5 : 1)*(1-Color.rgb);
+		Color.rgb = Color.rgb*0.8 + calcSky(normalize(viewPos));
 	} else {
 		// Render Object
 		const vec2 lightLevel = unpackLightLevel(Color.a);

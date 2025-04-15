@@ -21,7 +21,8 @@ const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
     uniform mat4 gbufferModelView;
     uniform mat4 gbufferModelViewInverse;
     uniform mat3 normalMatrix;
-
+    uniform float sunAngle;
+    
     #include "/settings/main.glsl"
     #include "/settings/pbr.glsl"
     #include "/lib/math_lighting.glsl"
