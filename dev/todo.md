@@ -3,8 +3,6 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Sky(box)
-    Attempt Preethams's atmospheric model
-    - Make skybox also contribute to ambient
     - sky + metals support sky reflections
 - Fog
 - Integrated pbr
@@ -45,6 +43,7 @@ It is meant to be a self note, but is **not** private.
  - (?) Turning on Shadow Fade Out makes an unknown black fade in the distance appear
 
 ### Ideas:
+- Physically based sky via **Bruneton's** precomputed model..
 - Exponential shadow mapping(medium)
 - Temporal Shadows(medium priority). Store the history of shadow in a buffer
 - Fake Soft Clouds(medium priority)
