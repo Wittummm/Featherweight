@@ -2,16 +2,10 @@
 
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
-uniform vec3 chunkOffset;
-
-in vec4 vaColor;
-
-out vec3 vertPos;
 
 void main() {
 	const vec4 viewPos = modelViewMatrix * vec4(vaPosition, 1);
 	const vec4 clipPos = projectionMatrix * viewPos;
 
 	gl_Position = clipPos;
-	vertPos = viewPos.xyz;
 }

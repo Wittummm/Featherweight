@@ -4,7 +4,9 @@ It is meant to be a self note, but is **not** private.
 ### To-do:
 - Sky(box)
     - sky + metals support sky reflections
-- Fog
+        - probably precompute/cache the 6 cardinal directions of the skybox, and calculate in runtime the rest
+- Fog -> Is influenced by sky's horizon color
+- Make sky under the horizon same as fog color.
 - Integrated pbr
 - Water
     - vert displacement
@@ -26,7 +28,7 @@ It is meant to be a self note, but is **not** private.
     - Particles fade out when out of vanilla range due to DH sorting issues
     - Try shading specifically for water, foliage
     - Broken on 1.21.4 iris
-        - DH chunks doesnt cast shadows
+        - DH chunks doesnt cast shadows -> verify what MC version supports it by using a verified shader such as super duper vanilla
 - In caves, make the skybox black/dark(should not have ANY false positives)
 - Use a better shadow distortion algo, as this one makes the far chunks super thin
 - (?) Distort PCF's offset, and maybe also PCSS

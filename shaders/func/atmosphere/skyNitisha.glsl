@@ -1,10 +1,10 @@
-/* Nitisha Atmospheric Scattering Sky
+/* Crude Nitisha Atmospheric Scattering Sky
 Sources:
     [x] https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/simulating-sky/simulating-colors-of-the-sky.html
     [x] https://www.shadertoy.com/view/3lVyRc
 */
 
-// Required Uniforms: gbufferModelViewInverse, upPosition
+// Required Uniforms: gbufferModelViewInverse
 
 // TODOEVENTUALLY: Actually understand the algorithm, Polish up the code, perhaps a rewrite from scratch
 
@@ -18,10 +18,10 @@ const float g = 0.8;
 
 #define MAX 1000000
 
-#define SAMPLES 2
-#define SAMPLES_LIGHT 2
+#define SAMPLES 4
+#define SAMPLES_LIGHT 3
 #define ALTITUDE 0.0
-#define MIE_EXTINCTION_MUL 1.2
+#define MIE_EXTINCTION_MUL 1.1
 
 const vec3 pos = vec3(0.0, Re + ALTITUDE, 0.0);
 
@@ -87,7 +87,12 @@ vec3 computeIncidentLight(const in vec3 orig, const in vec3 dir, in float tmin, 
     return (sumR * betaR * phaseR + sumM * betaM * phaseM) ;
 }
 
-vec3 calcSky(vec3 viewDir, vec3 lightDir, float time) {
+vec3 ACES(vec3 v) {
+    v *= 0.6;
+    return (v*(2.51*v+0.03))/(v*(2.43*v+0.59)+0.14);
+}
+
+vec3 calcSky(vec3 viewDir, vec3 lightDir, float time, float intensity, float max) {
     viewDir = (mat3(gbufferModelViewInverse) * viewDir); // To Player Space
     lightDir = (mat3(gbufferModelViewInverse) * lightDir); // To Player Space
 
@@ -95,16 +100,16 @@ vec3 calcSky(vec3 viewDir, vec3 lightDir, float time) {
     if (raySphereIntersect(pos, viewDir, Re, t0, t1) && t0 > 0.0) {
         tMax = t0;
     }
-    float strength = 15;
 
-    if (viewDir.y < 0) {
-        viewDir.y *= 0.7;
+    if (viewDir.y < 0) { // Handle below horizon(Hacky)
         tMax = MAX;
     }
-    if (time < 1 && time > 0.5) {
-        tMax = MAX*0.01;
-        strength = 5;
-    }
+    // if (time < 1 && time > 0.5) { // Night
+    //     tMax = MAX*0.01;
+    //     intensity *= 0.1;
+    // }
+
+    const vec3 color = computeIncidentLight(pos, viewDir, 0.0, tMax*max, lightDir);
     
-    return computeIncidentLight(pos, viewDir, 0.0, tMax, lightDir)*strength;
+    return ACES(color*intensity);
 }

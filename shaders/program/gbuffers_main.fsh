@@ -45,7 +45,6 @@ in vec3 vertNormal;
 in vec3 vertPosition;
 
 /* RENDERTARGETS: 0,1,2 */
-layout(location = 0) in vec4 InColor;
 layout(location = 0) out vec4 Color;
 layout(location = 1) out vec4 GBuffer0;
 layout(location = 2) out vec4 GBuffer1;
@@ -107,8 +106,8 @@ void main() {
 		discard; return;
 	}
 
-    GBuffer0 = texture(specular, texCoord, -7); // TODOEVENTUALLY: should actually fix mipmaps
-    GBuffer1 = texture(normals, texCoord, -7); // TODOEVENTUALLY: should actually fix mipmaps
+    GBuffer0 = texture(specular, texCoord, -1); // TODOEVENTUALLY: should actually fix mipmaps
+    GBuffer1 = texture(normals, texCoord, -1); // TODOEVENTUALLY: should actually fix mipmaps
 
     const vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
