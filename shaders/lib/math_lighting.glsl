@@ -1,6 +1,7 @@
 // Required Uniforms: shadowModelView, shadowProjection, shadowLightPosition, gbufferModelViewInverse
 #include "/settings/main.glsl"
 #include "/settings/lighting.glsl"
+#include "/settings/atmosphere.glsl"
 #include "/settings/rain.glsl"
 #include "/lib/pbr.glsl"
 #include "/func/specular.glsl"
@@ -11,7 +12,7 @@
 #include "/func/depthToViewPos.glsl"
 #include "/settings/shadows.glsl"
 #include "/lib/shadow.glsl"
-#include "/func/atmosphere/calcSky.glsl"
+#include "/func/calcSkyReflection.glsl"
 
 uniform float rain;
 uniform float wetness;
@@ -59,7 +60,6 @@ Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
 // PIN!
 void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {
     const float skylight = lightLevel.y;
-    const vec3 rawPosView = posView;
 
     vec3 posWorld = (mat3(gbufferModelViewInverse) * posView) + cameraPosition;
     #if PIXELIZATION != Off
@@ -90,20 +90,10 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     const vec3 colorSpecular = vec3(0);
     #endif
 
-    // TODONOW: clean this up, and note that it isnt physically based, also maybe chunk into snippets or make a function
-    const float quality = 2
-
-    const float sampleCount = floor(1+(roughness*2));
-    vec3 ambient;
-    for (int i = 0; i < int(sampleCount); i++) {
-        const vec3 currentNormals = normalize(normals + roughness*(i/sampleCount)*(mod(i, 2) == 0 ? -1 : 1));
-        ambient += calcSky(mix(reflect(viewDir, currentNormals), currentNormals, min(roughness+0.2, 0.2)))*skylight*skylight*(1-roughness);
-    }
-    ambient /= sampleCount; 
+    const vec3 ambientSpecular = calcSkyReflection(AMBIENT_REFLECTION_QUALITY, viewDir, normals, roughness, skylight);
 
     color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit);
-    color.rgb = (color.rgb*(1-kS) + colorSpecular*lit);
-    color.rgb += ambient*AMBIENT; // Arbitrary
+    color.rgb = (color.rgb*(1-kS) + (colorSpecular+ambientSpecular)*lit);
 
     #if PUDDLES == On
     /* Rain Puddles using Clearcoat layer
@@ -128,7 +118,7 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
         material.roughness = mix(roughness, PUDDLE_ROUGHNESS, puddle);
         material.normals = mix(normals, puddleNormal, puddle);
         if (f0.x == f0.y && f0.y == f0.z) { // If non-metal, we cannot encode colored F0s :(
-            material.f0 = vec3(mix(f0.x, PUDDLE_WATER_F0, puddle)*3);
+            material.f0 = vec3(mix(f0.x, PUDDLE_WATER_F0, puddle));
         }
     }
     #endif

@@ -2,9 +2,6 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
-- Sky(box)
-    - sky + metals support sky reflections
-        - probably precompute/cache the 6 cardinal directions of the skybox, and calculate in runtime the rest
 - Fog -> Is influenced by sky's horizon color
 - Make sky under the horizon same as fog color.
 - Integrated pbr
@@ -38,6 +35,7 @@ It is meant to be a self note, but is **not** private.
 - DH support (Cant seem to do this currently, on the initial DH support since it doesnt seem to work on 1.21.4 and couldnt get to run on 1.20.1)
     - Cast Shadows
     - Per Mat Id pbrs
+- Sky reflection should be cached/precomputed like 128 directions or something instead of runtime computation
 
 ### Issues
  - (!) Entity shadows disappear at certain angles, may be iris bug? (1.21.4)

@@ -4,7 +4,7 @@ Sources:
     [x] https://www.shadertoy.com/view/3lVyRc
 */
 
-// Required Uniforms: gbufferModelViewInverse
+// Required Uniforms: gbufferModelViewInverse, eyeAltitude
 
 // TODOEVENTUALLY: Actually understand the algorithm, Polish up the code, perhaps a rewrite from scratch
 
@@ -18,12 +18,9 @@ const float g = 0.4;
 
 #define MAX 1000000
 
-#define SAMPLES 4
+const int SAMPLES = 4 + int(eyeAltitude*0.0008);
 #define SAMPLES_LIGHT 3
-#define ALTITUDE 0.0
 #define MIE_EXTINCTION_MUL 1.1
-
-const vec3 pos = vec3(0.0, Re + ALTITUDE, 0.0);
 
 bool raySphereIntersect(const vec3 center, const vec3 dir, const float radius, out float t0, out float t1) {
     const float b = dot(dir, center);
@@ -93,6 +90,8 @@ vec3 ACES(vec3 v) {
 }
 
 vec3 skyNitisha(vec3 viewDir, vec3 lightDir, float time, float intensity, float max) {
+    const vec3 pos = vec3(0.0, Re + eyeAltitude, 0.0);
+    
     float t0, t1, tMax = MAX;
     if (raySphereIntersect(pos, viewDir, Re, t0, t1) && t0 > 0.0) {
         tMax = t0;
@@ -101,11 +100,6 @@ vec3 skyNitisha(vec3 viewDir, vec3 lightDir, float time, float intensity, float 
     if (viewDir.y < 0) { // Handle below horizon(Hacky)
         tMax = MAX;
     }
-    // if (time < 1 && time > 0.5) { // Night
-    //     tMax = MAX*0.01;
-    //     intensity *= 0.1;
-    // }
-
     const vec3 color = computeIncidentLight(pos, viewDir, 0.0, tMax*max, lightDir);
     
     return ACES(color*intensity);

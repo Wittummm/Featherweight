@@ -3,15 +3,7 @@
 #include "/settings/lighting.glsl"
 #include "/func/fade.glsl"
 #include "/func/distortShadow.glsl"
-
-// uniform mat4 dhProjection;
-
-vec2 goldenDiskSample(const float index, const float count) {
-    const float theta = index * 2.4;
-    const float r = sqrt((index + 0.5) / count);
-
-    return vec2(r * cos(theta), r* sin(theta));
-}
+#include "/func/goldenDiskSample.glsl"
 
 ////////////////////////////////
 float sampleShadowMap(const vec2 coord) {
