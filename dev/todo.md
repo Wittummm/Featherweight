@@ -2,8 +2,6 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
-- Fog -> Is influenced by sky's horizon color
-- Make sky under the horizon same as fog color.
 - Integrated pbr
 - Water
     - vert displacement
@@ -85,3 +83,6 @@ It is meant to be a self note, but is **not** private.
 - Shadows should be softer/fainter on foliage
 - Maybe add fake sun angle by shearing shadows
 - A shortcut menu for all performance options separated into Low, Medium, High and Unknown
+
+### Scrapped(Acrhive):
+ - ~~- Make sky under the horizon same as fog color.~~

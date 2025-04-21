@@ -10,6 +10,7 @@ uniform sampler2D depthtex0;
 uniform float far;
 uniform float viewWidth;
 uniform float viewHeight;
+uniform sampler2D lightmap;
 
 const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 
@@ -22,10 +23,13 @@ const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
     uniform mat4 gbufferModelViewInverse;
     uniform mat3 normalMatrix;
     uniform float sunAngle;
-    
+    uniform vec4 lightColor;
+
     #include "/settings/main.glsl"
     #include "/settings/pbr.glsl"
+#ifdef FORWARD
     #include "/lib/math_lighting.glsl"
+#endif
 
     uniform sampler2D gtexture;
     uniform sampler2D normals;
@@ -56,7 +60,9 @@ layout(location = 2) out vec4 GBuffer1;
 void main() {
     #include "/snippets/core_to_compat.fsh"
     const vec2 fragCoord = gl_FragCoord.xy*pixelSize;
-        
+
+    Color = vertColor;
+
 #ifdef DISTANT_HORIZONS
     const vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
     if (fadeDH(length(posPlayer), far)) {
@@ -70,7 +76,6 @@ void main() {
         discard;
         return;
     }
-    Color = vertColor;
 
     // TODOEVENTUALLY: Move this somewhere else for better organization
     switch (dhMaterialId) { // TODOEVENTUALLY NOTE: Not tested bc it doesnt work on 1.21.4
@@ -96,13 +101,13 @@ void main() {
         case DH_BLOCK_ILLUMINATED:
             GBuffer0.a = 0.95; break;
         default:
-            GBuffer0.rgba = vec4(0.33, 0.05, 0, 0); break;
+            GBuffer0.rgba = vec4(0.1, 0.05, 0, 0); break;
     }
 
     GBuffer1.rg = normalsWrite(vertNormal);
     GBuffer1.a = 0.25; // Height
 #else
-    Color = vec4(vertColor.rgb, 1) * texture(gtexture, texCoord, MIP_MAP_BIAS);
+    Color = vec4(Color.rgb, 1) * texture(gtexture, texCoord, MIP_MAP_BIAS);
 	if (Color.a < alphaTestRef) {
 		discard; return;
 	}

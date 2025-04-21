@@ -118,6 +118,9 @@ float sampleShadow(const vec3 shadowScreenPos, const vec3 posPlayer, const float
 }
 
 float calcShadow(const vec3 posPlayer, const vec3 geoNormals) {
+    #if SHADOWS == 0
+        return 0;
+    #else
     const vec3 shadowView = (shadowModelView * vec4(posPlayer, 1)).xyz;
     // #ifdef DISTANT_HORIZONS
     const vec4 oldShadowClip = shadowProjection * vec4(shadowView, 1);
@@ -130,7 +133,7 @@ float calcShadow(const vec3 posPlayer, const vec3 geoNormals) {
 
     // Distorts z bias(Copied from pre-deferred)
     float zBias = Z_BIAS;
-    // TODOEVENTUALLY: i should probably use a more surefire method eventually
+    // TODOEVENTUALLY: i should probably use a more surefire biasing method eventually
     const float distortion = (length(oldShadowClip.xyz))/(length(shadowClip));
     zBias *= 1+(max(dot(geoNormals, normalize(shadowLightPosition)), 0)); // Applies more bias on parallel surfaces
     zBias /= distortion; // Counter distorts zbias
@@ -139,4 +142,5 @@ float calcShadow(const vec3 posPlayer, const vec3 geoNormals) {
     const float shadow = sampleShadow(shadowScreen, posPlayer, zBias);
     
     return shadow;
+    #endif
 }

@@ -18,7 +18,7 @@ const float g = 0.4;
 
 #define MAX 1000000
 
-const int SAMPLES = 4 + int(eyeAltitude*0.0008);
+const int SAMPLES = 6 + int(eyeAltitude*0.0008);
 #define SAMPLES_LIGHT 3
 #define MIE_EXTINCTION_MUL 1.1
 
@@ -35,12 +35,12 @@ bool raySphereIntersect(const vec3 center, const vec3 dir, const float radius, o
 	return true;
 }
 
-vec3 computeIncidentLight(const in vec3 orig, const in vec3 dir, in float tmin, in float tmax, const in vec3 sunDirection) {
+vec3 computeIncidentLight(const in vec3 orig, const in vec3 dir, in float tmin, in float tmax, const in vec3 sunDirection, int samples) {
     float t0, t1;
     if (!raySphereIntersect(orig, dir, Ra, t0, t1) || t1 < 0.0) return vec3(0.0);
     if (t0 > tmin && t0 > 0.0) tmin = t0;
     if (t1 < tmax) tmax = t1;
-    float segmentLength = (tmax*0.25) / float(SAMPLES);
+    float segmentLength = (tmax*0.25) / float(samples);
     float tCurrent = tmin;
     vec3 sumR = vec3(0.0); // rayleigh contribution
     float opticalDepthR = 0.0;
@@ -49,7 +49,7 @@ vec3 computeIncidentLight(const in vec3 orig, const in vec3 dir, in float tmin, 
     vec3 sumM = vec3(0.0); // mie contribution
     float opticalDepthM = 0.0;
     float phaseM = 3.0 / (8.0 * PI) * ((1.0 - g * g) * (1.0 + mu * mu)) / ((2.0 + g * g) * pow(1.0 + g * g - 2.0 * g * mu, 1.5));
-    for (uint i = 0u; i < SAMPLES; ++i) {
+    for (uint i = 0u; i < samples; ++i) {
         vec3 samplePosition = orig + (tCurrent + segmentLength * 0.5) * dir;
         float height = length(samplePosition) - Re;
         // compute optical depth for light
@@ -91,6 +91,7 @@ vec3 ACES(vec3 v) {
 
 vec3 skyNitisha(vec3 viewDir, vec3 lightDir, float time, float intensity, float max) {
     const vec3 pos = vec3(0.0, Re + eyeAltitude, 0.0);
+    int samples = SAMPLES;
     
     float t0, t1, tMax = MAX;
     if (raySphereIntersect(pos, viewDir, Re, t0, t1) && t0 > 0.0) {
@@ -99,8 +100,12 @@ vec3 skyNitisha(vec3 viewDir, vec3 lightDir, float time, float intensity, float 
 
     if (viewDir.y < 0) { // Handle below horizon(Hacky)
         tMax = MAX;
+
+        // viewDir = (mat3(gbufferModelView) * 
+        //     normalize(viewDir*vec3(1,0,1)) 
+        // );
     }
-    const vec3 color = computeIncidentLight(pos, viewDir, 0.0, tMax*max, lightDir);
+    const vec3 color = computeIncidentLight(pos, viewDir, 0.0, tMax*max, lightDir, samples);
     
     return ACES(color*intensity);
 }

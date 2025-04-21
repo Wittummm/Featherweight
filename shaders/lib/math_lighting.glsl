@@ -58,7 +58,8 @@ Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
 //////////////////////////////
 
 // PIN!
-void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {
+bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {
+    bool editGbuffers = false;
     const float skylight = lightLevel.y;
 
     vec3 posWorld = (mat3(gbufferModelViewInverse) * posView) + cameraPosition;
@@ -78,10 +79,9 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     /////////////////////////////////////////
     const float shadow = calcShadow(posWorld - cameraPosition, viewToPlayerSpace(normals));
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
-    const vec3 emissive = albedo*emission;
 
     const float diffuseFactor = calcDiffuseFactor(color.rgb, lightDir, outDir, normals, roughness);
-    const float lit = min(diffuseFactor,1-shadow)*LIGHT_BRIGHTNESS;
+    const vec3 lit = min(diffuseFactor,1-shadow)*lightColor.rgb*lightColor.a;
 
     vec3 kS = vec3(0.0);
     #if SPECULAR == On
@@ -93,7 +93,7 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     const vec3 ambientSpecular = calcSkyReflection(AMBIENT_REFLECTION_QUALITY, viewDir, normals, roughness, skylight);
 
     color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit);
-    color.rgb = (color.rgb*(1-kS) + (colorSpecular+ambientSpecular)*lit);
+    color.rgb = color.rgb*(1-kS) + (colorSpecular+ambientSpecular)*lit + albedo*emission;
 
     #if PUDDLES == On
     /* Rain Puddles using Clearcoat layer
@@ -120,12 +120,14 @@ void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
         if (f0.x == f0.y && f0.y == f0.z) { // If non-metal, we cannot encode colored F0s :(
             material.f0 = vec3(mix(f0.x, PUDDLE_WATER_F0, puddle));
         }
+        editGbuffers = true;
     }
     #endif
+    return editGbuffers;
 }
 
-void shade(inout vec4 color, inout Material material, vec2 lightLevel, vec2 fragCoord, float depth) {
+bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec2 fragCoord, float depth) {
     vec3 posView = depthToViewPos(fragCoord, depth); 
 
-    shade(color, material, lightLevel, posView);
+    return shade(color, material, lightLevel, posView);
 }
