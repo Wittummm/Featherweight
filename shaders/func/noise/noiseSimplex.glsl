@@ -7,8 +7,8 @@ vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
 vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
 
 float noiseSimplex(vec3 v){ 
-  const vec2  C = vec2(0.166666666666666666666666666666, 0.33333333333333333333333333333) ;
-  const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec2  C = vec2(0.166666666666666666666666666666, 0.33333333333333333333333333333) ;
+  vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
 
 // First corner
   vec3 i  = floor(v + dot(v, C.yyy) );

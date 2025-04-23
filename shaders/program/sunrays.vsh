@@ -15,11 +15,11 @@ out vec3 vertPosition;
 out vec2 lightPos;
 
 void main() {
-	const vec4 viewPos = modelViewMatrix * vec4(vaPosition, 1);
-	const vec4 clipPos = projectionMatrix * viewPos;
+	vec4 viewPos = modelViewMatrix * vec4(vaPosition, 1);
+	vec4 clipPos = projectionMatrix * viewPos;
 
-	const vec4 lightClip = gbufferProjection * vec4(shadowLightPosition, 1);
-    const vec3 lightNdc = lightClip.xyz / lightClip.w;
+	vec4 lightClip = gbufferProjection * vec4(shadowLightPosition, 1);
+    vec3 lightNdc = lightClip.xyz / lightClip.w;
     lightPos = ((lightNdc + 1.0)*0.5).xy; // Screen-Space
 
 	texCoord = vaUV0;

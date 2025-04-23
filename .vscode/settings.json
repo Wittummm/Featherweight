@@ -17,17 +17,17 @@
         "shaders/gbuffers_basic.vsh": true,
         "shaders/gbuffers_entities.fsh": true,
         "shaders/gbuffers_entities.vsh": true,
-        "shaders/gbuffers_skybasic.fsh": true,
         "shaders/gbuffers_skybasic.vsh": true,
         "shaders/gbuffers_skytextured.vsh": true,
         "shaders/gbuffers_skytextured.fsh": true,
         "shaders/gbuffers_terrain.fsh": true,
-        "shaders/gbuffers_water.fsh": true,
         "shaders/gbuffers_terrain.vsh": true,
-        "shaders/gbuffers_water.vsh": true,
         "shaders/composite10.vsh": true,
         "shaders/composite1.vsh": true,
-        "shaders/deferred.vsh": true
+        "shaders/deferred.vsh": true,
+        "shaders/gbuffers_water.fsh": true,
+        "shaders/gbuffers_water.vsh": true,
+        "shaders/gbuffers_skybasic.fsh": true
     },
     "hide-files.files": [
         "Featherweight/shaders/composite10.fsh",
@@ -42,16 +42,16 @@
         "shaders/gbuffers_basic.vsh",
         "shaders/gbuffers_entities.fsh",
         "shaders/gbuffers_entities.vsh",
-        "shaders/gbuffers_skybasic.fsh",
         "shaders/gbuffers_skybasic.vsh",
         "shaders/gbuffers_skytextured.vsh",
         "shaders/gbuffers_skytextured.fsh",
         "shaders/gbuffers_terrain.fsh",
-        "shaders/gbuffers_water.fsh",
         "shaders/gbuffers_terrain.vsh",
-        "shaders/gbuffers_water.vsh",
         "shaders/composite10.vsh",
         "shaders/composite1.vsh",
-        "shaders/deferred.vsh"
+        "shaders/deferred.vsh",
+        "shaders/gbuffers_water.fsh",
+        "shaders/gbuffers_water.vsh",
+        "shaders/gbuffers_skybasic.fsh"
     ]
 }

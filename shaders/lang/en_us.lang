@@ -36,9 +36,8 @@ option.SUNRAYS_MODE = Sunrays Mode
     option.SUNRAYS_MODE.comment = §lTransparency Handling§r\n[Block] Blocks Sunrays\n[Pass] Let Sunrays pass\n[Pass Darken] Let Sunrays pass but gets weaker\n[Pass Tint] Experimental, Tints the passing sunrays according to the block
     value.SUNRAYS_MODE.0 = Off
     value.SUNRAYS_MODE.1 = Block
-    value.SUNRAYS_MODE.2 = Pass
-    value.SUNRAYS_MODE.3 = Pass Darken
-    value.SUNRAYS_MODE.4 = Pass Tint
+    value.SUNRAYS_MODE.2 = Pass Darken
+    value.SUNRAYS_MODE.3 = Pass Tint
 
 value.DH_FADE_QUALITY.10 = 2x2 Dither
 value.DH_FADE_QUALITY.11 = 4x4 Dither

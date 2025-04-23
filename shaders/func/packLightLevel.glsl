@@ -7,7 +7,6 @@ vec2 unpackLightLevel(float lightmapCoord) {
    return vec2(0, lightmapCoord);
 }
 
-
 /*
 DESC: This is currently unused as it is imprecise as i dont need block light values rn, 
 so ill just store just the full precision skylight :)

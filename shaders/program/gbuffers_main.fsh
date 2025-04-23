@@ -5,12 +5,16 @@
 #include "/func/packLightLevel.glsl"
 
 uniform vec3 cameraPosition;
-uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
+uniform float near;
 uniform float far;
 uniform float viewWidth;
 uniform float viewHeight;
 uniform sampler2D lightmap;
+uniform mat4 gbufferModelView;
+uniform mat4 gbufferModelViewInverse;
+uniform bool isEyeUnderwater;
+layout (rgba8) uniform image2D colorimg0;
 
 const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 
@@ -19,16 +23,18 @@ const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
     uniform vec3 shadowLightPosition;
     uniform mat4 shadowModelView;
     uniform mat4 shadowProjection;
-    uniform mat4 gbufferModelView;
-    uniform mat4 gbufferModelViewInverse;
     uniform mat3 normalMatrix;
     uniform float sunAngle;
     uniform vec4 lightColor;
 
     #include "/settings/main.glsl"
     #include "/settings/pbr.glsl"
+    #include "/func/depthToViewPos.glsl"
 #ifdef FORWARD
     #include "/lib/math_lighting.glsl"
+    #include "/func/shading/calcWater.glsl"
+    uniform sampler2D depthtex1;
+    in vec2 blockType;
 #endif
 
     uniform sampler2D gtexture;
@@ -43,6 +49,7 @@ const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 #endif
 
 #include "/lib/pbr.glsl"
+#include "/func/coloring/srgb.glsl"
 
 in vec2 lightmapCoord;
 in vec4 vertColor;
@@ -59,12 +66,12 @@ layout(location = 2) out vec4 GBuffer1;
 
 void main() {
     #include "/snippets/core_to_compat.fsh"
-    const vec2 fragCoord = gl_FragCoord.xy*pixelSize;
+    vec2 fragCoord = gl_FragCoord.xy*pixelSize;
 
-    Color = vertColor;
+    Color = srgbToLinear(vertColor);
 
 #ifdef DISTANT_HORIZONS
-    const vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
+    vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
     if (fadeDH(length(posPlayer), far)) {
         discard;
         return;
@@ -107,23 +114,46 @@ void main() {
     GBuffer1.rg = normalsWrite(vertNormal);
     GBuffer1.a = 0.25; // Height
 #else
-    Color = vec4(Color.rgb, 1) * texture(gtexture, texCoord, MIP_MAP_BIAS);
+    Color = vec4(Color.rgb, 1) * srgbToLinear(texture(gtexture, texCoord, MIP_MAP_BIAS));
 	if (Color.a < alphaTestRef) {
 		discard; return;
 	}
 
-    GBuffer0 = texture(specular, texCoord, -1); // TODOEVENTUALLY: should actually fix mipmaps
-    GBuffer1 = texture(normals, texCoord, -1); // TODOEVENTUALLY: should actually fix mipmaps
-
-    const vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
+    GBuffer0 = texture(specular, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
+    GBuffer1 = texture(normals, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
+    
+    vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 #endif
     #ifdef FORWARD
+        // NOTE: Ideally we should disable alpha blending for gbuffer0 and 1 OR pack it into 32 bit buffer
+        GBuffer0.a = GBuffer0.a == 0 ? 1 : GBuffer0.a; // 100 alpha = 1 emission = 0 alpha, but we need 1 for alpha blending or something
         Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
-        shade(Color, material, lightmapCoord, fragCoord, gl_FragCoord.z);
+        float shadow = 0;
+        shade(Color, material, lightmapCoord, depthToViewPos(fragCoord, gl_FragCoord.z), shadow);
+
+        if (blockType.x == 1) { // Water
+            // Applying the shadow like this isnt not accurate, it would look better raymarched
+            // TODOEVENTUALLY: probably dont directly use `lightColor.rgb`
+
+
+            // TODONOW: polish this up
+            // endSkylight darker than skylight = underwater -> false positive on if surface is dark, but end is brighter(ie under overhangs)
+            // float endSkylight = imageLoad(colorimg0, ivec2(gl_FragCoord.xy)).a; // NOTE: This actually reads and writes in the same program which isnt ideal, but isnt a big issue
+            // float lightDiff = lightmapCoord.y - endSkylight;
+            // float aaa = float(lightDiff > -0.03 || lightDiff < -0.077); // TODONOWBUTLATER: polish this up, and smooth instead of thresholding
+            
+            if (!isEyeUnderwater) { // Isnt water
+                float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
+                float waterDepth = distance(depthToViewPos(fragCoord, texture(depthtex1, fragCoord).r), depthToViewPos(fragCoord, gl_FragCoord.z));
+                Color.rgb = calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
+            }
+        }
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
     #endif
+
+    Color = linearToSRGB(Color);
 
     #include "/snippets/debug.fsh"
 }
