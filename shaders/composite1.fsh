@@ -22,6 +22,7 @@ uniform float near;
 uniform float far;
 #ifdef DISTANT_HORIZONS
 	uniform sampler2D dhDepthTex0;
+	uniform int dhRenderDistance;
 	uniform mat4 dhProjectionInverse;
 #endif
 
@@ -46,7 +47,12 @@ void main() {
 	#endif
 
 	if (!isSky) {
-		const float fogFactor = min(smoothstep(FOG_START*far, FOG_END*far, length(viewPos)) * FOG_DENSITY, 1);
+		#ifdef DISTANT_HORIZONS
+			const float renderDist = dhRenderDistance;
+		#else
+			const float renderDist = far;
+		#endif
+		const float fogFactor = min(smoothstep(FOG_START*renderDist, FOG_END*renderDist, length(viewPos)) * FOG_DENSITY, 1);
 		const vec3 fogCoord = (mat3(gbufferModelView) * 
 			normalize((mat3(gbufferModelViewInverse)*viewPos*vec3(1,0,1))) 
 		);

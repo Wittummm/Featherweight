@@ -112,8 +112,8 @@ void main() {
 		discard; return;
 	}
 
-    GBuffer0 = texture(specular, texCoord, -1); // TODOEVENTUALLY: should actually fix mipmaps
-    GBuffer1 = texture(normals, texCoord, -1); // TODOEVENTUALLY: should actually fix mipmaps
+    GBuffer0 = texture(specular, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
+    GBuffer1 = texture(normals, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
 
     const vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));

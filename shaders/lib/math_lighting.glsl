@@ -81,7 +81,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
 
     const float diffuseFactor = calcDiffuseFactor(color.rgb, lightDir, outDir, normals, roughness);
-    const vec3 lit = min(diffuseFactor,1-shadow)*lightColor.rgb*lightColor.a;
+    const float lit = min(diffuseFactor,1-shadow)*lightColor.a; //*lightColor.rgb;
 
     vec3 kS = vec3(0.0);
     #if SPECULAR == On
@@ -92,7 +92,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
 
     const vec3 ambientSpecular = calcSkyReflection(AMBIENT_REFLECTION_QUALITY, viewDir, normals, roughness, skylight);
 
-    color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit);
+    color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit); // NOTE: This darkens everything including lightmap as lightmap isnt included in `lit`
     color.rgb = color.rgb*(1-kS) + (colorSpecular+ambientSpecular)*lit + albedo*emission;
 
     #if PUDDLES == On

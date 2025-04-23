@@ -2,14 +2,13 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
-- Integrated pbr
 - Water
-    - vert displacement
+    - vert displacement -> only displace water and not glass lol
+    - investigate why water got no specular
     - shore foam
-    - absorption?
-    - fresnel
+    - absorption(beer's law)?
     - SSR
-- fog color changes according to time
+- colored + translucent shadows + hardcoded translucent shadows like leaves
 
 ### To-do Later:
 - `PUDDLE_EXPOSURE_MIN` should correlate with the unimplemented `WIND_STRENGTH`
@@ -34,11 +33,15 @@ It is meant to be a self note, but is **not** private.
     - Cast Shadows
     - Per Mat Id pbrs
 - Sky reflection should be cached/precomputed like 128 directions or something instead of runtime computation
+- Integrated pbr
+- Reimplement fog color adjustment based on mood and player light level like pre-deferred version
 
 ### Issues
  - (!) Entity shadows disappear at certain angles, may be iris bug? (1.21.4)
  - Mipmaps fade out too quick, perhaps use `textureGrad`
  - (?) Turning on Shadow Fade Out makes an unknown black fade in the distance appear
+ - Boat has water visible in it (RN on MC 1.21.4 Iris 1.8.8)
+ - Current fog implementation has an issue as it uses a hack by multiply by 0, resulting in the bottommost part of the fog(if you fly up) being pitched
 
 ### Ideas:
 - Physically based sky via **Bruneton's** precomputed model..
