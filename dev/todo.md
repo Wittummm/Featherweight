@@ -3,8 +3,6 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Water
-    - vert displacement -> only displace water and not glass lol
-    - investigate why water got no specular
     - shore foam
     - absorption(beer's law)?
     - SSR

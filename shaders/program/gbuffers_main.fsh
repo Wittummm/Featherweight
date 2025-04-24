@@ -114,11 +114,13 @@ void main() {
 
     GBuffer0 = texture(specular, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
     GBuffer1 = texture(normals, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
-
+    
     const vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 #endif
     #ifdef FORWARD
+        // NOTE: Ideally we should disable alpha blending for gbuffer0 and 1 or pack it into 32 bit buffer
+        GBuffer0.a = GBuffer0.a == 0 ? 1 : GBuffer0.a; // 100 alpha = 1 emission = 0 alpha, but we need 1 for alpha blending or something
         Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
         shade(Color, material, lightmapCoord, fragCoord, gl_FragCoord.z);
     #else

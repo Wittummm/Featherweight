@@ -25,19 +25,19 @@ float geometric(float NdotM, float alpha) {
 }
 
 // Schlick Fresnel [1]
-vec3 fresnelSchlick(float cosTheta, vec3 f0) {
-    return f0 + (1.0 - f0) * pow(1.0 - cosTheta, 5.0);
+vec3 fresnelSchlick(float NdotV, vec3 f0) {
+    return f0 + (1.0 - f0) * pow(1.0 - NdotV, 5.0);
 }
 vec3 calcSpecular(vec3 inDir, vec3 outDir, vec3 normal, float roughness, vec3 f0, out vec3 kS) {
+    // roughness = max(roughness, 0.005);
     const float alpha = roughness*roughness;
     const vec3 halfway = normalize(inDir + outDir);
 
     const float NdotL = max(dot(normal, inDir), 0);
-    const float NdotV = max(dot(normal, outDir), 0);
+    const float NdotV = max(dot(normal, outDir), 0.00001);
     const float NdotH = max(dot(normal, halfway), 0);
-    const float cosTheta = max(dot(outDir, halfway), 0);
 
-    const vec3 fresnel = fresnelSchlick(cosTheta, f0);
+    const vec3 fresnel = fresnelSchlick(NdotV, f0);
     const vec3 radiance = (distributionGGX(NdotH, alpha) * geometric(NdotV, alpha) * geometric(NdotL, alpha) * fresnel) / (4*NdotL*NdotV);
 
     kS += fresnel;
