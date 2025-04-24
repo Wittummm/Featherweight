@@ -7,6 +7,7 @@
 uniform vec3 cameraPosition;
 uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
+uniform float near;
 uniform float far;
 uniform float viewWidth;
 uniform float viewHeight;
@@ -27,8 +28,16 @@ const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 
     #include "/settings/main.glsl"
     #include "/settings/pbr.glsl"
+    #include "/func/depthToViewPos.glsl"
 #ifdef FORWARD
     #include "/lib/math_lighting.glsl"
+    #include "/settings/water.glsl"
+    uniform sampler2D depthtex1;
+    in vec2 blockType;
+
+    float linearizeDepth(float depth) {
+        return (near * far) / (depth * (near - far) + far);
+    }
 #endif
 
     uniform sampler2D gtexture;
@@ -122,7 +131,26 @@ void main() {
         // NOTE: Ideally we should disable alpha blending for gbuffer0 and 1 or pack it into 32 bit buffer
         GBuffer0.a = GBuffer0.a == 0 ? 1 : GBuffer0.a; // 100 alpha = 1 emission = 0 alpha, but we need 1 for alpha blending or something
         Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
-        shade(Color, material, lightmapCoord, fragCoord, gl_FragCoord.z);
+        float shadow = 0;
+        shade(Color, material, lightmapCoord, depthToViewPos(fragCoord, gl_FragCoord.z), shadow);
+
+        // TODONOW: move this somewhere else organized
+        if (blockType.x == 1) { // Water
+            const float waterDepth = linearizeDepth(texture(depthtex1, fragCoord).r) - linearizeDepth(gl_FragCoord.z);
+
+            const vec3 transmittance = pow(vec3(10), -waterDepth*waterConcentration*waterAbsorption);
+            Color.rgb *= transmittance;
+            //////////////////////////////////////////////////////
+
+            float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
+            // Henyey-Greenstein Phase function
+            float phase = (1.0 - waterScattering2) / pow(1.0 + waterScattering2 - 2.0*waterScattering * LdotV, 1.5);
+            float scatterAmount = 1.0 - exp(-waterDepth * lightColor.a);
+
+            // Applying the shadow like this isnt not accurate, it would look better raymarched
+            vec3 inScattering = phase * scatterAmount * (1-shadow) * lightColor.rgb; // TODOEVENTUALLY: probably dont directly use `lightColor.rgb`
+            Color.rgb += inScattering;
+        }
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
     #endif

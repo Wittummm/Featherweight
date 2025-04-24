@@ -53,9 +53,11 @@ void main() {
 			const float renderDist = far;
 		#endif
 		const float fogFactor = min(smoothstep(FOG_START*renderDist, FOG_END*renderDist, length(viewPos)) * FOG_DENSITY, 1);
-		const vec3 fogCoord = (mat3(gbufferModelView) * 
-			normalize((mat3(gbufferModelViewInverse)*viewPos*vec3(1,0,1))) 
-		);
-		Color.rgb = mix(Color.rgb, calcSky(fogCoord), fogFactor);
+		if (fogFactor > 0) {
+			const vec3 fogCoord = (mat3(gbufferModelView) * 
+				normalize((mat3(gbufferModelViewInverse)*viewPos*vec3(1,0,1))) 
+			);
+			Color.rgb = mix(Color.rgb, calcSky(fogCoord), fogFactor);
+		}
 	}
 }

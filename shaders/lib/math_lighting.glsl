@@ -58,7 +58,7 @@ Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
 //////////////////////////////
 
 // PIN!
-bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {
+bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView, out float shadow) {
     bool editGbuffers = false;
     const float skylight = lightLevel.y;
 
@@ -77,7 +77,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     const float emission = material.emission;
     const vec3 outDir = -viewDir;
     /////////////////////////////////////////
-    const float shadow = calcShadow(posWorld - cameraPosition, viewToPlayerSpace(normals));
+    shadow = calcShadow(posWorld - cameraPosition, viewToPlayerSpace(normals));
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
 
     const float diffuseFactor = calcDiffuseFactor(color.rgb, lightDir, outDir, normals, roughness);
@@ -94,7 +94,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
 
     color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit); // NOTE: This darkens everything including lightmap as lightmap isnt included in `lit`
     color.rgb = color.rgb*(1-kS) + ambientSpecular*(0.5+kS*0.5)*(0.5+lit*0.5) + colorSpecular*lit + albedo*emission;
-    
+
     #if PUDDLES == On
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris
@@ -126,8 +126,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     return editGbuffers;
 }
 
-bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec2 fragCoord, float depth) {
-    vec3 posView = depthToViewPos(fragCoord, depth); 
-
-    return shade(color, material, lightLevel, posView);
+bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {
+    float shadow;
+    return shade(color, material, lightLevel, posView, shadow);
 }

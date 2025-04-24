@@ -24,7 +24,6 @@ uniform sampler2D lightmap;
 	out vec4 tangent;
 	#ifdef PROGRAM_TRANSLUCENT
 		uniform sampler2D depthtex1;
-		uniform vec2 mc_Entity;
 		uniform int biome;
 		uniform float waveHeightMin;
 		uniform float waveHeightMax;
@@ -35,8 +34,11 @@ uniform sampler2D lightmap;
 		uniform float waveScaleMagic;
 		uniform float waveSpeedMagic;
 		uniform float far;
+		in vec2 mc_Entity;
+		out vec2 blockType;
 		#include "/func/noise/noiseSimplex.glsl"
 		#include "/func/depthToViewPos.glsl"
+		#include "/settings/water.glsl"
 	#endif
 #endif
 
@@ -54,8 +56,10 @@ void main() {
 	vec3 viewPos = (modelViewMatrix * vec4(vaPosition + chunkOffset, 1)).xyz;
 	vec4 clipPos = projectionMatrix * vec4(viewPos, 1);
 	vec3 screenPos = (clipPos.xyz / clipPos.w)*0.5 + 0.5;
-	#ifdef PROGRAM_TRANSLUCENT
-		if (mc_Entity.y == 00001) { // Water
+	#ifdef PROGRAM_TRANSLUCENT 
+		blockType = mc_Entity;
+	#if WATER_WAVES == On
+		if (mc_Entity.x == 1) { // Water
 			const vec3 playerPos = (gbufferModelViewInverse * vec4(viewPos, 1)).xyz;
 			const vec3 worldPos = playerPos + cameraPosition;
 			const vec2 fragCoord = screenPos.xy;
@@ -82,6 +86,7 @@ void main() {
 			clipPos = projectionMatrix * vec4(viewPos, 1);
 			screenPos = (clipPos.xyz / clipPos.w)*0.5 + 0.5;
 		}
+	#endif
 	#endif
 
 	vec2 lightLevel = (TEXTURE_MATRIX_2 * vec4(vaUV2, 0.0, 1.0)).xy;

@@ -3,9 +3,11 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Water
-    - shore foam
-    - absorption(beer's law)?
+    - scattering(to brighten water)
+    - water fog(composite)
     - SSR
+    - shore foam(? maybe not)
+- fix shadows bing broken when enabling water displacement
 - colored + translucent shadows + hardcoded translucent shadows like leaves
 
 ### To-do Later:
