@@ -6,15 +6,15 @@
 #include "/func/goldenDiskSample.glsl"
 
 ////////////////////////////////
-float sampleShadowMap(const vec2 coord) {
+float sampleShadowMap(vec2 coord) {
     return texture(shadowtex0, coord).r;
 }
 
-float sampleShadowMap(const vec3 coord) {
+float sampleShadowMap(vec3 coord) {
     return texture(shadowtex0HW, coord);
 }
 
-float pcfSampleShadow(const vec3 coord, const float sampleCount, float offset) {
+float pcfSampleShadow(vec3 coord, float sampleCount, float offset) {
     float totalDepth = 0;
 
 #if PRESET_PCF_PATTERNS == On
@@ -51,7 +51,7 @@ float pcfSampleShadow(const vec3 coord, const float sampleCount, float offset) {
         default:
 #endif
     for (int i = 0; i < sampleCount; ++i) {
-        const vec2 sampleOffset = goldenDiskSample(i, sampleCount) * offset;
+        vec2 sampleOffset = goldenDiskSample(i, sampleCount) * offset;
 
         totalDepth += sampleShadowMap(coord + vec3(sampleOffset.xy,0));
     }
@@ -64,9 +64,9 @@ float pcfSampleShadow(const vec3 coord, const float sampleCount, float offset) {
 
 // ISSUE: Should counter distort the space
 #if SHADOW_FILTER == FixedSamplePCSS || SHADOW_FILTER == VariableSamplePCSS
-float sampleShadowPCSS(vec3 shadowScreenPos, vec3 playerPos, const float zBias) {
+float sampleShadowPCSS(vec3 shadowScreenPos, vec3 playerPos, float zBias) {
     shadowScreenPos.z -= zBias;
-    const float depth = shadowScreenPos.z;
+    float depth = shadowScreenPos.z;
     
     float shadowedBy = 0; float shadowStrength = 1; float softnessStrength = 1;
     fadeShadows(playerPos, shadowStrength, softnessStrength);
@@ -78,9 +78,9 @@ float sampleShadowPCSS(vec3 shadowScreenPos, vec3 playerPos, const float zBias) 
 #endif
 
 #if SHADOW_FILTER == PCF
-const float baseSoftness = 0.002;
+float baseSoftness = 0.002;
 
-float sampleShadowPCF(vec3 shadowScreenPos, vec3 playerPos, const float zBias) {
+float sampleShadowPCF(vec3 shadowScreenPos, vec3 playerPos, float zBias) {
     shadowScreenPos.z -= zBias;
     
     float shadowedBy = 0; float shadowStrength = 1; float softnessStrength = 1;
@@ -93,7 +93,7 @@ float sampleShadowPCF(vec3 shadowScreenPos, vec3 playerPos, const float zBias) {
 #endif
 
 #if SHADOW_FILTER == Linear || SHADOW_FILTER == Nearest
-float sampleShadowNormal(vec3 shadowScreenPos, vec3 playerPos, const float zBias) {
+float sampleShadowNormal(vec3 shadowScreenPos, vec3 playerPos, float zBias) {
     shadowScreenPos.z -= zBias;
     
     float shadowedBy = 0; float shadowStrength = 1;
@@ -107,7 +107,7 @@ float sampleShadowNormal(vec3 shadowScreenPos, vec3 playerPos, const float zBias
 #endif
 
 // NOTE: We dont just make the algorithm specific functions this base name; to potentially allow other code to use algorithm-specific function and not only the user-set one
-float sampleShadow(const vec3 shadowScreenPos, const vec3 posPlayer, const float zBias) {
+float sampleShadow(vec3 shadowScreenPos, vec3 posPlayer, float zBias) {
     #if SHADOW_FILTER <= Linear 
         return sampleShadowNormal(shadowScreenPos, posPlayer, zBias);
     #elif SHADOW_FILTER == PCF
@@ -117,29 +117,29 @@ float sampleShadow(const vec3 shadowScreenPos, const vec3 posPlayer, const float
     #endif
 }
 
-float calcShadow(const vec3 posPlayer, const vec3 geoNormals) {
+float calcShadow(vec3 posPlayer, vec3 geoNormals) {
     #if SHADOWS == 0
         return 0;
     #else
-    const vec3 shadowView = (shadowModelView * vec4(posPlayer, 1)).xyz;
+    vec3 shadowView = (shadowModelView * vec4(posPlayer, 1)).xyz;
     // #ifdef DISTANT_HORIZONS
-    const vec4 oldShadowClip = shadowProjection * vec4(shadowView, 1);
+    vec4 oldShadowClip = shadowProjection * vec4(shadowView, 1);
     // #elif
-    // const vec4 oldShadowClip = dhProjection * vec4(shadowView, 1);
+    // vec4 oldShadowClip = dhProjection * vec4(shadowView, 1);
     // #endif
-    const vec3 shadowClip = distortShadow(oldShadowClip.xyz);
-    const vec3 shadowNdc = shadowClip.xyz / oldShadowClip.w;
-    const vec3 shadowScreen = shadowNdc * 0.5 + 0.5;
+    vec3 shadowClip = distortShadow(oldShadowClip.xyz);
+    vec3 shadowNdc = shadowClip.xyz / oldShadowClip.w;
+    vec3 shadowScreen = shadowNdc * 0.5 + 0.5;
 
     // Distorts z bias(Copied from pre-deferred)
     float zBias = Z_BIAS;
     // TODOEVENTUALLY: i should probably use a more surefire biasing method eventually
-    const float distortion = (length(oldShadowClip.xyz))/(length(shadowClip));
+    float distortion = (length(oldShadowClip.xyz))/(length(shadowClip));
     zBias *= 1+(max(dot(geoNormals, normalize(shadowLightPosition)), 0)); // Applies more bias on parallel surfaces
     zBias /= distortion; // Counter distorts zbias
     zBias *= 1+(pow(((length(shadowNdc.xyz)+1)*4)-1, 2)*0.25); // Not battle tested
 
-    const float shadow = sampleShadow(shadowScreen, posPlayer, zBias);
+    float shadow = sampleShadow(shadowScreen, posPlayer, zBias);
     
     return shadow;
     #endif

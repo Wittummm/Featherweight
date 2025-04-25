@@ -12,6 +12,8 @@ uniform float far;
 uniform float viewWidth;
 uniform float viewHeight;
 uniform sampler2D lightmap;
+uniform mat4 gbufferModelView;
+uniform mat4 gbufferModelViewInverse;
 
 const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 
@@ -20,8 +22,6 @@ const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
     uniform vec3 shadowLightPosition;
     uniform mat4 shadowModelView;
     uniform mat4 shadowProjection;
-    uniform mat4 gbufferModelView;
-    uniform mat4 gbufferModelViewInverse;
     uniform mat3 normalMatrix;
     uniform float sunAngle;
     uniform vec4 lightColor;
@@ -65,12 +65,12 @@ layout(location = 2) out vec4 GBuffer1;
 
 void main() {
     #include "/snippets/core_to_compat.fsh"
-    const vec2 fragCoord = gl_FragCoord.xy*pixelSize;
+    vec2 fragCoord = gl_FragCoord.xy*pixelSize;
 
     Color = srgbToLinear(vertColor);
 
 #ifdef DISTANT_HORIZONS
-    const vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
+    vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
     if (fadeDH(length(posPlayer), far)) {
         discard;
         return;
@@ -121,7 +121,7 @@ void main() {
     GBuffer0 = texture(specular, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
     GBuffer1 = texture(normals, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
     
-    const vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
+    vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 #endif
     #ifdef FORWARD
@@ -139,6 +139,8 @@ void main() {
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
     #endif
+
+    Color = linearToSRGB(Color);
 
     #include "/snippets/debug.fsh"
 }

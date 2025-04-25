@@ -11,7 +11,7 @@ float fresnelSchlick(float cosTheta, float f0) {
 }
 
 float distributionGTR1(float alpha2, float NdotH) {
-    const float alpha2MinusOne = alpha2 - 1;
+    float alpha2MinusOne = alpha2 - 1;
     // not sure if log or log2
     return alpha2MinusOne / (PI * log2(alpha2) * (1 + alpha2MinusOne*NdotH*NdotH));
 }
@@ -22,13 +22,13 @@ float geometricSmithGGX(float alpha2, float NdotM) {
 
 // Defaults: roughness = 0.25, f0 = 0.04
 vec3 clearcoat(vec3 coatColor, vec3 inDir, vec3 outDir, vec3 normal, float roughness, float f0) {
-    const float alpha2 = roughness*roughness*roughness*roughness;
+    float alpha2 = roughness*roughness*roughness*roughness;
 
-    const vec3 halfway = normalize(inDir+outDir);
-    const float NdotL = max(dot(normal, inDir), 0);
-    const float NdotV = max(dot(normal, outDir), 0);
-    const float NdotH = max(dot(normal, halfway), 0);
-    const float cosTheta = max(dot(inDir, halfway), 0); // questionable if correct
+    vec3 halfway = normalize(inDir+outDir);
+    float NdotL = max(dot(normal, inDir), 0);
+    float NdotV = max(dot(normal, outDir), 0);
+    float NdotH = max(dot(normal, halfway), 0);
+    float cosTheta = max(dot(inDir, halfway), 0); // questionable if correct
 
     return coatColor * (distributionGTR1(alpha2, NdotH)-0.04) * fresnelSchlick(cosTheta,f0) * geometricSmithGGX(alpha2, NdotL) * geometricSmithGGX(alpha2, NdotV) * 0.25;
 }

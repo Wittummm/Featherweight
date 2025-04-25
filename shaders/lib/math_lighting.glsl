@@ -44,13 +44,13 @@ struct Material {
 
 // PIN: This parses the gbuffers into actual useable data
 Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
-    const float roughness = roughnessRead(gbuffer0.r);
-    const float reflectance = gbuffer0.g;
+    float roughness = roughnessRead(gbuffer0.r);
+    float reflectance = gbuffer0.g;
     bool isPorosity = false;
-    const float porosity = porosityRead(gbuffer0.b, isPorosity);
-    const float emission = emissionRead(gbuffer0.a);
+    float porosity = porosityRead(gbuffer0.b, isPorosity);
+    float emission = emissionRead(gbuffer0.a);
     // Cannot `eyePlayerSpace -> viewSpace` have to `eyePlayerSpace -> playerSpace -> viewSpace`
-    const vec3 normals = playerToViewSpace(normalsRead(gbuffer1.rg));
+    vec3 normals = playerToViewSpace(normalsRead(gbuffer1.rg));
 
     return Material(roughness, normals, isPorosity ? porosity : -1, !isPorosity ? porosity : -1, emission,0,0.0, reflectanceRead(reflectance, albedo));
 }
@@ -60,37 +60,37 @@ Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
 // PIN!
 bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView, out float shadow) {
     bool editGbuffers = false;
-    const float skylight = lightLevel.y;
+    float skylight = lightLevel.y;
 
     vec3 posWorld = (mat3(gbufferModelViewInverse) * posView) + cameraPosition;
     #if PIXELIZATION != Off
     posWorld = (floor((posWorld*PIXELIZATION)+0.002)/PIXELIZATION);
     posView = (gbufferModelView * vec4(posWorld - cameraPosition, 1)).xyz;
     #endif
-    const vec3 viewDir = normalize(posView);
+    vec3 viewDir = normalize(posView);
 
-    const vec3 albedo = color.rgb;
-    const vec3 normals = material.normals;
-    const float roughness = material.roughness;
-    const float porosity = material.porosity;
-    const vec3 f0 = material.f0;
-    const float emission = material.emission;
-    const vec3 outDir = -viewDir;
+    vec3 albedo = color.rgb;
+    vec3 normals = material.normals;
+    float roughness = material.roughness;
+    float porosity = material.porosity;
+    vec3 f0 = material.f0;
+    float emission = material.emission;
+    vec3 outDir = -viewDir;
     /////////////////////////////////////////
     shadow = calcShadow(posWorld - cameraPosition, viewToPlayerSpace(normals));
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
 
-    const float diffuseFactor = calcDiffuseFactor(color.rgb, lightDir, outDir, normals, roughness);
-    const float lit = min(diffuseFactor,1-shadow)*lightColor.a; //*lightColor.rgb;
+    float diffuseFactor = calcDiffuseFactor(color.rgb, lightDir, outDir, normals, roughness);
+    float lit = min(diffuseFactor,1-shadow)*lightColor.a; //*lightColor.rgb;
 
     vec3 kS = vec3(0.0);
     #if SPECULAR == On
-    const vec3 colorSpecular = calcSpecular(lightDir, outDir, normals, roughness, f0, kS);
+    vec3 colorSpecular = calcSpecular(lightDir, outDir, normals, roughness, f0, kS);
     #else
-    const vec3 colorSpecular = vec3(0);
+    vec3 colorSpecular = vec3(0);
     #endif
 
-    const vec3 ambientSpecular = calcSkyReflection(AMBIENT_REFLECTION_QUALITY, viewDir, normals, roughness, skylight);
+    vec3 ambientSpecular = calcSkyReflection(AMBIENT_REFLECTION_QUALITY, viewDir, normals, roughness, skylight);
 
     color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit); // NOTE: This darkens everything including lightmap as lightmap isnt included in `lit`
     color.rgb = color.rgb*(1-kS) + ambientSpecular*kS*(0.5+lit*0.5) + colorSpecular*lit + albedo*emission;
@@ -100,17 +100,17 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris
     */
     if (wetness > 0.001) { // TODO: Check if is not fluid, cuz fluids cant get wet + that looks weird
-        const float upness = dot(normals, upDir);
-        const float skyExposure = clamp(smoothstep(PUDDLE_EXPOSURE_MIN, PUDDLE_EXPOSURE_MAX, skylight), 0, 1);
+        float upness = dot(normals, upDir);
+        float skyExposure = clamp(smoothstep(PUDDLE_EXPOSURE_MIN, PUDDLE_EXPOSURE_MAX, skylight), 0, 1);
         
-        const vec3 noiseCoord = posWorld*puddleScale;
-        const float distortion = noise(noiseCoord*PUDDLE_DISTORT_SCALE);
-        const vec3 distort = max(vec3(-distortion, 0, distortion), 0);
+        vec3 noiseCoord = posWorld*puddleScale;
+        float distortion = noise(noiseCoord*PUDDLE_DISTORT_SCALE);
+        vec3 distort = max(vec3(-distortion, 0, distortion), 0);
         float puddle = (noiseSimplex(noiseCoord * (1-PUDDLE_DISTORT_STRENGTH) + distort*PUDDLE_DISTORT_STRENGTH)*0.5 + 0.5);
         puddle = puddle - mix(1-PUDDLE_SIZE , 0.1, rain) - (1-skyExposure);
         puddle = clamp(puddle * (0.5 + upness*0.5) * rain * RAIN_INTENSITY, 0, 1);
 
-        const vec3 puddleNormal = upness > 0.2 ? mix(normals, upDir, clamp(puddle*PUDDLE_THICKNESS*mix(0.5,1,wetness), PUDDLE_THICKNESS*0.45, 1)) : normals;
+        vec3 puddleNormal = upness > 0.2 ? mix(normals, upDir, clamp(puddle*PUDDLE_THICKNESS*mix(0.5,1,wetness), PUDDLE_THICKNESS*0.45, 1)) : normals;
         color.rgb *= 0.8 + ((1-puddle)*mix(0.6,0.1,porosity))*PUDDLE_COLOR;
         color.rgb += clearcoat(PUDDLE_COLOR, lightDir, outDir, puddleNormal, PUDDLE_ROUGHNESS, PUDDLE_WATER_F0) * puddle * lit;
     

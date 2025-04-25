@@ -2,6 +2,8 @@
 
 uniform vec3 chunkOffset;
 uniform sampler2D lightmap;
+uniform mat4 gbufferModelViewInverse;
+uniform mat4 gbufferModelView;
 
 #ifndef DISTANT_HORIZONS_SHADER
 	uniform int renderStage;
@@ -9,8 +11,6 @@ uniform sampler2D lightmap;
 	uniform mat4 projectionMatrix;
 	uniform sampler2D noisetex; // temp, actually use runtime noise
 	uniform float frameTimeCounter;
-	uniform mat4 gbufferModelViewInverse;
-	uniform mat4 gbufferModelView;
 	uniform vec3 cameraPosition;
 
 	in vec2 vaUV0;
@@ -60,26 +60,26 @@ void main() {
 		blockType = mc_Entity;
 	#if WATER_WAVES == On
 		if (mc_Entity.x == 1) { // Water
-			const vec3 playerPos = (gbufferModelViewInverse * vec4(viewPos, 1)).xyz;
-			const vec3 worldPos = playerPos + cameraPosition;
-			const vec2 fragCoord = screenPos.xy;
+			vec3 playerPos = (gbufferModelViewInverse * vec4(viewPos, 1)).xyz;
+			vec3 worldPos = playerPos + cameraPosition;
+			vec2 fragCoord = screenPos.xy;
 			vec3 offset = vec3(0);
 			// ISSUE: When occluded by entites it will act weird or things that arent solid will still influence shallowness like boats, kelp, players
 			// Above issue could be mitigated by writing to custom low resolution depth buffer(1/4) that only stores terrain depth but is not implemented rn for performance and lazy :)
-			const vec4 depths0 = textureGather(depthtex1, fragCoord); // ISSUE NOTE: This should use depthtex2, but it doesnt exist for some reason even though at `gbuffers_water` depthtex1&2 should be perfectly fine. (Iris 1.8.8 MC 1.21.4)
-			const float terrainDepth = min(depths0.x, min(depths0.y, min(depths0.z, depths0.w)));
+			vec4 depths0 = textureGather(depthtex1, fragCoord); // ISSUE NOTE: This should use depthtex2, but it doesnt exist for some reason even though at `gbuffers_water` depthtex1&2 should be perfectly fine. (Iris 1.8.8 MC 1.21.4)
+			float terrainDepth = min(depths0.x, min(depths0.y, min(depths0.z, depths0.w)));
 
 			// NOTE: The water wave displacement is still mediocre
 			float deepness = terrainDepth < screenPos.z+0.00015 ? 0.8 : clamp(distance(viewPos, depthToViewPos(fragCoord, terrainDepth))*0.05, 0, 1);
 
-			const float waveHeight = mix(waveHeightMin, waveHeightMax, deepness); 
-			const float waveSpeed = mix(waveSpeedMin, waveSpeedMax, deepness); 
-			const float waveScale = mix(waveScaleMin, waveScaleMax, deepness); 
+			float waveHeight = mix(waveHeightMin, waveHeightMax, deepness); 
+			float waveSpeed = mix(waveSpeedMin, waveSpeedMax, deepness); 
+			float waveScale = mix(waveScaleMin, waveScaleMax, deepness); 
 
-			const vec3 noisePos = playerPos*waveScale + cameraPosition*waveScaleMagic;
-			const float time = ((sin(frameTimeCounter/wrapTime)+1)*wrapTime*0.5)+0.5;
-			const float noiseSpeed = time*waveSpeed*0.5 + time*waveSpeedMagic*0.5;
-			const float wave = (noiseSimplex(noisePos*vec3(1,0.1,1) + noiseSpeed*vec3(1,0.5,1))*0.5 + 0.5);
+			vec3 noisePos = playerPos*waveScale + cameraPosition*waveScaleMagic;
+			float time = ((sin(frameTimeCounter/wrapTime)+1)*wrapTime*0.5)+0.5;
+			float noiseSpeed = time*waveSpeed*0.5 + time*waveSpeedMagic*0.5;
+			float wave = (noiseSimplex(noisePos*vec3(1,0.1,1) + noiseSpeed*vec3(1,0.5,1))*0.5 + 0.5);
 			offset.y -= wave*waveHeight;
 
 			viewPos = (gbufferModelView * vec4(worldPos - cameraPosition + offset, 1)).xyz;
@@ -89,8 +89,8 @@ void main() {
 	#endif
 	#endif
 
-	vec2 lightLevel = (TEXTURE_MATRIX_2 * vec4(vaUV2, 0.0, 1.0)).xy;
-	const vec3 light = texture(lightmap, lightLevel).rgb;
+	vec2 lightLevel = (textureMatrix2 * vec4(vaUV2, 0.0, 1.0)).xy;
+	vec3 light = texture(lightmap, lightLevel).rgb;
 
 #ifndef DISTANT_HORIZONS_SHADER
 	texCoord = vaUV0;

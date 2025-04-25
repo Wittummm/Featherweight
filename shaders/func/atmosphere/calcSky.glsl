@@ -34,13 +34,13 @@ vec3 calcSkyNoHorizon(vec3 dir, vec3 lightDir, float time) {
     lightDir = (mat3(gbufferModelViewInverse) * lightDir); // To Player Space
     dir.y = (dir.y+1)*0.5;
 
-    const float alpha = time > 0.5 ? abs(0.75 - time)*0.5 : 1;
+    float alpha = time > 0.5 ? abs(0.75 - time)*0.5 : 1;
 
     // NOTE: Assumes moon is opposite of sun, but that may not always be the case
     // TODOEVENTUALLY: use `moonPosition` and `sunPosition` respectively
-    const vec3 sun = skyNitisha(dir, lightDir, time, 55, 1);
+    vec3 sun = skyNitisha(dir, lightDir, time, 55, 1);
     if (alpha < 1) {
-        const vec3 moon = skyNitisha(dir, lightDir, -time, 5, 0.01);
+        vec3 moon = skyNitisha(dir, lightDir, -time, 5, 0.01);
         return mix(moon, sun, alpha);
     } else {
         return sun;

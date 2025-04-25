@@ -9,8 +9,8 @@ in vec3 vaPosition;
 
 out vec2 texCoord;
 void main() {
-	const vec4 viewPos = modelViewMatrix * vec4(vaPosition, 1);
-	const vec4 clipPos = projectionMatrix * viewPos;
+	vec4 viewPos = modelViewMatrix * vec4(vaPosition, 1);
+	vec4 clipPos = projectionMatrix * viewPos;
 
 	texCoord = vaUV0;
 	gl_Position = clipPos;

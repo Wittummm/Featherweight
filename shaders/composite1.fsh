@@ -16,6 +16,7 @@ uniform float sunAngle;
 #include "/func/depthToViewPos.glsl"
 #include "/func/atmosphere/calcSky.glsl"
 #include "/settings/atmosphere.glsl"
+#include "/func/coloring/srgb.glsl"
 
 uniform sampler2D depthtex0;
 uniform float near;
@@ -38,7 +39,7 @@ void main() {
 	float depth = texture(depthtex0, texCoord).r;
 	// DUPLICATE CODE: SDKH213
 	#ifdef DISTANT_HORIZONS
-		const float dhDepth = texture(dhDepthTex0, texCoord).r;
+		float dhDepth = texture(dhDepthTex0, texCoord).r;
 		isSky = depth >= 1 && dhDepth >= 1;
 		vec3 viewPos = depth < 1 ? depthToViewPos(texCoord, depth) : depthToViewPos(texCoord, dhDepth, dhProjectionInverse);
 	#else
@@ -48,16 +49,16 @@ void main() {
 
 	if (!isSky) {
 		#ifdef DISTANT_HORIZONS
-			const float renderDist = dhRenderDistance;
+			float renderDist = dhRenderDistance;
 		#else
-			const float renderDist = far;
+			float renderDist = far;
 		#endif
-		const float fogFactor = min(smoothstep(FOG_START*renderDist, FOG_END*renderDist, length(viewPos)) * FOG_DENSITY, 1);
+		float fogFactor = min(smoothstep(FOG_START*renderDist, FOG_END*renderDist, length(viewPos)) * FOG_DENSITY, 1);
 		if (fogFactor > 0) {
-			const vec3 fogCoord = (mat3(gbufferModelView) * 
+			vec3 fogCoord = (mat3(gbufferModelView) * 
 				normalize((mat3(gbufferModelViewInverse)*viewPos*vec3(1,0,1))) 
 			);
-			Color.rgb = mix(Color.rgb, calcSky(fogCoord), fogFactor);
+			Color.rgb = linearToSRGB(mix(srgbToLinear(Color.rgb), calcSky(fogCoord), fogFactor));
 		}
 	}
 }

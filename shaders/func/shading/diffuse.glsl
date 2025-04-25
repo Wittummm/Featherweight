@@ -5,20 +5,20 @@
 */
 
 // Disney/Burley Diffuse [1] [2/5.3]
-float diffuseBurley(const float NdotL, const float NdotV, const float LdotH, const float roughness) {
+float diffuseBurley(float NdotL, float NdotV, float LdotH, float roughness) {
     // ISSUE: This sometimes will have flickering/aliasing-like artifacts possibly due to mipmaps as roughness is acting weirdly
-    const float f90MinusOne = 0.5 + 2.0*roughness*LdotH*LdotH - 1.0;
+    float f90MinusOne = 0.5 + 2.0*roughness*LdotH*LdotH - 1.0;
     return ONE_OVER_PI*(1.0 + f90MinusOne*pow(1-NdotL, 5))*(1.0 + f90MinusOne*pow(1-NdotV, 5));
 }
 
-float calcDiffuseFactor(vec3 color, const vec3 inDir, const vec3 outDir, const vec3 normal, const float roughness) {
-    const vec3 halfway = normalize(inDir + outDir);
-    const float NdotL = max(dot(normal, inDir), 0.0);
-    const float NdotV = max(dot(normal, outDir), 0.0);
-    const float LdotH = max(dot(inDir, halfway), 0.0);
+float calcDiffuseFactor(vec3 color, vec3 inDir, vec3 outDir, vec3 normal, float roughness) {
+    vec3 halfway = normalize(inDir + outDir);
+    float NdotL = max(dot(normal, inDir), 0.0);
+    float NdotV = max(dot(normal, outDir), 0.0);
+    float LdotH = max(dot(inDir, halfway), 0.0);
 
     // Lambert + Burley Diffuse
-    const float diffuseFac = PI * NdotL * diffuseBurley(NdotL, NdotV, LdotH, roughness);
+    float diffuseFac = PI * NdotL * diffuseBurley(NdotL, NdotV, LdotH, roughness);
 
     return diffuseFac;
 }

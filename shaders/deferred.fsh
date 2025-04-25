@@ -19,6 +19,7 @@ uniform vec4 lightColor;
 #include "/settings/lighting.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/func/atmosphere/calcSky.glsl"
+#include "/func/coloring/srgb.glsl"
 
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
@@ -39,15 +40,15 @@ layout(location = 1) out vec4 GBuffer0;
 layout(location = 2) out vec4 GBuffer1;
 
 void main() {
+	Color = srgbToLinear(texture(colortex0, texCoord));
 	GBuffer0 = texture(colortex1, texCoord);
 	GBuffer1 = texture(colortex2, texCoord);
-	Color = texture(colortex0, texCoord);
 
 	bool isSky = false;
 	float depth = texture(depthtex0, texCoord).r;
 	// DUPLICATE CODE: SDKH213
 	#ifdef DISTANT_HORIZONS
-		const float dhDepth = texture(dhDepthTex0, texCoord).r;
+		float dhDepth = texture(dhDepthTex0, texCoord).r;
 		isSky = depth >= 1 && dhDepth >= 1;
 		vec3 viewPos = depth < 1 ? depthToViewPos(texCoord, depth) : depthToViewPos(texCoord, dhDepth, dhProjectionInverse);
 	#else
@@ -61,14 +62,16 @@ void main() {
 		Color.rgb = Color.rgb*0.8 + calcSky(normalize(viewPos));
 	} else {
 		// Render Object
-		const vec2 lightLevel = unpackLightLevel(Color.a);
+		vec2 lightLevel = unpackLightLevel(Color.a);
 		Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
 
-		const bool shouldUpdate = shade(Color, material, lightLevel, viewPos);
+		bool shouldUpdate = shade(Color, material, lightLevel, viewPos);
 		if (shouldUpdate) {
 			GBuffer0.r = roughnessWrite(material.roughness);
 			GBuffer1.rg = normalsWrite(viewToPlayerSpace(material.normals));
 			GBuffer0.g = reflectanceWriteFromF0(material.f0.x);
 		}
 	}
+
+	Color = linearToSRGB(Color);
 }

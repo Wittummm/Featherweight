@@ -22,9 +22,9 @@ const int SAMPLES = 6 + int(eyeAltitude*0.0008);
 #define SAMPLES_LIGHT 3
 #define MIE_EXTINCTION_MUL 1.1
 
-bool raySphereIntersect(const vec3 center, const vec3 dir, const float radius, out float t0, out float t1) {
-    const float b = dot(dir, center);
-    const float c = dot(center, center) - (radius * radius);
+bool raySphereIntersect(vec3 center, vec3 dir, float radius, out float t0, out float t1) {
+    float b = dot(dir, center);
+    float c = dot(center, center) - (radius * radius);
 	float test = b*b - c;
     // Intersection should have two points
     if (test <= 0.0) return false;
@@ -35,7 +35,7 @@ bool raySphereIntersect(const vec3 center, const vec3 dir, const float radius, o
 	return true;
 }
 
-vec3 computeIncidentLight(const in vec3 orig, const in vec3 dir, in float tmin, in float tmax, const in vec3 sunDirection, int samples) {
+vec3 computeIncidentLight(in vec3 orig, in vec3 dir, in float tmin, in float tmax, in vec3 sunDirection, int samples) {
     float t0, t1;
     if (!raySphereIntersect(orig, dir, Ra, t0, t1) || t1 < 0.0) return vec3(0.0);
     if (t0 > tmin && t0 > 0.0) tmin = t0;
@@ -90,7 +90,7 @@ vec3 ACES(vec3 v) {
 }
 
 vec3 skyNitisha(vec3 viewDir, vec3 lightDir, float time, float intensity, float max) {
-    const vec3 pos = vec3(0.0, Re + eyeAltitude, 0.0);
+    vec3 pos = vec3(0.0, Re + eyeAltitude, 0.0);
     int samples = SAMPLES;
     
     float t0, t1, tMax = MAX;
@@ -100,12 +100,8 @@ vec3 skyNitisha(vec3 viewDir, vec3 lightDir, float time, float intensity, float 
 
     if (viewDir.y < 0) { // Handle below horizon(Hacky)
         tMax = MAX;
-
-        // viewDir = (mat3(gbufferModelView) * 
-        //     normalize(viewDir*vec3(1,0,1)) 
-        // );
     }
-    const vec3 color = computeIncidentLight(pos, viewDir, 0.0, tMax*max, lightDir, samples);
+    vec3 color = computeIncidentLight(pos, viewDir, 0.0, tMax*max, lightDir, samples);
     
     return ACES(color*intensity);
 }

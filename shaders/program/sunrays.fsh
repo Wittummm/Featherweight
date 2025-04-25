@@ -6,7 +6,7 @@
 
 Bugs/Limitations:
     - The shaft can go through objects and looks quite bad, idk how to fix this, this is mitigated by `SUNRAYS_SPREAD`
-    - `PassTint` may display color incorrectly when objects behind the glass is strongly colored too
+    - `PassTint` may display Color incorrectly when objects behind the glass is strongly colored too
 */
 #include "/common/shader.glsl"
 //
@@ -57,12 +57,12 @@ in vec3 vertPosition;
 in vec2 lightPos;
 
 /* RENDERTARGETS: 0 */
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec4 Color;
 
 const vec2 applyAspectRatio = vec2(aspectRatio, 1);
 
 float sampleDepth0(vec2 samplePos) {
-    const float depth = textureLod(depthtex0, samplePos, 0).r;
+    float depth = textureLod(depthtex0, samplePos, 0).r;
     #ifdef DISTANT_HORIZONS
         if (depth < 1) { return depth; }
         else { return textureLod(dhDepthTex0, samplePos, 0).r; }
@@ -72,7 +72,7 @@ float sampleDepth0(vec2 samplePos) {
 }
 
 float sampleDepth1(vec2 samplePos) {
-    const float depth = textureLod(depthtex1, samplePos, 0).r;
+    float depth = textureLod(depthtex1, samplePos, 0).r;
     #ifdef DISTANT_HORIZONS
         if (depth < 1) { return depth; }
         else { return textureLod(dhDepthTex1, samplePos, 0).r; }
@@ -82,23 +82,23 @@ float sampleDepth1(vec2 samplePos) {
 }
 
 void main() {
-    color = textureLod(colortex0, texCoord, 0);
+    Color = textureLod(colortex0, texCoord, 0);
 
-    const vec3 lightDir = normalize(shadowLightPosition);
-    const float strength = -lightDir.z*1.4;
+    vec3 lightDir = normalize(shadowLightPosition);
+    float strength = -lightDir.z*1.4;
     if (strength <= 0) {return;}
 
 #if SUNRAYS_AUTO_FAKE_SAMPLES == On
-    const float adjustedFakeSampleMult = SUNRAYS_FAKE_SAMPLES > 0 ? SUNRAYS_FAKE_SAMPLES + ceil((1+lightDir.z)*4)*0.5 : SUNRAYS_FAKE_SAMPLES;
+    float adjustedFakeSampleMult = SUNRAYS_FAKE_SAMPLES > 0 ? SUNRAYS_FAKE_SAMPLES + ceil((1+lightDir.z)*4)*0.5 : SUNRAYS_FAKE_SAMPLES;
 #else
-    const float adjustedFakeSampleMult = SUNRAYS_FAKE_SAMPLES;
+    float adjustedFakeSampleMult = SUNRAYS_FAKE_SAMPLES;
 #endif
 
-    const vec2 uv = texCoord - lightPos;
-    const float offset = adjustedFakeSampleMult > 1 ? length(fract(gl_FragCoord.xy/adjustedFakeSampleMult)*precompute) : 0;
-    const float blurStart = ((1-SUNRAYS_SPREAD) - offset) ;
-    const float blurStartOffseted = blurStart - offset;
-    const vec2 uvCorrected = uv*applyAspectRatio;
+    vec2 uv = texCoord - lightPos;
+    float offset = adjustedFakeSampleMult > 1 ? length(fract(gl_FragCoord.xy/adjustedFakeSampleMult)*precompute) : 0;
+    float blurStart = ((1-SUNRAYS_SPREAD) - offset) ;
+    float blurStartOffseted = blurStart - offset;
+    vec2 uvCorrected = uv*applyAspectRatio;
 
 #if SUNRAYS_MODE == 4
     vec3 rayColor = lightColor.rgb;
@@ -106,31 +106,31 @@ void main() {
 #endif
     float rayAlpha = 0;
     for(float i = 0; i < samples; i++) {
-        const mediump float scale = blurStartOffseted + (i * precompute);
+        mediump float scale = blurStartOffseted + (i * precompute);
         #if SUNRAYS_ORIGIN_SHAPE == Diamond
-            const vec2 scaledUV = abs(uvCorrected*scale);
-            const float len = (scaledUV.x + scaledUV.y)*0.75; // Compensate a bit to match Circle
+            vec2 scaledUV = abs(uvCorrected*scale);
+            float len = (scaledUV.x + scaledUV.y)*0.75; // Compensate a bit to match Circle
         #elif SUNRAYS_ORIGIN_SHAPE == Circle
-            const float len = length(uvCorrected*scale);
+            float len = length(uvCorrected*scale);
         #endif
 
         // Sun mask
         if (len < SUNRAYS_ORIGIN_SIZE) {
-            const vec2 samplePos = (uv * scale) + lightPos;
+            vec2 samplePos = (uv * scale) + lightPos;
             float blockTransparency = 1;
            
         #if SUNRAYS_MODE == 1
-            const float depth = sampleDepth0(samplePos);
+            float depth = sampleDepth0(samplePos);
         #elif SUNRAYS_MODE == 2
-            const float depth = textureLod(depthtex1, samplePos, 0).r;
+            float depth = textureLod(depthtex1, samplePos, 0).r;
         #elif SUNRAYS_MODE == 3 || SUNRAYS_MODE == 4
-            const float depth = textureLod(depthtex1, samplePos, 0).r;
+            float depth = textureLod(depthtex1, samplePos, 0).r;
             blockTransparency = depth - textureLod(depthtex0, samplePos, 0).r > 0 ? SUNRAYS_MAX_TRANSPARENCY : 1; 
 
             #if SUNRAYS_MODE == 4
                 // Probably not physically accurate tinting at all
                 if (blockTransparency < 1 && blockTransparency > 0) {
-                    const vec3 tint = textureLod(colortex0, samplePos, 0).rgb; 
+                    vec3 tint = textureLod(colortex0, samplePos, 0).rgb; 
                     blockTransparency *= dot(tint, skyColor); // Closer to skyColor = more transparent
                     rayColor = mix(rayColor+tint, rayColor*tint*SUNRAYS_TINT_STRENGTH, (1-blockTransparency) * 1.5 * max(tint.x, max(tint.y, tint.z)));
                     rayColorCount++;
@@ -138,16 +138,16 @@ void main() {
             #endif
         #endif
 
-            const float reduceSunIntensity = ((samples - i) * oneOverSamples);// Inverts the influence when its on the sun itself, so sun isnt super bright
-            const float spreadStrength = (SUNRAYS_ORIGIN_SIZE-len-0.05)*2; 
+            float reduceSunIntensity = ((samples - i) * oneOverSamples);// Inverts the influence when its on the sun itself, so sun isnt super bright
+            float spreadStrength = (SUNRAYS_ORIGIN_SIZE-len-0.05)*2; 
 
             rayAlpha += blockTransparency * step(1, depth) * reduceSunIntensity * spreadStrength; 
         }
     }
 #if SUNRAYS_MODE == 4
-    const vec3 rayColorFactor = mix(lightColor.rgb, normalize(rayColor/float(rayColorCount)), SUNRAYS_MAX_TRANSPARENCY);
+    vec3 rayColorFactor = mix(lightColor.rgb, normalize(rayColor/float(rayColorCount)), SUNRAYS_MAX_TRANSPARENCY);
 #else
-    const vec3 rayColorFactor = lightColor.rgb;
+    vec3 rayColorFactor = lightColor.rgb;
 #endif
-    color.rgb += rayColorFactor*(rayAlpha*oneOverSamples)*lightColor.a*strength*SUNRAYS_STRENGTH;
+    Color.rgb += rayColorFactor*(rayAlpha*oneOverSamples)*lightColor.a*strength*SUNRAYS_STRENGTH;
 }

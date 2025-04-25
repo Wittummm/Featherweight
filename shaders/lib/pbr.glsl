@@ -60,7 +60,7 @@ vec2 normalsWrite(vec3 n) {
 }
 #ifndef DISTANT_HORIZONS_SHADER
 vec2 normalsWrite(vec3 normal, vec4 tangent, vec3 texNormal) { 
-    const vec3 newNormal = normalize(tbnNormalTangentPlayerSpace(normal, tangent) * texNormal);
+    vec3 newNormal = normalize(tbnNormalTangentPlayerSpace(normal, tangent) * texNormal);
     return normalsWrite(newNormal);
 }
 #endif
@@ -79,7 +79,7 @@ vec3 reflectanceRead(float reflectance, vec3 albedo, int medium) {
     if (reflectance < 0.9) { // is non metal
         return vec3(reflectance) * 1.10869565218;
     } else {
-        const int value = int(reflectance * 255 + 0.5);
+        int value = int(reflectance * 255 + 0.5);
 
         // Precomputed values using N and K
         switch(medium) {
