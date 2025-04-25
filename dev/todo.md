@@ -3,8 +3,7 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Water
-    - scattering(to brighten water)
-    - water fog(composite)
+    - water fog(composite)(? maybe do same thing as normal fog, maybe use some scattering)
     - SSR
     - shore foam(? maybe not)
 - fix shadows bing broken when enabling water displacement

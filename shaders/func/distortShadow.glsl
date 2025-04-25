@@ -6,7 +6,7 @@
 
 #ifndef distortShadow_glsl
 #define distortShadow_glsl
-#include "/func/getShade.glsl"
+#include "/func/misc/getShade.glsl"
 
 const float minDistort = 0.05;
 vec3 distortShadow(vec3 shadowClipPos){

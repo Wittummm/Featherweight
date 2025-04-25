@@ -4,15 +4,15 @@
 #include "/settings/atmosphere.glsl"
 #include "/settings/rain.glsl"
 #include "/lib/pbr.glsl"
-#include "/func/specular.glsl"
-#include "/func/diffuse.glsl"
-#include "/func/clearcoat.glsl"
+#include "/func/shading/specular.glsl"
+#include "/func/shading/diffuse.glsl"
+#include "/func/shading/clearcoat.glsl"
 #include "/func/noise/noiseSimplex.glsl"
 #include "/func/noise/noise.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/settings/shadows.glsl"
 #include "/lib/shadow.glsl"
-#include "/func/calcSkyReflection.glsl"
+#include "/func/shading/calcSkyReflection.glsl"
 
 uniform float rain;
 uniform float wetness;
@@ -93,7 +93,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     const vec3 ambientSpecular = calcSkyReflection(AMBIENT_REFLECTION_QUALITY, viewDir, normals, roughness, skylight);
 
     color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit); // NOTE: This darkens everything including lightmap as lightmap isnt included in `lit`
-    color.rgb = color.rgb*(1-kS) + ambientSpecular*(0.5+kS*0.5)*(0.5+lit*0.5) + colorSpecular*lit + albedo*emission;
+    color.rgb = color.rgb*(1-kS) + ambientSpecular*kS*(0.5+lit*0.5) + colorSpecular*lit + albedo*emission;
 
     #if PUDDLES == On
     /* Rain Puddles using Clearcoat layer

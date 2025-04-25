@@ -31,13 +31,9 @@ const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
     #include "/func/depthToViewPos.glsl"
 #ifdef FORWARD
     #include "/lib/math_lighting.glsl"
-    #include "/settings/water.glsl"
+    #include "/func/shading/calcWater.glsl"
     uniform sampler2D depthtex1;
     in vec2 blockType;
-
-    float linearizeDepth(float depth) {
-        return (near * far) / (depth * (near - far) + far);
-    }
 #endif
 
     uniform sampler2D gtexture;
@@ -52,6 +48,7 @@ const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 #endif
 
 #include "/lib/pbr.glsl"
+#include "/func/coloring/srgb.glsl"
 
 in vec2 lightmapCoord;
 in vec4 vertColor;
@@ -70,7 +67,7 @@ void main() {
     #include "/snippets/core_to_compat.fsh"
     const vec2 fragCoord = gl_FragCoord.xy*pixelSize;
 
-    Color = vertColor;
+    Color = srgbToLinear(vertColor);
 
 #ifdef DISTANT_HORIZONS
     const vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
@@ -116,7 +113,7 @@ void main() {
     GBuffer1.rg = normalsWrite(vertNormal);
     GBuffer1.a = 0.25; // Height
 #else
-    Color = vec4(Color.rgb, 1) * texture(gtexture, texCoord, MIP_MAP_BIAS);
+    Color = vec4(Color.rgb, 1) * srgbToLinear(texture(gtexture, texCoord, MIP_MAP_BIAS));
 	if (Color.a < alphaTestRef) {
 		discard; return;
 	}
@@ -128,28 +125,16 @@ void main() {
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 #endif
     #ifdef FORWARD
-        // NOTE: Ideally we should disable alpha blending for gbuffer0 and 1 or pack it into 32 bit buffer
+        // NOTE: Ideally we should disable alpha blending for gbuffer0 and 1 OR pack it into 32 bit buffer
         GBuffer0.a = GBuffer0.a == 0 ? 1 : GBuffer0.a; // 100 alpha = 1 emission = 0 alpha, but we need 1 for alpha blending or something
         Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
         float shadow = 0;
         shade(Color, material, lightmapCoord, depthToViewPos(fragCoord, gl_FragCoord.z), shadow);
 
-        // TODONOW: move this somewhere else organized
         if (blockType.x == 1) { // Water
-            const float waterDepth = linearizeDepth(texture(depthtex1, fragCoord).r) - linearizeDepth(gl_FragCoord.z);
-
-            const vec3 transmittance = pow(vec3(10), -waterDepth*waterConcentration*waterAbsorption);
-            Color.rgb *= transmittance;
-            //////////////////////////////////////////////////////
-
-            float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
-            // Henyey-Greenstein Phase function
-            float phase = (1.0 - waterScattering2) / pow(1.0 + waterScattering2 - 2.0*waterScattering * LdotV, 1.5);
-            float scatterAmount = 1.0 - exp(-waterDepth * lightColor.a);
-
             // Applying the shadow like this isnt not accurate, it would look better raymarched
-            vec3 inScattering = phase * scatterAmount * (1-shadow) * lightColor.rgb; // TODOEVENTUALLY: probably dont directly use `lightColor.rgb`
-            Color.rgb += inScattering;
+            // TODOEVENTUALLY: probably dont directly use `lightColor.rgb`
+            Color.rgb += (1-shadow) * calcWater(lightColor, texture(depthtex1, fragCoord).r, dot(normalize(shadowLightPosition), calcViewDir(fragCoord)));
         }
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));

@@ -18,9 +18,7 @@ uniform vec4 lightColor;
 #include "/func/packLightLevel.glsl"
 #include "/settings/lighting.glsl"
 #include "/func/depthToViewPos.glsl"
-#include "/func/specular.glsl"
 #include "/func/atmosphere/calcSky.glsl"
-
 
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;

@@ -27,7 +27,8 @@
         "shaders/composite1.vsh": true,
         "shaders/deferred.vsh": true,
         "shaders/gbuffers_water.fsh": true,
-        "shaders/gbuffers_water.vsh": true
+        "shaders/gbuffers_water.vsh": true,
+        "shaders/final.vsh": true
     },
     "hide-files.files": [
         "Featherweight/shaders/composite10.fsh",
@@ -52,6 +53,7 @@
         "shaders/composite1.vsh",
         "shaders/deferred.vsh",
         "shaders/gbuffers_water.fsh",
-        "shaders/gbuffers_water.vsh"
+        "shaders/gbuffers_water.vsh",
+        "shaders/final.vsh"
     ]
 }
