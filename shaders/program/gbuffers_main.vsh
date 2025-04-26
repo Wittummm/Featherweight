@@ -34,11 +34,13 @@ uniform mat4 gbufferModelView;
 		uniform float waveScaleMagic;
 		uniform float waveSpeedMagic;
 		uniform float far;
+		uniform int isEyeInWater;
 		in vec2 mc_Entity;
 		out vec2 blockType;
 		#include "/func/noise/noiseSimplex.glsl"
 		#include "/func/depthToViewPos.glsl"
 		#include "/settings/water.glsl"
+		#include "/lib/metadata.glsl"
 	#endif
 #endif
 
@@ -58,9 +60,15 @@ void main() {
 	vec3 screenPos = (clipPos.xyz / clipPos.w)*0.5 + 0.5;
 	#ifdef PROGRAM_TRANSLUCENT 
 		blockType = mc_Entity;
-	#if WATER_WAVES == On
 		if (mc_Entity.x == 1) { // Water
 			vec3 playerPos = (gbufferModelViewInverse * vec4(viewPos, 1)).xyz;
+
+			// Might rework this idk
+			if (isEyeInWater == 1 && all(lessThan(abs(playerPos), vec3(5, 30, 5)))) { 
+				waterColor += vaColor.rgb; 
+				waterCount++;
+			}
+		#if WATER_WAVES == On
 			vec3 worldPos = playerPos + cameraPosition;
 			vec2 fragCoord = screenPos.xy;
 			vec3 offset = vec3(0);
@@ -85,8 +93,8 @@ void main() {
 			viewPos = (gbufferModelView * vec4(worldPos - cameraPosition + offset, 1)).xyz;
 			clipPos = projectionMatrix * vec4(viewPos, 1);
 			screenPos = (clipPos.xyz / clipPos.w)*0.5 + 0.5;
+		#endif
 		}
-	#endif
 	#endif
 
 	vec2 lightLevel = (textureMatrix2 * vec4(vaUV2, 0.0, 1.0)).xy;

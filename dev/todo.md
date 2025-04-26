@@ -3,14 +3,15 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Water
-    - verify if air gaps cause issues with water
-    - water fog(composite)(? maybe do same thing as normal fog, maybe use some scattering)
-        - just do same as surface but use depth from camera
+    - water fog
+        - maybe integrate with sunrays or reuse sunray's data -> combine into one pass
+-> try dh blending on vanilla chunks via `layout (rgba8) uniform image2D colorimg0;` to read dh color
     - SSR
     - shore foam(? maybe not)
 - fix shadows bing broken when enabling water displacement
     - consolidate the displacement code, so that we can reuse it in shadow.vsh
 - colored + translucent shadows + hardcoded translucent shadows like leaves
+- add colortexx0 HDR (10/10/10/2) and move `skylight` somewhere else like a new metadata buffer
 
 ### To-do Later:
 - `PUDDLE_EXPOSURE_MIN` should correlate with the unimplemented `WIND_STRENGTH`

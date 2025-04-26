@@ -10,6 +10,8 @@ uniform mat4 gbufferModelViewInverse;
 uniform mat4 gbufferModelView;
 uniform sampler2D colortex0;
 uniform float sunAngle;
+uniform sampler2D shadowtex1;
+uniform sampler2DShadow shadowtex1HW;
 
 #include "/common/const.glsl"
 #include "/settings/lighting.glsl"
@@ -17,10 +19,16 @@ uniform float sunAngle;
 #include "/func/atmosphere/calcSky.glsl"
 #include "/settings/atmosphere.glsl"
 #include "/func/coloring/srgb.glsl"
+#include "/func/shading/calcWater.glsl"
+#include "/lib/metadata.glsl"
+#include "/lib/shadow/shadow1.glsl"
 
 uniform sampler2D depthtex0;
+uniform sampler2D depthtex2;
 uniform float near;
 uniform float far;
+uniform bool isEyeUnderwater;
+uniform vec4 lightColor;
 #ifdef DISTANT_HORIZONS
 	uniform sampler2D dhDepthTex0;
 	uniform int dhRenderDistance;
@@ -33,7 +41,7 @@ in vec2 texCoord;
 layout(location = 0) out vec4 Color;
 
 void main() {
-	Color = texture(colortex0, texCoord);
+	Color = srgbToLinear(texture(colortex0, texCoord));
 
 	bool isSky = false;
 	float depth = texture(depthtex0, texCoord).r;
@@ -47,7 +55,18 @@ void main() {
 		isSky = depth >= 1;
 	#endif
 
-	if (!isSky) {
+	if (isEyeUnderwater) {
+		float LdotV = dot(normalize(shadowLightPosition), normalize(viewPos));
+		float waterDepth = length(viewPos);
+		
+		// IDEA: we can possibly integrate the screen space radial sunrays here, which means combining the sunrays stage into here
+		vec3 posPlayer = (gbufferModelViewInverse * vec4(viewPos, 1)).xyz;
+		float shadow = calcShadow(posPlayer, vec3(0));
+		float fogFactor = min(smoothstep(0, 0.5 - log(waterConcentration), waterDepth/far), 1);
+		Color.rgb = mix(Color.rgb, calcWater(waterColor.rgb/waterCount, (1-shadow) * lightColor, waterDepth, LdotV), fogFactor);
+	}
+
+	if (!isSky && !isEyeUnderwater) {
 		#ifdef DISTANT_HORIZONS
 			float renderDist = dhRenderDistance;
 		#else
@@ -58,7 +77,9 @@ void main() {
 			vec3 fogCoord = (mat3(gbufferModelView) * 
 				normalize((mat3(gbufferModelViewInverse)*viewPos*vec3(1,0,1))) 
 			);
-			Color.rgb = linearToSRGB(mix(srgbToLinear(Color.rgb), calcSky(fogCoord), fogFactor));
+			Color.rgb = mix(Color.rgb, calcSky(fogCoord), fogFactor);
 		}
 	}
+
+	Color = linearToSRGB(Color);
 }

@@ -5,7 +5,6 @@
 #include "/func/packLightLevel.glsl"
 
 uniform vec3 cameraPosition;
-uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
 uniform float near;
 uniform float far;
@@ -14,6 +13,8 @@ uniform float viewHeight;
 uniform sampler2D lightmap;
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
+uniform bool isEyeUnderwater;
+layout (rgba8) uniform image2D colorimg0;
 
 const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 
@@ -134,7 +135,19 @@ void main() {
         if (blockType.x == 1) { // Water
             // Applying the shadow like this isnt not accurate, it would look better raymarched
             // TODOEVENTUALLY: probably dont directly use `lightColor.rgb`
-            Color.rgb += (1-shadow) * calcWater(lightColor, texture(depthtex1, fragCoord).r, dot(normalize(shadowLightPosition), calcViewDir(fragCoord)));
+
+
+            // TODONOW: polish this up
+            // endSkylight darker than skylight = underwater -> false positive on if surface is dark, but end is brighter(ie under overhangs)
+            // float endSkylight = imageLoad(colorimg0, ivec2(gl_FragCoord.xy)).a; // NOTE: This actually reads and writes in the same program which isnt ideal, but isnt a big issue
+            // float lightDiff = lightmapCoord.y - endSkylight;
+            // float aaa = float(lightDiff > -0.03 || lightDiff < -0.077); // TODONOWBUTLATER: polish this up, and smooth instead of thresholding
+            
+            if (!isEyeUnderwater) { // Isnt water
+                float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
+                float waterDepth = distance(depthToViewPos(fragCoord, texture(depthtex1, fragCoord).r), depthToViewPos(fragCoord, gl_FragCoord.z));
+                Color.rgb = calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
+            }
         }
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));

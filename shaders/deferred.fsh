@@ -20,6 +20,8 @@ uniform vec4 lightColor;
 #include "/func/depthToViewPos.glsl"
 #include "/func/atmosphere/calcSky.glsl"
 #include "/func/coloring/srgb.glsl"
+#include "/func/shading/calcWater.glsl"
+#include "/lib/metadata.glsl"
 
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
@@ -65,7 +67,8 @@ void main() {
 		vec2 lightLevel = unpackLightLevel(Color.a);
 		Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
 
-		bool shouldUpdate = shade(Color, material, lightLevel, viewPos);
+		float shadow;
+		bool shouldUpdate = shade(Color, material, lightLevel, viewPos, shadow);
 		if (shouldUpdate) {
 			GBuffer0.r = roughnessWrite(material.roughness);
 			GBuffer1.rg = normalsWrite(viewToPlayerSpace(material.normals));

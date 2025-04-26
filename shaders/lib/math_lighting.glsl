@@ -11,7 +11,7 @@
 #include "/func/noise/noise.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/settings/shadows.glsl"
-#include "/lib/shadow.glsl"
+#include "/lib/shadow/shadow0.glsl"
 #include "/func/shading/calcSkyReflection.glsl"
 
 uniform float rain;
