@@ -5,18 +5,23 @@
  - Bloom-like effect on the body as a side effect
 
 Bugs/Limitations:
-    - The shaft can go through objects and looks quite bad, idk how to fix this, this is mitigated by `SUNRAYS_SPREAD`
+    - The shaft can go through objects and looks quite bad, idk how to fix this, this is mitigated by `sunraysSpread`
     - `PassTint` may display Color incorrectly when objects behind the glass is strongly colored too
 */
 #include "/common/shader.glsl"
 //
 
-#define SUNRAYS_STRENGTH 0.7 // [0.2 0.4 0.6 0.8 1 1.1 1.25 1.5 1.75 2 2.25 2.5 3 3.5 4 4.5 5]
+#define SUNRAYS_STRENGTH 1 // [1]
+#define SUNRAYS_SPREAD 1 // [1]
+#define SUNRAYS_ORIGIN_SIZE 1 // [1] 
 
-#define SUNRAYS_SPREAD 0.6 // [0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95 1]
+uniform float sunraysStrength;
+uniform float sunraysSpread; 
+uniform vec3 sunraysColor;
+uniform float sunraysOriginSize;
+
 #define SUNRAYS_SAMPLES 1 // [0.25 0.5 1 1.5 2 2.5 3 3.5 4]
 #define SUNRAYS_FAKE_SAMPLES 1 // [0 0.5 1 1.5 2 2.5 3 3.5 4] {Multiples the sample count via dithering}
-#define SUNRAYS_ORIGIN_SIZE 0.25 // [0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5] // 0.2
 #define SUNRAYS_AUTO_FAKE_SAMPLES On // [Off On]
 const float falloff = 5; // How tight the falloff is, higher is tighter
 
@@ -24,18 +29,18 @@ const float falloff = 5; // How tight the falloff is, higher is tighter
 #define Circle Medium
 #define SUNRAYS_ORIGIN_SHAPE Circle // [Diamond Circle] {Diamond is may be cheaper}
 
-#define SUNRAYS_MODE 1 // [0 1 2 3 4] {Off Block Pass PassDarken PassTint(EXPERIMENTAL! EXPECT BUGS)}
+#define SUNRAYS_MODE 1 // [0 1 2 3] {Off Block PassDarken PassTint(EXPERIMENTAL! EXPECT BUGS)}
 #define SUNRAYS_MAX_TRANSPARENCY 0.75 // [0 0.5 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95 1]
 #define SUNRAYS_TINT_STRENGTH 1 // [0.5 1 1.5 2 2.5 3 3.5 4]
 
 #define SUNRAYS_SAMPLES_OVERRIDE Off // [Off 10 20 30 40 50 60 70 80 100 120 140 160 180 200]
 #if SUNRAYS_SAMPLES_OVERRIDE == Off
-    const float samples = SUNRAYS_SPREAD*SUNRAYS_SAMPLES*25;
+    const float samples = sunraysSpread*SUNRAYS_SAMPLES*25;
 #else
     const float samples = SUNRAYS_SAMPLES_OVERRIDE;
 #endif
 const float oneOverSamples = 1.0/samples;
-const float precompute = SUNRAYS_SPREAD * (1.0 / (samples - 1.0));
+const float precompute = sunraysSpread * (1.0 / (samples - 1.0));
 
 //
 
@@ -51,6 +56,7 @@ uniform vec3 shadowLightPosition;
 uniform vec3 upPosition;
 uniform float aspectRatio;
 uniform vec4 lightColor;
+uniform bool isEyeUnderwater;
 
 in vec2 texCoord;
 in vec3 vertPosition;
@@ -96,17 +102,17 @@ void main() {
 
     vec2 uv = texCoord - lightPos;
     float offset = adjustedFakeSampleMult > 1 ? length(fract(gl_FragCoord.xy/adjustedFakeSampleMult)*precompute) : 0;
-    float blurStart = ((1-SUNRAYS_SPREAD) - offset) ;
+    float blurStart = ((1-sunraysSpread) - offset) ;
     float blurStartOffseted = blurStart - offset;
     vec2 uvCorrected = uv*applyAspectRatio;
 
-#if SUNRAYS_MODE == 4
-    vec3 rayColor = lightColor.rgb;
+#if SUNRAYS_MODE == 3
+    vec3 rayColor = sunraysColor;
     int rayColorCount = 1;
 #endif
     float rayAlpha = 0;
     for(float i = 0; i < samples; i++) {
-        mediump float scale = blurStartOffseted + (i * precompute);
+        float scale = blurStartOffseted + (i * precompute);
         #if SUNRAYS_ORIGIN_SHAPE == Diamond
             vec2 scaledUV = abs(uvCorrected*scale);
             float len = (scaledUV.x + scaledUV.y)*0.75; // Compensate a bit to match Circle
@@ -115,19 +121,18 @@ void main() {
         #endif
 
         // Sun mask
-        if (len < SUNRAYS_ORIGIN_SIZE) {
+        if (len < sunraysOriginSize) {
             vec2 samplePos = (uv * scale) + lightPos;
             float blockTransparency = 1;
            
         #if SUNRAYS_MODE == 1
-            float depth = sampleDepth0(samplePos);
-        #elif SUNRAYS_MODE == 2
-            float depth = textureLod(depthtex1, samplePos, 0).r;
-        #elif SUNRAYS_MODE == 3 || SUNRAYS_MODE == 4
-            float depth = textureLod(depthtex1, samplePos, 0).r;
-            blockTransparency = depth - textureLod(depthtex0, samplePos, 0).r > 0 ? SUNRAYS_MAX_TRANSPARENCY : 1; 
+            float depth = isEyeUnderwater ? sampleDepth1(samplePos) : sampleDepth0(samplePos);
+            // TODO: adjust the spread and strength and color when underwater here
+        #elif SUNRAYS_MODE == 2 || SUNRAYS_MODE == 3
+            float depth = sampleDepth1(samplePos);
+            blockTransparency = depth - sampleDepth0(samplePos) > 0 ? SUNRAYS_MAX_TRANSPARENCY : 1; 
 
-            #if SUNRAYS_MODE == 4
+            #if SUNRAYS_MODE == 3
                 // Probably not physically accurate tinting at all
                 if (blockTransparency < 1 && blockTransparency > 0) {
                     vec3 tint = textureLod(colortex0, samplePos, 0).rgb; 
@@ -139,15 +144,15 @@ void main() {
         #endif
 
             float reduceSunIntensity = ((samples - i) * oneOverSamples);// Inverts the influence when its on the sun itself, so sun isnt super bright
-            float spreadStrength = (SUNRAYS_ORIGIN_SIZE-len-0.05)*2; 
+            float spreadStrength = (sunraysOriginSize-len-0.05)*2; 
 
             rayAlpha += blockTransparency * step(1, depth) * reduceSunIntensity * spreadStrength; 
         }
     }
-#if SUNRAYS_MODE == 4
-    vec3 rayColorFactor = mix(lightColor.rgb, normalize(rayColor/float(rayColorCount)), SUNRAYS_MAX_TRANSPARENCY);
+#if SUNRAYS_MODE == 3
+    vec3 rayColorFactor = mix(sunraysColor, normalize(rayColor/float(rayColorCount)), SUNRAYS_MAX_TRANSPARENCY);
 #else
-    vec3 rayColorFactor = lightColor.rgb;
+    vec3 rayColorFactor = sunraysColor;
 #endif
-    Color.rgb += rayColorFactor*(rayAlpha*oneOverSamples)*lightColor.a*strength*SUNRAYS_STRENGTH;
+    Color.rgb += rayColorFactor*(rayAlpha*oneOverSamples)*lightColor.a*strength*sunraysStrength;
 }

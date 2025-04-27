@@ -20,11 +20,13 @@ uniform sampler2DShadow shadowtex1HW;
 #include "/settings/atmosphere.glsl"
 #include "/func/coloring/srgb.glsl"
 #include "/func/shading/calcWater.glsl"
+#include "/func/misc/reconstructNormals.glsl"
 #include "/lib/metadata.glsl"
 #include "/lib/shadow/shadow1.glsl"
+#include "/lib/pbr.glsl"
 
 uniform sampler2D depthtex0;
-uniform sampler2D depthtex2;
+uniform sampler2D colortex2;
 uniform float near;
 uniform float far;
 uniform bool isEyeUnderwater;
@@ -37,7 +39,9 @@ uniform vec4 lightColor;
 
 in vec2 texCoord;
 
-/* RENDERTARGETS: 0 */
+const vec3 lightDir = normalize(shadowLightPosition);
+
+/* RENDERTARGETS: 0,2 */
 layout(location = 0) out vec4 Color;
 
 void main() {
@@ -45,7 +49,7 @@ void main() {
 
 	bool isSky = false;
 	float depth = texture(depthtex0, texCoord).r;
-	// DUPLICATE CODE: SDKH213
+	// DUPLICATE, CODE: SDKH213
 	#ifdef DISTANT_HORIZONS
 		float dhDepth = texture(dhDepthTex0, texCoord).r;
 		isSky = depth >= 1 && dhDepth >= 1;
@@ -54,16 +58,18 @@ void main() {
 		vec3 viewPos = depthToViewPos(texCoord, depth);
 		isSky = depth >= 1;
 	#endif
+	float fragDist = length(viewPos);
 
 	if (isEyeUnderwater) {
-		float LdotV = dot(normalize(shadowLightPosition), normalize(viewPos));
-		float waterDepth = length(viewPos);
+		float LdotV = dot(lightDir, normalize(viewPos));
+
+		vec4 Gbuffer1 = texture(colortex2, texCoord);
+		vec3 normals = vec3(0,1,0); // TODO: Actually fetch the normals
 		
-		// IDEA: we can possibly integrate the screen space radial sunrays here, which means combining the sunrays stage into here
 		vec3 posPlayer = (gbufferModelViewInverse * vec4(viewPos, 1)).xyz;
-		float shadow = calcShadow(posPlayer, vec3(0));
-		float fogFactor = min(smoothstep(0, 0.5 - log(waterConcentration), waterDepth/far), 1);
-		Color.rgb = mix(Color.rgb, calcWater(waterColor.rgb/waterCount, (1-shadow) * lightColor, waterDepth, LdotV), fogFactor);
+		float shadow = calcShadow(posPlayer, vec3(0)); // * dot(normals, lightDir)
+		Color.rgb *= calcWater(srgbToLinear(waterColor.rgb/waterCount /*CODE: 12jk3h*/), (1-shadow) * lightColor, fragDist, LdotV);
+	
 	}
 
 	if (!isSky && !isEyeUnderwater) {
@@ -72,7 +78,7 @@ void main() {
 		#else
 			float renderDist = far;
 		#endif
-		float fogFactor = min(smoothstep(FOG_START*renderDist, FOG_END*renderDist, length(viewPos)) * FOG_DENSITY, 1);
+		float fogFactor = min(smoothstep(FOG_START*renderDist, FOG_END*renderDist, fragDist) * FOG_DENSITY, 1);
 		if (fogFactor > 0) {
 			vec3 fogCoord = (mat3(gbufferModelView) * 
 				normalize((mat3(gbufferModelViewInverse)*viewPos*vec3(1,0,1))) 

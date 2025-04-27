@@ -63,6 +63,7 @@ void main() {
 		if (mc_Entity.x == 1) { // Water
 			vec3 playerPos = (gbufferModelViewInverse * vec4(viewPos, 1)).xyz;
 
+			// CODE: 12jk3h
 			// Might rework this idk
 			if (isEyeInWater == 1 && all(lessThan(abs(playerPos), vec3(5, 30, 5)))) { 
 				waterColor += vaColor.rgb; 

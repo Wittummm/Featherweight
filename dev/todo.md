@@ -3,9 +3,8 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Water
-    - water fog
-        - maybe integrate with sunrays or reuse sunray's data -> combine into one pass
 -> try dh blending on vanilla chunks via `layout (rgba8) uniform image2D colorimg0;` to read dh color
+    - water refraction
     - SSR
     - shore foam(? maybe not)
 - fix shadows bing broken when enabling water displacement
@@ -45,6 +44,7 @@ It is meant to be a self note, but is **not** private.
  - (?) Turning on Shadow Fade Out makes an unknown black fade in the distance appear
  - Boat has water visible in it (RN on MC 1.21.4 Iris 1.8.8)
  - Current fog implementation has an issue as it uses a hack by multiply by 0, resulting in the bottommost part of the fog(if you fly up) being pitched
+ - (!) The auto water color detection is flickering `CODE: 12jk3h`
 
 ### Ideas:
 - Physically based sky via **Bruneton's** precomputed model..
