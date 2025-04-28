@@ -42,6 +42,7 @@ option.SUNRAYS_MODE = Sunrays Mode
 value.DH_FADE_QUALITY.10 = 2x2 Dither
 value.DH_FADE_QUALITY.11 = 4x4 Dither
 value.DH_FADE_QUALITY.12 = 8x8 Dither
+value.DH_FADE_QUALITY.1 = Blend
 
 // Debug
 option.DEBUG.comment = Toggles debugging. This doesn't stop it from loading, it simply turns it off after doing so.

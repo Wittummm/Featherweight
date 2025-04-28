@@ -4,6 +4,12 @@ It is meant to be a self note, but is **not** private.
 ### To-do:
 - Water
 -> try dh blending on vanilla chunks via `layout (rgba8) uniform image2D colorimg0;` to read dh color
+    - shade dh water **surface** same as vanilla water via dhdepthtex0 and dhdepthtex1
+    -> shadow on dh water is big bc rn shadows dont support casting on dh
+    - add support for shadows casting on dh chunks -> use dhprojection when calcualting shadow pos
+
+    - fix DH being broken when it has (fake or real) transparency
+    
     - water refraction
     - SSR
     - shore foam(? maybe not)

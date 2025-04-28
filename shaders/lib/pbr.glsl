@@ -74,6 +74,10 @@ vec3 normalsRead(vec2 f) {
     return normalize(n);
 }
 
+float getMetallic(float reflectance) {
+    return reflectance > 0.9 ? 1 : 0;
+}
+
 // Reflectance
 vec3 reflectanceRead(float reflectance, vec3 albedo, int medium) {
     if (reflectance < 0.9) { // is non metal

@@ -31,7 +31,7 @@ const float falloff = 5; // How tight the falloff is, higher is tighter
 
 #define SUNRAYS_MODE 1 // [0 1 2 3] {Off Block PassDarken PassTint(EXPERIMENTAL! EXPECT BUGS)}
 #define SUNRAYS_MAX_TRANSPARENCY 0.75 // [0 0.5 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95 1]
-#define SUNRAYS_TINT_STRENGTH 1 // [0.5 1 1.5 2 2.5 3 3.5 4]
+#define SUNRAYS_TINT_STRENGTH 0.5 // [0.5 1 1.5 2 2.5 3 3.5 4]
 
 #define SUNRAYS_SAMPLES_OVERRIDE Off // [Off 10 20 30 40 50 60 70 80 100 120 140 160 180 200]
 #if SUNRAYS_SAMPLES_OVERRIDE == Off

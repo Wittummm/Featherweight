@@ -1,8 +1,8 @@
 #include "/snippets/version.glsl"
 
 #include "/common/const.glsl"
-#include "/func/fadeDH.glsl"
 #include "/func/packLightLevel.glsl"
+#include "/settings/dh_main.glsl"
 
 uniform vec3 cameraPosition;
 uniform sampler2D depthtex0;
@@ -14,29 +14,38 @@ uniform sampler2D lightmap;
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
 uniform bool isEyeUnderwater;
-layout (rgba8) uniform image2D colorimg0;
 
 const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 
-#ifndef DISTANT_HORIZONS_SHADER
-    uniform vec3 upPosition;
-    uniform vec3 shadowLightPosition;
-    uniform mat4 shadowModelView;
-    uniform mat4 shadowProjection;
-    uniform mat3 normalMatrix;
-    uniform float sunAngle;
-    uniform vec4 lightColor;
+#ifdef DISTANT_HORIZONS
+    #if DH_FADE_QUALITY == 1
+        layout (rgba8) uniform image2D colorimg0;
+        layout (rgba8) uniform image2D colorimg1;
+        layout (rgba8) uniform image2D colorimg2;
+        uniform float dhNearPlane;
+    #elif DH_FADE_QUALITY == 10 || DH_FADE_QUALITY == 11 || DH_FADE_QUALITY == 12
+        #include "/func/fadeDH.glsl"
+    #endif
+#endif
 
-    #include "/settings/main.glsl"
-    #include "/settings/pbr.glsl"
-    #include "/func/depthToViewPos.glsl"
+uniform vec3 upPosition;
+uniform vec3 shadowLightPosition;
+uniform mat4 shadowModelView;
+uniform mat4 shadowProjection;
+uniform mat3 normalMatrix;
+uniform float sunAngle;
+uniform vec4 lightColor;
+
+#include "/settings/main.glsl"
+#include "/settings/pbr.glsl"
+#include "/func/depthToViewPos.glsl"
 #ifdef FORWARD
     #include "/lib/math_lighting.glsl"
     #include "/func/shading/calcWater.glsl"
     uniform sampler2D depthtex1;
     in vec2 blockType;
 #endif
-
+#ifndef DISTANT_HORIZONS_SHADER
     uniform sampler2D gtexture;
     uniform sampler2D normals;
     uniform sampler2D specular;
@@ -67,16 +76,20 @@ layout(location = 2) out vec4 GBuffer1;
 void main() {
     #include "/snippets/core_to_compat.fsh"
     vec2 fragCoord = gl_FragCoord.xy*pixelSize;
-
     Color = srgbToLinear(vertColor);
 
-#ifdef DISTANT_HORIZONS
-    vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
-    if (fadeDH(length(posPlayer), far)) {
-        discard;
-        return;
-    }
-#endif
+    #ifdef DISTANT_HORIZONS
+        vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
+        float distToPlayer = length(posPlayer);
+        float fade = min(smoothstep(DH_FADE_START*far, DH_FADE_END*far, distToPlayer), 1);
+
+        #if DH_FADE_QUALITY == 10 || DH_FADE_QUALITY == 11 || DH_FADE_QUALITY == 12
+            if (fadeDH(length(posPlayer), far)) {
+                discard;
+                return;
+            }
+        #endif
+    #endif
 
 #ifdef DISTANT_HORIZONS_SHADER
     if (texture(depthtex0, fragCoord).r < 1.0) {
@@ -125,32 +138,41 @@ void main() {
     vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 #endif
+    // NOTE: Ideally we should disable alpha blending for GBuffer0 and 1 OR pack it into 32 bit buffer
+    GBuffer0.a = GBuffer0.a == 0 ? 1 : GBuffer0.a; // 100 alpha = 1 emission = 0 alpha, but we need 1 for alpha blending or something
+    
+    // "Alpha" blend vanilla chunks to dh
+    #if defined DISTANT_HORIZONS && !defined DISTANT_HORIZONS_SHADER && DH_FADE_QUALITY == 1
+        if (-vertPosition.z > dhNearPlane) {
+            vec4 dhGBuffer0 = imageLoad(colorimg1, ivec2(gl_FragCoord.xy));
+            GBuffer0 = mix(GBuffer0, dhGBuffer0, fade);
+            
+            vec4 dhGBuffer1 = imageLoad(colorimg2, ivec2(gl_FragCoord.xy));
+            GBuffer1.rg = normalsWrite(mix(normalsRead(GBuffer1.rg), normalsRead(dhGBuffer1.rg), fade));
+            GBuffer1.ba = mix(GBuffer1.ba, dhGBuffer1.ba, fade);
+        }
+    #endif
+
     #ifdef FORWARD
-        // NOTE: Ideally we should disable alpha blending for gbuffer0 and 1 OR pack it into 32 bit buffer
-        GBuffer0.a = GBuffer0.a == 0 ? 1 : GBuffer0.a; // 100 alpha = 1 emission = 0 alpha, but we need 1 for alpha blending or something
         Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
         float shadow = 0;
         shade(Color, material, lightmapCoord, depthToViewPos(fragCoord, gl_FragCoord.z), shadow);
 
-        if (blockType.x == 1) { // Water
-            // Applying the shadow like this isnt not accurate, it would look better raymarched
-            // TODOEVENTUALLY: probably dont directly use `lightColor.rgb`
-
-
-            // TODONOW: polish this up
-            // endSkylight darker than skylight = underwater -> false positive on if surface is dark, but end is brighter(ie under overhangs)
-            // float endSkylight = imageLoad(colorimg0, ivec2(gl_FragCoord.xy)).a; // NOTE: This actually reads and writes in the same program which isnt ideal, but isnt a big issue
-            // float lightDiff = lightmapCoord.y - endSkylight;
-            // float aaa = float(lightDiff > -0.03 || lightDiff < -0.077); // TODONOWBUTLATER: polish this up, and smooth instead of thresholding
-            
-            if (!isEyeUnderwater) { // Isnt water
-                float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
-                float waterDepth = distance(depthToViewPos(fragCoord, texture(depthtex1, fragCoord).r), depthToViewPos(fragCoord, gl_FragCoord.z));
-                Color.rgb = calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
-            }
+        if (blockType.x == 1 && !isEyeUnderwater) { // Water
+            float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
+            float waterDepth = distance(depthToViewPos(fragCoord, texture(depthtex1, fragCoord).r), depthToViewPos(fragCoord, gl_FragCoord.z));
+            Color.rgb = 1 * calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
         }
+        // NOTE: can control dh's water transparency here ig `Color.a`
+        Color.rgb = vec3(gl_FragCoord.z);
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
+    #endif
+
+    // "Alpha" blend vanilla chunks to dh
+    #if defined DISTANT_HORIZONS && !defined DISTANT_HORIZONS_SHADER && DH_FADE_QUALITY == 1
+        vec3 dhColor = srgbToLinear(imageLoad(colorimg0, ivec2(gl_FragCoord.xy)).rgb);
+        Color.rgb = mix(Color.rgb, dhColor, fade);
     #endif
 
     Color = linearToSRGB(Color);

@@ -16,7 +16,6 @@
 
 uniform float rain;
 uniform float wetness;
-uniform mat4 dhProjection;
 
 const vec3 lightDir = normalize(shadowLightPosition);
 const vec3 upDir = normalize(upPosition);
@@ -40,6 +39,7 @@ struct Material {
     float ao; // Currently unsupported
     float height; // Currently unsupported
     vec3 f0;
+    float metallic;
 };
 
 // PIN: This parses the gbuffers into actual useable data
@@ -52,14 +52,14 @@ Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
     // Cannot `eyePlayerSpace -> viewSpace` have to `eyePlayerSpace -> playerSpace -> viewSpace`
     vec3 normals = playerToViewSpace(normalsRead(gbuffer1.rg));
 
-    return Material(roughness, normals, isPorosity ? porosity : -1, !isPorosity ? porosity : -1, emission,0,0.0, reflectanceRead(reflectance, albedo));
+    return Material(roughness, normals, isPorosity ? porosity : -1, !isPorosity ? porosity : -1, emission,0,0.0, reflectanceRead(reflectance, albedo), getMetallic(reflectance));
 }
 
 //////////////////////////////
 
 // PIN!
 bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView, out float shadow) {
-    bool editGbuffers = false;
+    bool editGBuffers = false;
     float skylight = lightLevel.y;
 
     vec3 posWorld = (mat3(gbufferModelViewInverse) * posView) + cameraPosition;
@@ -75,6 +75,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     float porosity = material.porosity;
     vec3 f0 = material.f0;
     float emission = material.emission;
+    float metallic = material.metallic;
     vec3 outDir = -viewDir;
     /////////////////////////////////////////
     shadow = calcShadow(posWorld - cameraPosition, viewToPlayerSpace(normals));
@@ -93,7 +94,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     vec3 ambientSpecular = calcSkyReflection(AMBIENT_REFLECTION_QUALITY, viewDir, normals, roughness, skylight);
 
     color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit); // NOTE: This darkens everything including lightmap as lightmap isnt included in `lit`
-    color.rgb = color.rgb*(1-kS) + ambientSpecular*kS*(0.5+lit*0.5) + colorSpecular*lit + albedo*emission;
+    color.rgb = color.rgb*(1-kS)*(1-metallic) + ambientSpecular*kS*(0.5+lit*0.5) + colorSpecular*lit + albedo*emission;
 
     #if PUDDLES == On
     /* Rain Puddles using Clearcoat layer
@@ -120,10 +121,10 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
         if (f0.x == f0.y && f0.y == f0.z) { // If non-metal, we cannot encode colored F0s :(
             material.f0 = vec3(mix(f0.x, PUDDLE_WATER_F0, puddle));
         }
-        editGbuffers = true;
+        editGBuffers = true;
     }
     #endif
-    return editGbuffers;
+    return editGBuffers;
 }
 
 bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {

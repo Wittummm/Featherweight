@@ -11,8 +11,6 @@
         "shaders/composite10.fsh": true,
         "shaders/composite99.vsh": true,
         "shaders/composite99.fsh": true,
-        "shaders/dh_terrain.fsh": true,
-        "shaders/dh_terrain.vsh": true,
         "shaders/gbuffers_basic.fsh": true,
         "shaders/gbuffers_basic.vsh": true,
         "shaders/gbuffers_entities.fsh": true,
@@ -27,7 +25,9 @@
         "shaders/deferred.vsh": true,
         "shaders/gbuffers_water.fsh": true,
         "shaders/gbuffers_water.vsh": true,
-        "shaders/gbuffers_skybasic.fsh": true
+        "shaders/gbuffers_skybasic.fsh": true,
+        "shaders/dh_terrain.fsh": true,
+        "shaders/dh_terrain.vsh": true
     },
     "hide-files.files": [
         "Featherweight/shaders/composite10.fsh",
@@ -36,8 +36,6 @@
         "shaders/composite10.fsh",
         "shaders/composite99.vsh",
         "shaders/composite99.fsh",
-        "shaders/dh_terrain.fsh",
-        "shaders/dh_terrain.vsh",
         "shaders/gbuffers_basic.fsh",
         "shaders/gbuffers_basic.vsh",
         "shaders/gbuffers_entities.fsh",
@@ -52,6 +50,8 @@
         "shaders/deferred.vsh",
         "shaders/gbuffers_water.fsh",
         "shaders/gbuffers_water.vsh",
-        "shaders/gbuffers_skybasic.fsh"
+        "shaders/gbuffers_skybasic.fsh",
+        "shaders/dh_terrain.fsh",
+        "shaders/dh_terrain.vsh"
     ]
 }
