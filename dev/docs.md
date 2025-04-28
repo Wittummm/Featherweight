@@ -34,8 +34,8 @@ Search for these keywords to see what extra features you can toggle, most are di
 
 ### Buffers & Storage
  - colortex0, render buffer
- - colortex1, Gbuffer0
- - colortex2, Gbuffer1
+ - colortex1, GBuffer0
+ - colortex2, GBuffer1
  - `pbr.glsl` for hardcoded metal values
 
 ### Organization of Files

@@ -19,6 +19,7 @@ uniform float viewHeight;
 
 #ifdef DISTANT_HORIZONS
     uniform sampler2D dhDepthTex0;
+    uniform sampler2D dhDepthTex1;
 #endif
 
 in vec2 texCoord;

@@ -63,13 +63,12 @@ void main() {
 	if (isEyeUnderwater) {
 		float LdotV = dot(lightDir, normalize(viewPos));
 
-		vec4 Gbuffer1 = texture(colortex2, texCoord);
+		vec4 GBuffer1 = texture(colortex2, texCoord);
 		vec3 normals = vec3(0,1,0); // TODO: Actually fetch the normals
 		
 		vec3 posPlayer = (gbufferModelViewInverse * vec4(viewPos, 1)).xyz;
 		float shadow = calcShadow(posPlayer, vec3(0)); // * dot(normals, lightDir)
 		Color.rgb *= calcWater(srgbToLinear(waterColor.rgb/waterCount /*CODE: 12jk3h*/), (1-shadow) * lightColor, fragDist, LdotV);
-	
 	}
 
 	if (!isSky && !isEyeUnderwater) {
