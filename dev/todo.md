@@ -3,20 +3,15 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Water
--> try dh blending on vanilla chunks via `layout (rgba8) uniform image2D colorimg0;` to read dh color
-    - shade dh water **surface** same as vanilla water via dhdepthtex0 and dhdepthtex1
-    -> shadow on dh water is big bc rn shadows dont support casting on dh
-    - add support for shadows casting on dh chunks -> use dhprojection when calcualting shadow pos
-
-    - fix DH being broken when it has (fake or real) transparency
-    
-    - water refraction
     - SSR
+    - water refraction
     - shore foam(? maybe not)
 - fix shadows bing broken when enabling water displacement
     - consolidate the displacement code, so that we can reuse it in shadow.vsh
 - colored + translucent shadows + hardcoded translucent shadows like leaves
 - add colortexx0 HDR (10/10/10/2) and move `skylight` somewhere else like a new metadata buffer
+### To-do Palnned:
+- water blur and underwater blur
 
 ### To-do Later:
 - `PUDDLE_EXPOSURE_MIN` should correlate with the unimplemented `WIND_STRENGTH`
@@ -51,6 +46,7 @@ It is meant to be a self note, but is **not** private.
  - Boat has water visible in it (RN on MC 1.21.4 Iris 1.8.8)
  - Current fog implementation has an issue as it uses a hack by multiply by 0, resulting in the bottommost part of the fog(if you fly up) being pitched
  - (!) The auto water color detection is flickering `CODE: 12jk3h`
+ - DH shadowmap's depth rn doesnt blend according to the vanila-dh chunk blend, should do this eventually but needs to be after supporting dh chunks casting shadows
 
 ### Ideas:
 - Physically based sky via **Bruneton's** precomputed model..

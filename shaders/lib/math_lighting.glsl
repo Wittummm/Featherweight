@@ -127,7 +127,8 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     return editGBuffers;
 }
 
-bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {
-    float shadow;
-    return shade(color, material, lightLevel, posView, shadow);
-}
+// REMOVAL: Unused so commented out, if unused for too long then remove this - 2025/28/4
+// bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {
+//     float shadow;
+//     return shade(color, material, lightLevel, posView, shadow);
+// }

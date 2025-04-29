@@ -18,12 +18,13 @@ uniform bool isEyeUnderwater;
 const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 
 #ifdef DISTANT_HORIZONS
-    #if DH_FADE_QUALITY == 1
+    #if DH_FADE_BLENDING == 2
         layout (rgba8) uniform image2D colorimg0;
         layout (rgba8) uniform image2D colorimg1;
         layout (rgba8) uniform image2D colorimg2;
         uniform float dhNearPlane;
-    #elif DH_FADE_QUALITY == 10 || DH_FADE_QUALITY == 11 || DH_FADE_QUALITY == 12
+    #endif
+    #if DH_FADE_DITHER > 0
         #include "/func/fadeDH.glsl"
     #endif
 #endif
@@ -39,11 +40,19 @@ uniform vec4 lightColor;
 #include "/settings/main.glsl"
 #include "/settings/pbr.glsl"
 #include "/func/depthToViewPos.glsl"
+
+#include "/func/misc/linearizeDepth.glsl"
+// TEMPTMEP
 #ifdef FORWARD
     #include "/lib/math_lighting.glsl"
     #include "/func/shading/calcWater.glsl"
     uniform sampler2D depthtex1;
     in vec2 blockType;
+
+    #ifdef DISTANT_HORIZONS
+        uniform sampler2D dhDepthTex1;
+        uniform mat4 dhProjectionInverse;
+    #endif
 #endif
 #ifndef DISTANT_HORIZONS_SHADER
     uniform sampler2D gtexture;
@@ -81,21 +90,26 @@ void main() {
     #ifdef DISTANT_HORIZONS
         vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
         float distToPlayer = length(posPlayer);
-        float fade = min(smoothstep(DH_FADE_START*far, DH_FADE_END*far, distToPlayer), 1);
+        float fade = clamp(smoothstep(DH_FADE_START*far, DH_FADE_END*far, distToPlayer), 0, 1);
 
-        #if DH_FADE_QUALITY == 10 || DH_FADE_QUALITY == 11 || DH_FADE_QUALITY == 12
-            if (fadeDH(length(posPlayer), far)) {
-                discard;
-                return;
-            }
+        #if DH_FADE_DITHER > 0
+            // Only DH chunks need dithering when using blending mode
+            #if (DH_FADE_BLENDING == 2 && defined DISTANT_HORIZONS_SHADER) || DH_FADE_BLENDING == 1
+                if (fadeDH(length(posPlayer), far)) {
+                    discard;
+                    return;
+                }
+            #endif
         #endif
     #endif
 
 #ifdef DISTANT_HORIZONS_SHADER
-    if (texture(depthtex0, fragCoord).r < 1.0) {
-        discard;
-        return;
-    }
+    #ifdef FORWARD 
+        if (distToPlayer > length(depthToViewPos(fragCoord, texture(depthtex0, fragCoord).r))) {
+            discard;
+            return;
+        }
+    #endif
 
     // TODOEVENTUALLY: Move this somewhere else for better organization
     switch (dhMaterialId) { // TODOEVENTUALLY NOTE: Not tested bc it doesnt work on 1.21.4
@@ -139,10 +153,10 @@ void main() {
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 #endif
     // NOTE: Ideally we should disable alpha blending for GBuffer0 and 1 OR pack it into 32 bit buffer
-    GBuffer0.a = GBuffer0.a == 0 ? 1 : GBuffer0.a; // 100 alpha = 1 emission = 0 alpha, but we need 1 for alpha blending or something
+    GBuffer0.a = fract(GBuffer0.a); // 100 alpha = 1 emission = 0 alpha, but we need 1 for alpha blending or something
     
     // "Alpha" blend vanilla chunks to dh
-    #if defined DISTANT_HORIZONS && !defined DISTANT_HORIZONS_SHADER && DH_FADE_QUALITY == 1
+    #if defined DISTANT_HORIZONS && !defined DISTANT_HORIZONS_SHADER && DH_FADE_BLENDING == 2
         if (-vertPosition.z > dhNearPlane) {
             vec4 dhGBuffer0 = imageLoad(colorimg1, ivec2(gl_FragCoord.xy));
             GBuffer0 = mix(GBuffer0, dhGBuffer0, fade);
@@ -156,21 +170,37 @@ void main() {
     #ifdef FORWARD
         Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
         float shadow = 0;
-        shade(Color, material, lightmapCoord, depthToViewPos(fragCoord, gl_FragCoord.z), shadow);
+        shade(Color, material, lightmapCoord, vertPosition, shadow);
 
-        if (blockType.x == 1 && !isEyeUnderwater) { // Water
+        #ifdef DISTANT_HORIZONS_SHADER
+            // Below is a bad solution and hacky, should not hardcode the alpha, color, etc
+            bool isWater = true; // TODOBUTLATER: should ideally use `dhMaterialId`
+            Color.b *= 1.5;
+            Color.a = 0.8;
+        #else
+            bool isWater = blockType.x == 1;
+        #endif
+        if (isWater && !isEyeUnderwater) {
+            #ifdef DISTANT_HORIZONS_SHADER
+                // NOTE: Note that dh water depth still doesnt look perfectly correct, but acceptable for now
+                vec3 dhPos = depthToViewPos(fragCoord, texture(dhDepthTex1, fragCoord).r, dhProjectionInverse);
+                float waterDepth = distance(dhPos, vertPosition);
+            #else
+                float terrainDepth = texture(depthtex1, fragCoord).r;
+                vec3 pos = terrainDepth < 1 ? depthToViewPos(fragCoord, terrainDepth) : depthToViewPos(fragCoord, texture(dhDepthTex1, fragCoord).r, dhProjectionInverse);
+                float waterDepth = distance(pos, vertPosition);
+            #endif
+
             float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
-            float waterDepth = distance(depthToViewPos(fragCoord, texture(depthtex1, fragCoord).r), depthToViewPos(fragCoord, gl_FragCoord.z));
-            Color.rgb = 1 * calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
+            Color.rgb = calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
         }
         // NOTE: can control dh's water transparency here ig `Color.a`
-        Color.rgb = vec3(gl_FragCoord.z);
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
     #endif
 
     // "Alpha" blend vanilla chunks to dh
-    #if defined DISTANT_HORIZONS && !defined DISTANT_HORIZONS_SHADER && DH_FADE_QUALITY == 1
+    #if defined DISTANT_HORIZONS && !defined DISTANT_HORIZONS_SHADER && DH_FADE_BLENDING == 2
         vec3 dhColor = srgbToLinear(imageLoad(colorimg0, ivec2(gl_FragCoord.xy)).rgb);
         Color.rgb = mix(Color.rgb, dhColor, fade);
     #endif
