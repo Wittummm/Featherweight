@@ -2,16 +2,34 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
+- Actually Fix dh blending now
+
+- SSR
+    - The dh-vanilla chunk boundary/blending seem to make the ssr reflect wrongly, perhaps fix that if possible
+    - Do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
+
+- Buffer Reworking
+    - HDR colortex0 [10 11 11 8]
+    - Pack Gbuffers into one `RG32UI`(64) buffer
+        - `LOWER_PRECISION_GBUFFERS` -> `RGB16UI`(48) buffer for low precision (default)
 - Water
-    - SSR
+    - use hardcoded water colors per biome, dont do auto color
+    - use a small scale noise layer the scrolls vertically to add movement to water puddles
+    - fix shadows bing broken when enabling water displacement
+        - consolidate the displacement code, so that we can reuse it in shadow.vsh
+    - Total internal reflection using snells law, and if TIR then use ssr for reflection
     - water refraction
+    - caustics
     - shore foam(? maybe not)
-- fix shadows bing broken when enabling water displacement
-    - consolidate the displacement code, so that we can reuse it in shadow.vsh
-- colored + translucent shadows + hardcoded translucent shadows like leaves
-- add colortexx0 HDR (10/10/10/2) and move `skylight` somewhere else like a new metadata buffer
-### To-do Palnned:
-- water blur and underwater blur
+- Colored + translucent shadows + hardcoded translucent shadows like leaves
+- DH shadows support(1.20.1?)
+
+
+### To-do Planned:
+- Make sky non-physically based as it is inflexible. 
+    - Make it artist friendly but still support, top, mid, bottom, sun/moon halo/horizon sky colors -> maybe use preetham's for sunset
+- Water blur and underwater blur
+-  Disable alpha blending on gbuffers, ISSUECODE: 12xnd
 
 ### To-do Later:
 - `PUDDLE_EXPOSURE_MIN` should correlate with the unimplemented `WIND_STRENGTH`
@@ -19,7 +37,6 @@ It is meant to be a self note, but is **not** private.
 - Fix mip maps
     - Albedo
     - All gbuffers
-- Pack gbuffers into `rgba16` instead of 2 `rgba8`s
 - Distant Horizons support
     - Add noise for DH like vanilla DH
     - Particles fade out when out of vanilla range due to DH sorting issues
@@ -38,6 +55,7 @@ It is meant to be a self note, but is **not** private.
 - Sky reflection should be cached/precomputed like 128 directions or something instead of runtime computation
 - Integrated pbr
 - Reimplement fog color adjustment based on mood and player light level like pre-deferred version
+- Moving rain particles -> shear the rain based on weather/wind
 
 ### Issues
  - (!) Entity shadows disappear at certain angles, may be iris bug? (1.21.4)
@@ -47,9 +65,11 @@ It is meant to be a self note, but is **not** private.
  - Current fog implementation has an issue as it uses a hack by multiply by 0, resulting in the bottommost part of the fog(if you fly up) being pitched
  - (!) The auto water color detection is flickering `CODE: 12jk3h`
  - DH shadowmap's depth rn doesnt blend according to the vanila-dh chunk blend, should do this eventually but needs to be after supporting dh chunks casting shadows
+ - #WontFix SSR cannot trace behind hand and trying to do so is too impractical as it requires a **color buffer without hand and a depth buffer without hand**
+ - #ShouldFixEventually Rain-Fog does not fog properly
+ - #ShouldMaybeFix SSR has noisy results at grazing reflection angles which exaggerates the effect of normal maps
 
 ### Ideas:
-- Physically based sky via **Bruneton's** precomputed model..
 - Exponential shadow mapping(medium)
 - Temporal Shadows(medium priority). Store the history of shadow in a buffer
 - Fake Soft Clouds(medium priority)

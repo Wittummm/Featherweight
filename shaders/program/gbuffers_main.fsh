@@ -1,13 +1,11 @@
 #include "/snippets/version.glsl"
 
 #include "/common/const.glsl"
-#include "/func/packLightLevel.glsl"
+#include "/func/packing/packLightLevel.glsl"
 #include "/settings/dh_main.glsl"
 
 uniform vec3 cameraPosition;
-uniform sampler2D depthtex0;
-uniform float near;
-uniform float far;
+uniform float renderDistance;
 uniform float viewWidth;
 uniform float viewHeight;
 uniform sampler2D lightmap;
@@ -18,11 +16,11 @@ uniform bool isEyeUnderwater;
 const vec2 pixelSize = 1.0/vec2(viewWidth, viewHeight);
 
 #ifdef DISTANT_HORIZONS
+    uniform float dhNearPlane;
     #if DH_FADE_BLENDING == 2
         layout (rgba8) uniform image2D colorimg0;
         layout (rgba8) uniform image2D colorimg1;
         layout (rgba8) uniform image2D colorimg2;
-        uniform float dhNearPlane;
     #endif
     #if DH_FADE_DITHER > 0
         #include "/func/fadeDH.glsl"
@@ -36,23 +34,26 @@ uniform mat4 shadowProjection;
 uniform mat3 normalMatrix;
 uniform float sunAngle;
 uniform vec4 lightColor;
+uniform sampler2D depthtex1;
+uniform sampler2D depthtex0;
 
 #include "/settings/main.glsl"
 #include "/settings/pbr.glsl"
 #include "/func/depthToViewPos.glsl"
 
-#include "/func/misc/linearizeDepth.glsl"
-// TEMPTMEP
 #ifdef FORWARD
+    uniform vec2 mc_Entity;
     #include "/lib/math_lighting.glsl"
     #include "/func/shading/calcWater.glsl"
-    uniform sampler2D depthtex1;
     in vec2 blockType;
 
-    #ifdef DISTANT_HORIZONS
-        uniform sampler2D dhDepthTex1;
-        uniform mat4 dhProjectionInverse;
+#endif
+#ifdef DISTANT_HORIZONS
+    #ifndef DISTANT_HORIZONS_SHADER
+        uniform sampler2D dhDepthTex0; // Use depth0 in some cases because DH handles the 0/1 depth buffer weirdly :)
     #endif
+    uniform sampler2D dhDepthTex1;
+    uniform mat4 dhProjectionInverse;
 #endif
 #ifndef DISTANT_HORIZONS_SHADER
     uniform sampler2D gtexture;
@@ -66,13 +67,15 @@ uniform vec4 lightColor;
     uniform int dhMaterialId;
 #endif
 
-#include "/lib/pbr.glsl"
+#define YES_NORMALS_WRITE
+#include "/func/packing/encodeNormals.glsl"
 #include "/func/coloring/srgb.glsl"
 
 in vec2 lightmapCoord;
 in vec4 vertColor;
 in vec3 vertNormal;
 in vec3 vertPosition;
+in vec4 at_midBlock;
 
 /* RENDERTARGETS: 0,1,2 */
 layout(location = 0) out vec4 Color;
@@ -88,29 +91,51 @@ void main() {
     Color = srgbToLinear(vertColor);
 
     #ifdef DISTANT_HORIZONS
+        #if defined DISTANT_HORIZONS_SHADER && defined FORWARD 
+            // Depth checks DH fragments, ensures that DH frag behind Vanilla doesnt get drawn
+            /*immut*/ float depth1 = texture(depthtex1, fragCoord).r;
+            if (depth1 < 1 && vertPosition.z < depthToViewPos(fragCoord, depth1).z) {
+                discard;
+                return;
+            }
+        #endif
+
         vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
         float distToPlayer = length(posPlayer);
-        float fade = clamp(smoothstep(DH_FADE_START*far, DH_FADE_END*far, distToPlayer), 0, 1);
+        float fade = clamp(smoothstep(DH_FADE_START*renderDistance, DH_FADE_END*renderDistance, distToPlayer), 0, 1);
+        // #ifndef DISTANT_HORIZONS_SHADER
+        //     // if near the front of near plane
+        //     if (-vertPosition.z >= dhNearPlane) {
+        //         float s = -vertPosition.z - dhNearPlane;
+        //         float a = 4.0;
+        //         // fade = max(1-clamp(s/a, 0, 1), fade);
+        //         Color.rgb = vec3(1-clamp(s/a, 0, 1));
+        //     }
+        // #endif
 
         #if DH_FADE_DITHER > 0
-            // Only DH chunks need dithering when using blending mode
-            #if (DH_FADE_BLENDING == 2 && defined DISTANT_HORIZONS_SHADER) || DH_FADE_BLENDING == 1
-                if (fadeDH(length(posPlayer), far)) {
-                    discard;
-                    return;
-                }
+            // Only need to dither out Vanilla chunks
+            // FALSE! need to also dither dh chunks, ESPECIALLY on vanilla translucents
+            #ifndef DISTANT_HORIZONS_SHADER
+                #if DH_FADE_BLENDING == 1
+                    bool shouldDither = true;
+                #else
+                     // This fixes the "invisible" vanilla chunks by dithering some vanilla chunks
+                    vec3 dhPos = depthToViewPos(fragCoord, texture(dhDepthTex0, fragCoord).r, dhProjectionInverse);
+                    bool shouldDither = -vertPosition.z > dhNearPlane && vertPosition.z - dhPos.z > 0.25;
+                #endif
+                if (shouldDither && fadeDH(fade)) { discard; return; }
+            #else
+                // TODONOW: This is improper as it causes transluecents fragments
+                // TODONOW: So fix issue somehow :)
+                if (fadeDH(1-fade)) { discard; return; }
             #endif
         #endif
     #endif
 
-#ifdef DISTANT_HORIZONS_SHADER
-    #ifdef FORWARD 
-        if (distToPlayer > length(depthToViewPos(fragCoord, texture(depthtex0, fragCoord).r))) {
-            discard;
-            return;
-        }
-    #endif
+    // Color = srgbToLinear(vertColor); commented out fot tetsing
 
+#ifdef DISTANT_HORIZONS_SHADER
     // TODOEVENTUALLY: Move this somewhere else for better organization
     switch (dhMaterialId) { // TODOEVENTUALLY NOTE: Not tested bc it doesnt work on 1.21.4
         // Smoothness, Reflectance, Porosity/SSS, Emissive
@@ -139,21 +164,24 @@ void main() {
     }
 
     GBuffer1.rg = normalsWrite(vertNormal);
-    GBuffer1.a = 0.25; // Height
+    GBuffer1.a = 1; // Need 1 alpha for the blending, but value should actually be 0.25 ISSUECODE: 12xnd TODOEVENTUALLY: Fix this by turning of alpha blending on gbuffers
 #else
     Color = vec4(Color.rgb, 1) * srgbToLinear(texture(gtexture, texCoord, MIP_MAP_BIAS));
-	if (Color.a < alphaTestRef) {
-		discard; return;
-	}
+    #ifdef CUTOUT
+        if (Color.a < alphaTestRef) {
+            discard; return;
+        }
+    #endif
 
+    // Encode PBR data to buffers here
     GBuffer0 = texture(specular, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
     GBuffer1 = texture(normals, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
     
     vec2 normal = (GBuffer1.rg * 2.0) - 1.0;
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 #endif
-    // NOTE: Ideally we should disable alpha blending for GBuffer0 and 1 OR pack it into 32 bit buffer
-    GBuffer0.a = fract(GBuffer0.a); // 100 alpha = 1 emission = 0 alpha, but we need 1 for alpha blending or something
+    // ISSUECODE: 12xnd NOTE: Ideally we should disable alpha blending for GBuffer0 and 1 OR pack it into 32 bit buffer
+    GBuffer0.a = GBuffer0.a == 0 ? 1 : GBuffer0.a;
     
     // "Alpha" blend vanilla chunks to dh
     #if defined DISTANT_HORIZONS && !defined DISTANT_HORIZONS_SHADER && DH_FADE_BLENDING == 2
@@ -170,31 +198,33 @@ void main() {
     #ifdef FORWARD
         Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
         float shadow = 0;
-        shade(Color, material, lightmapCoord, vertPosition, shadow);
+        bool shouldUpdate = shade(Color, material, lightmapCoord, vertPosition, shadow);
+        if (shouldUpdate) writeMaterialToGbuffer(material, GBuffer0, GBuffer1);
 
         #ifdef DISTANT_HORIZONS_SHADER
             // Below is a bad solution and hacky, should not hardcode the alpha, color, etc
             bool isWater = true; // TODOBUTLATER: should ideally use `dhMaterialId`
-            Color.b *= 1.5;
-            Color.a = 0.8;
+            Color.b *= 1.7;
+            Color.a = 0.8; // can control dh's water transparency here ig `Color.a`
         #else
             bool isWater = blockType.x == 1;
         #endif
         if (isWater && !isEyeUnderwater) {
             #ifdef DISTANT_HORIZONS_SHADER
-                // NOTE: Note that dh water depth still doesnt look perfectly correct, but acceptable for now
                 vec3 dhPos = depthToViewPos(fragCoord, texture(dhDepthTex1, fragCoord).r, dhProjectionInverse);
                 float waterDepth = distance(dhPos, vertPosition);
-            #else
+            #elif defined DISTANT_HORIZONS
                 float terrainDepth = texture(depthtex1, fragCoord).r;
                 vec3 pos = terrainDepth < 1 ? depthToViewPos(fragCoord, terrainDepth) : depthToViewPos(fragCoord, texture(dhDepthTex1, fragCoord).r, dhProjectionInverse);
                 float waterDepth = distance(pos, vertPosition);
+            #else
+                float waterDepth = distance(depthToViewPos(fragCoord, texture(depthtex1, fragCoord).r), vertPosition);
             #endif
 
             float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
             Color.rgb = calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
+            // Color.rgb = vec3(waterDepth)*0.1; // TODONOW: fix the depth at the blending boundary being "wrong"
         }
-        // NOTE: can control dh's water transparency here ig `Color.a`
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
     #endif

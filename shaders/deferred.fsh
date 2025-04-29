@@ -11,11 +11,13 @@ uniform mat4 gbufferModelView;
 uniform sampler2D colortex0;
 uniform float sunAngle;
 uniform vec4 lightColor;
+uniform sampler2D depthtex1;
+uniform vec2 mc_Entity;
 
 #include "/common/const.glsl"
 #include "/lib/pbr.glsl"
 #include "/lib/math_lighting.glsl"
-#include "/func/packLightLevel.glsl"
+#include "/func/packing/packLightLevel.glsl"
 #include "/settings/lighting.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/func/atmosphere/calcSky.glsl"
@@ -25,16 +27,13 @@ uniform vec4 lightColor;
 
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
-uniform sampler2D depthtex0;
 uniform vec3 skyColor;
-uniform float near;
-uniform float far;
 #ifdef DISTANT_HORIZONS
 	uniform sampler2D dhDepthTex0;
 	uniform mat4 dhProjectionInverse;
 #endif
 
-in vec2 texCoord;
+in vec2 fragCoord;
 
 /* RENDERTARGETS: 0,1,2 */
 layout(location = 0) out vec4 Color;
@@ -42,19 +41,24 @@ layout(location = 1) out vec4 GBuffer0;
 layout(location = 2) out vec4 GBuffer1;
 
 void main() {
-	Color = srgbToLinear(texture(colortex0, texCoord));
-	GBuffer0 = texture(colortex1, texCoord);
-	GBuffer1 = texture(colortex2, texCoord);
+	Color = srgbToLinear(texture(colortex0, fragCoord));
+	GBuffer0 = texture(colortex1, fragCoord);
+	GBuffer1 = texture(colortex2, fragCoord);
 
 	bool isSky = false;
-	float depth = texture(depthtex0, texCoord).r;
+	float depth = texture(depthtex1, fragCoord).r;
 	// DUPLICATE CODE: SDKH213
 	#ifdef DISTANT_HORIZONS
-		float dhDepth = texture(dhDepthTex0, texCoord).r;
+		/*
+			Using `dhDepthTex1` instead of `dhDepthTex0` causes ghosting
+			because supposedly DH copies depth0 over to depth1 at deferred and is not the intuitive way
+			Reference: joshtheb(jbritain) https://discord.com/channels/237199950235041794/736928196162879510/1369707060597358773
+		*/
+		float dhDepth = texture(dhDepthTex0, fragCoord).r; // CODE: 8dh91 This causes "ghosting" as `dhDepthTex1` seems to be delayed(or maybe projected wrong)
 		isSky = depth >= 1 && dhDepth >= 1;
-		vec3 viewPos = depth < 1 ? depthToViewPos(texCoord, depth) : depthToViewPos(texCoord, dhDepth, dhProjectionInverse);
+		vec3 viewPos = depth < 1 ? depthToViewPos(fragCoord, depth) : depthToViewPos(fragCoord, dhDepth, dhProjectionInverse);
 	#else
-		vec3 viewPos = depthToViewPos(texCoord, depth);
+		vec3 viewPos = depthToViewPos(fragCoord, depth);
 		isSky = depth >= 1;
 	#endif
 
@@ -69,11 +73,7 @@ void main() {
 
 		float shadow;
 		bool shouldUpdate = shade(Color, material, lightLevel, viewPos, shadow);
-		if (shouldUpdate) {
-			GBuffer0.r = roughnessWrite(material.roughness);
-			GBuffer1.rg = normalsWrite(viewToPlayerSpace(material.normals));
-			GBuffer0.g = reflectanceWriteFromF0(material.f0.x);
-		}
+		if (shouldUpdate) writeMaterialToGbuffer(material, GBuffer0, GBuffer1);
 	}
 
 	Color = linearToSRGB(Color);

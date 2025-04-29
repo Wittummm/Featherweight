@@ -1,2 +1,3 @@
 # Featherweight
-A Iris minecraft shader focusing on lightweight features.
+An Iris minecraft shader focusing on lightweight features.
+
