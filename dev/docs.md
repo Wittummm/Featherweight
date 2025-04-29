@@ -29,6 +29,7 @@ Search for these keywords to see what extra features you can toggle, most are di
     - "NOTE" a note for readers, including oneself
     - "PIN" likely will come back to, usually to edit/add features
     - "CODE: xxx" a random code(literally button mash) 
+    - "REMOVAL" to remove for some reasoon
   - **Notes**
     - Put "#define DISTANT_HORIZONS_SHADER" in the top of DH shader stages
 
