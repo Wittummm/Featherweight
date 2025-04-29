@@ -124,6 +124,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
         editGBuffers = true;
     }
     #endif
+
     return editGBuffers;
 }
 

@@ -22,7 +22,7 @@ uniform float viewHeight;
     uniform sampler2D dhDepthTex1;
 #endif
 
-in vec2 texCoord;
+in vec2 fragCoord;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 Color;
@@ -53,9 +53,9 @@ bool clip(ivec2 coord) {
 }
 
 void main() {
-    ivec2 coord = ivec2(floor(texCoord*vec2(viewWidth,viewHeight)));
+    ivec2 coord = ivec2(floor(fragCoord*vec2(viewWidth,viewHeight)));
     ivec2 squareCoord = ivec2(coord * vec2(aspectRatio, 1));
-    vec4 color = texture(colortex0, texCoord);
+    vec4 color = texture(colortex0, fragCoord);
 
     Color = color;
    

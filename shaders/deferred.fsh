@@ -11,6 +11,7 @@ uniform mat4 gbufferModelView;
 uniform sampler2D colortex0;
 uniform float sunAngle;
 uniform vec4 lightColor;
+uniform sampler2D depthtex1;
 
 #include "/common/const.glsl"
 #include "/lib/pbr.glsl"
@@ -25,16 +26,15 @@ uniform vec4 lightColor;
 
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
-uniform sampler2D depthtex0;
 uniform vec3 skyColor;
 uniform float near;
 uniform float far;
 #ifdef DISTANT_HORIZONS
-	uniform sampler2D dhDepthTex0;
+	uniform sampler2D dhDepthTex1;
 	uniform mat4 dhProjectionInverse;
 #endif
 
-in vec2 texCoord;
+in vec2 fragCoord;
 
 /* RENDERTARGETS: 0,1,2 */
 layout(location = 0) out vec4 Color;
@@ -42,19 +42,19 @@ layout(location = 1) out vec4 GBuffer0;
 layout(location = 2) out vec4 GBuffer1;
 
 void main() {
-	Color = srgbToLinear(texture(colortex0, texCoord));
-	GBuffer0 = texture(colortex1, texCoord);
-	GBuffer1 = texture(colortex2, texCoord);
+	Color = srgbToLinear(texture(colortex0, fragCoord));
+	GBuffer0 = texture(colortex1, fragCoord);
+	GBuffer1 = texture(colortex2, fragCoord);
 
 	bool isSky = false;
-	float depth = texture(depthtex0, texCoord).r;
+	float depth = texture(depthtex1, fragCoord).r;
 	// DUPLICATE CODE: SDKH213
 	#ifdef DISTANT_HORIZONS
-		float dhDepth = texture(dhDepthTex0, texCoord).r;
+		float dhDepth = texture(dhDepthTex1, fragCoord).r;
 		isSky = depth >= 1 && dhDepth >= 1;
-		vec3 viewPos = depth < 1 ? depthToViewPos(texCoord, depth) : depthToViewPos(texCoord, dhDepth, dhProjectionInverse);
+		vec3 viewPos = depth < 1 ? depthToViewPos(fragCoord, depth) : depthToViewPos(fragCoord, dhDepth, dhProjectionInverse);
 	#else
-		vec3 viewPos = depthToViewPos(texCoord, depth);
+		vec3 viewPos = depthToViewPos(fragCoord, depth);
 		isSky = depth >= 1;
 	#endif
 

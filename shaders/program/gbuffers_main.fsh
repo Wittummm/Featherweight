@@ -5,7 +5,6 @@
 #include "/settings/dh_main.glsl"
 
 uniform vec3 cameraPosition;
-uniform sampler2D depthtex0;
 uniform float near;
 uniform float far;
 uniform float viewWidth;
@@ -105,7 +104,7 @@ void main() {
 
 #ifdef DISTANT_HORIZONS_SHADER
     #ifdef FORWARD 
-        if (distToPlayer > length(depthToViewPos(fragCoord, texture(depthtex0, fragCoord).r))) {
+        if (vertPosition.z < depthToViewPos(fragCoord, texture(depthtex1, fragCoord).r).z) {
             discard;
             return;
         }
@@ -142,9 +141,11 @@ void main() {
     GBuffer1.a = 0.25; // Height
 #else
     Color = vec4(Color.rgb, 1) * srgbToLinear(texture(gtexture, texCoord, MIP_MAP_BIAS));
-	if (Color.a < alphaTestRef) {
-		discard; return;
-	}
+    #ifdef CUTOUT
+        if (Color.a < alphaTestRef) {
+            discard; return;
+        }
+    #endif
 
     GBuffer0 = texture(specular, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
     GBuffer1 = texture(normals, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
@@ -153,7 +154,7 @@ void main() {
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 #endif
     // NOTE: Ideally we should disable alpha blending for GBuffer0 and 1 OR pack it into 32 bit buffer
-    GBuffer0.a = fract(GBuffer0.a); // 100 alpha = 1 emission = 0 alpha, but we need 1 for alpha blending or something
+    GBuffer0.a = fract(GBuffer0.a);
     
     // "Alpha" blend vanilla chunks to dh
     #if defined DISTANT_HORIZONS && !defined DISTANT_HORIZONS_SHADER && DH_FADE_BLENDING == 2
@@ -176,25 +177,25 @@ void main() {
             // Below is a bad solution and hacky, should not hardcode the alpha, color, etc
             bool isWater = true; // TODOBUTLATER: should ideally use `dhMaterialId`
             Color.b *= 1.5;
-            Color.a = 0.8;
+            Color.a = 0.8; // can control dh's water transparency here ig `Color.a`
         #else
             bool isWater = blockType.x == 1;
         #endif
         if (isWater && !isEyeUnderwater) {
             #ifdef DISTANT_HORIZONS_SHADER
-                // NOTE: Note that dh water depth still doesnt look perfectly correct, but acceptable for now
                 vec3 dhPos = depthToViewPos(fragCoord, texture(dhDepthTex1, fragCoord).r, dhProjectionInverse);
                 float waterDepth = distance(dhPos, vertPosition);
-            #else
+            #elif DISTANT_HORIZONS
                 float terrainDepth = texture(depthtex1, fragCoord).r;
                 vec3 pos = terrainDepth < 1 ? depthToViewPos(fragCoord, terrainDepth) : depthToViewPos(fragCoord, texture(dhDepthTex1, fragCoord).r, dhProjectionInverse);
                 float waterDepth = distance(pos, vertPosition);
+            #else
+                float waterDepth = distance(depthToViewPos(fragCoord, texture(depthtex1, fragCoord).r), vertPosition);
             #endif
 
             float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
             Color.rgb = calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
         }
-        // NOTE: can control dh's water transparency here ig `Color.a`
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
     #endif
