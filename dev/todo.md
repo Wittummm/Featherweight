@@ -5,6 +5,7 @@ It is meant to be a self note, but is **not** private.
 - Water
     - SSR
     - water refraction
+    - caustics
     - shore foam(? maybe not)
 - fix shadows bing broken when enabling water displacement
     - consolidate the displacement code, so that we can reuse it in shadow.vsh
