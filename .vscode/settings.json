@@ -30,7 +30,13 @@
         "shaders/deferred.vsh": true,
         "shaders/composite1.fsh": true,
         "shaders/composite10.fsh": true,
-        "shaders/composite10.vsh": true
+        "shaders/composite10.vsh": true,
+        "shaders/composite16.vsh": true,
+        "shaders/composite15.vsh": true,
+        "shaders/dh_water.vsh": true,
+        "shaders/dh_water.fsh": true,
+        "shaders/shadow.vsh": true,
+        "shaders/shadow.fsh": true
     },
     "hide-files.files": [
         "Featherweight/shaders/composite10.fsh",
@@ -58,6 +64,12 @@
         "shaders/deferred.vsh",
         "shaders/composite1.fsh",
         "shaders/composite10.fsh",
-        "shaders/composite10.vsh"
+        "shaders/composite10.vsh",
+        "shaders/composite16.vsh",
+        "shaders/composite15.vsh",
+        "shaders/dh_water.vsh",
+        "shaders/dh_water.fsh",
+        "shaders/shadow.vsh",
+        "shaders/shadow.fsh"
     ]
 }

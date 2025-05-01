@@ -16,7 +16,7 @@ uniform sampler2D depthtex1;
 #include "/common/const.glsl"
 #include "/lib/pbr.glsl"
 #include "/lib/math_lighting.glsl"
-#include "/func/packLightLevel.glsl"
+#include "/func/packing/packLightLevel.glsl"
 #include "/settings/lighting.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/func/atmosphere/calcSky.glsl"

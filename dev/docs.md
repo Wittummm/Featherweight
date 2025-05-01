@@ -37,6 +37,7 @@ Search for these keywords to see what extra features you can toggle, most are di
  - colortex0, render buffer
  - colortex1, GBuffer0
  - colortex2, GBuffer1
+ - colortex3, SSR: rgb8 [12 12] 2 12 bit numbers
  - `pbr.glsl` for hardcoded metal values
 
 ### Organization of Files

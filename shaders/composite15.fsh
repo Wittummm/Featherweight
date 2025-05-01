@@ -9,18 +9,20 @@
 #include "/func/misc/reconstructNormals.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/settings/screen_space_reflections.glsl"
+#include "/func/buffers/colortex3.glsl"
+#include "/func/packing/encodeNormals.glsl"
 
 uniform mat4 gbufferProjection;
+uniform mat4 gbufferModelView;
 uniform sampler2D depthtex0;
-uniform sampler2D colortex0;
+uniform sampler2D colortex2;
 uniform float viewWidth;
 uniform float viewHeight;
 
-/* RENDERTARGETS: 0 */
-layout(location = 0) out vec4 Color;
-layout (rgba8) uniform image2D colorimg0;
+/* RENDERTARGETS: 3 */
+layout(location = 0) out uvec3 SSR;
 
-in vec2 fragCoord;
+// in vec2 fragCoord; // NOTE: Cannot use fragCoord from vertex stage as it is imprecise
 
 vec3 viewToScreenSpace(vec3 viewPos) {
     vec4 clipPos = gbufferProjection * vec4(viewPos, 1);
@@ -29,22 +31,26 @@ vec3 viewToScreenSpace(vec3 viewPos) {
 }
 
 void main() {
-	
-    // TODONOW: make resolution editable
     // TODONOW: polish and make look good
-    // TODONOW: make into ssr + binary search function
-
-    float depth;
-    vec3 normals = reconstructNormals(fragCoord, depthtex0, depth); // temp
+    vec2 fragCoord = gl_FragCoord.xy*colortex3TexelSize;
     
-    Color.rgb = vec3(0);
+    float depth = texelFetch(depthtex0, ivec2(gl_FragCoord.xy*vec2(viewWidth, viewHeight) * colortex3TexelSize), 0).r; // must multiply screenSize first then divide -> likely cuz floats are imprecise when small
+    
+	vec4 gbuffer1 = texture(colortex2, fragCoord);
+    vec3 normals = mat3(gbufferModelView) * normalsRead(gbuffer1.rg);
+    if (normals.z > 0) {
+        normals.z *= 0;
+        normals = normalize(normals);
+    }
+    
+    SSR.rgb = uvec3(0);
     if (depth >= 1) return;
 
     vec3 startPos = depthToViewPos(fragCoord, depth) + normals*0.1;
     vec3 reflected = normalize(reflect(normalize(startPos), normalize(normals)));
     vec3 endPos = startPos + reflected*maxDist;
 
-    vec3 reflectedColor = vec3(-1);
+    vec2 reflectedCoord = vec2(-1);
     vec3 lastFrag;
 
     for (float i = 0; i < steps; i++) {
@@ -54,32 +60,32 @@ void main() {
         float currentDepth = texture(depthtex0, currentFrag.xy).r;
 
         if (currentFrag.z > currentDepth && currentFrag.z - currentDepth < maxThickness) {
-
             // Binary Search
+            
             vec3 startFrag = lastFrag;
             vec3 endFrag = currentFrag;
             for (float j = 0; j < refineSteps; j++) {
-                vec3 _currentFrag = (startFrag + endFrag)*0.5;
-                float _currentDepth = texture(depthtex0, _currentFrag.xy).r;
+                vec3 BcurrentFrag = (startFrag + endFrag)*0.5;
+                float BcurrentDepth = texture(depthtex0, BcurrentFrag.xy).r;
 
-                if (_currentFrag.z > _currentDepth) {
-                    if (_currentFrag.z - _currentDepth < refineMaxThickness) {
-                        reflectedColor = texture(colortex0, _currentFrag.xy).rgb;
+                if (BcurrentFrag.z > BcurrentDepth) {
+                    if (BcurrentFrag.z - BcurrentDepth < refineMaxThickness) {
+                        reflectedCoord = BcurrentFrag.xy;
                         break; // precise enough so just break
                     } else {
-                        endFrag = _currentFrag;
+                        endFrag = BcurrentFrag;
                     }
                 } else {
-                    startFrag = _currentFrag;
+                    startFrag = BcurrentFrag;
                 }
-                if (j == refineSteps-1 && reflectedColor.x == -1) {
-                    reflectedColor = texture(colortex0, endFrag.xy).rgb;
+                if (j == refineSteps-1 && reflectedCoord.x == -1) {
+                    reflectedCoord = endFrag.xy;
                 }
             }
             break;
         }
         lastFrag = currentFrag;
     }
-
-    Color.rgb += reflectedColor;
+    
+    SSR = writeSSR(reflectedCoord);
 }

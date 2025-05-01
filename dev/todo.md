@@ -4,14 +4,21 @@ It is meant to be a self note, but is **not** private.
 ### To-do:
 - Water
     - SSR
+        - fix the goofy lines across screen when not 1 scale
+        - do sky/ambient reflection in composite instead of deferred, just like ssr
+        - blend reflections opaquly ie translucency doesnt matter
     - water refraction
     - caustics
     - shore foam(? maybe not)
+- make this work on 1.20.1 -> possibly issue with vaUV2
 - fix shadows bing broken when enabling water displacement
     - consolidate the displacement code, so that we can reuse it in shadow.vsh
 - colored + translucent shadows + hardcoded translucent shadows like leaves
 - add colortexx0 HDR (10/10/10/2) and move `skylight` somewhere else like a new metadata buffer
-### To-do Palnned:
+### To-do Planned:
+- Parallax reprojected SSR
+- Make sky non-physically based as it is inflexible. 
+    - Make it artist friendly but still support, top, mid, bottom, sun/moon halo/horizon sky colors -> maybe use preetham's for sunset
 - water blur and underwater blur
 
 ### To-do Later:

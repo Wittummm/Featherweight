@@ -1,7 +1,7 @@
 #include "/snippets/version.glsl"
 
 #include "/common/const.glsl"
-#include "/func/packLightLevel.glsl"
+#include "/func/packing/packLightLevel.glsl"
 #include "/settings/dh_main.glsl"
 
 uniform vec3 cameraPosition;
@@ -65,7 +65,8 @@ uniform vec4 lightColor;
     uniform int dhMaterialId;
 #endif
 
-#include "/lib/pbr.glsl"
+#define YES_NORMALS_WRITE
+#include "/func/packing/encodeNormals.glsl"
 #include "/func/coloring/srgb.glsl"
 
 in vec2 lightmapCoord;
