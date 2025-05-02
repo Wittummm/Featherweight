@@ -2,7 +2,7 @@
 #define encodeNormals_glsl
 
 vec3 reconstructZ(vec2 normals) {
-    return vec3(normals, sqrt(1.0 - clamp(dot(normals, normals), 0, 1)));
+    return vec3(normals, sqrt(1.0 - clamp(dot(normals, normals), 0.001, 1.0)));
 }
 
 #ifdef YES_NORMALS_WRITE

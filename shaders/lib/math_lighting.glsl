@@ -13,6 +13,7 @@
 #include "/settings/shadows.glsl"
 #include "/lib/shadow/shadow0.glsl"
 #include "/func/shading/calcSkyReflection.glsl"
+#include "/lib/material.glsl"
 
 uniform float rain;
 uniform float wetness;
@@ -20,40 +21,6 @@ uniform float wetness;
 const vec3 lightDir = normalize(shadowLightPosition);
 const vec3 upDir = normalize(upPosition);
 const vec3 puddleScale = vec3(PUDDLE_HORIZONTAL_SCALE, PUDDLE_VERTICAL_SCALE,PUDDLE_HORIZONTAL_SCALE);
-
-vec3 playerToViewSpace(vec3 normals) {
-    return mat3(gbufferModelView) * normals;
-    // return (gbufferModelView * vec4((normals + gbufferModelViewInverse[3].xyz).xyz, 1)).xyz;
-}
-
-vec3 viewToPlayerSpace(vec3 normals) {
-    return mat3(gbufferModelViewInverse) * normals;
-}
-
-struct Material {
-    float roughness;
-    vec3 normals; // NOTE!: This is in viewSpace where as gbuffers store normals in playerSpace
-    float porosity; // Not physically based
-    float sss; // Currently unimplemented
-    float emission;
-    float ao; // Currently unsupported
-    float height; // Currently unsupported
-    vec3 f0;
-    float metallic;
-};
-
-// PIN: This parses the gbuffers into actual useable data
-Material Mat(vec3 albedo, vec4 gbuffer0, vec4 gbuffer1) {
-    float roughness = roughnessRead(gbuffer0.r);
-    float reflectance = gbuffer0.g;
-    bool isPorosity = false;
-    float porosity = porosityRead(gbuffer0.b, isPorosity);
-    float emission = emissionRead(gbuffer0.a);
-    // Cannot `eyePlayerSpace -> viewSpace` have to `eyePlayerSpace -> playerSpace -> viewSpace`
-    vec3 normals = playerToViewSpace(normalsRead(gbuffer1.rg));
-
-    return Material(roughness, normals, isPorosity ? porosity : -1, !isPorosity ? porosity : -1, emission,0,0.0, reflectanceRead(reflectance, albedo), getMetallic(reflectance));
-}
 
 //////////////////////////////
 
@@ -78,7 +45,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     float metallic = material.metallic;
     vec3 outDir = -viewDir;
     /////////////////////////////////////////
-    shadow = calcShadow(posWorld - cameraPosition, viewToPlayerSpace(normals));
+    shadow = calcShadow(posWorld - cameraPosition, mat3(gbufferModelViewInverse) * normals);
     // NOTE: color + someStage -> colorSpecular, meaning color in the specular stage, not color of specular
 
     float diffuseFactor = calcDiffuseFactor(color.rgb, lightDir, outDir, normals, roughness);

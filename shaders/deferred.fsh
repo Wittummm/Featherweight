@@ -71,7 +71,7 @@ void main() {
 		bool shouldUpdate = shade(Color, material, lightLevel, viewPos, shadow);
 		if (shouldUpdate) {
 			GBuffer0.r = roughnessWrite(material.roughness);
-			GBuffer1.rg = normalsWrite(viewToPlayerSpace(material.normals));
+			GBuffer1.rg = normalsWrite(mat3(gbufferModelViewInverse) * (material.normals));
 			GBuffer0.g = reflectanceWriteFromF0(material.f0.x);
 		}
 	}
