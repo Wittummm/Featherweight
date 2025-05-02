@@ -9,7 +9,7 @@ Major.Minor.Revision.Patch, pre v1 versions are highly volatile.
  - `main` stable releases
  - `dev` unstable releases
  - `feature-some-feature` for working on features
- - `patch-some-patch` for working on patches
+ - `patch-some-patch` for working on patches (Uncommon unless issue is hard to patch)
 
 ### Change Logs Summary
  - v0.1.0.0 Initial Features, deferred rendering, shadows, sunrays
