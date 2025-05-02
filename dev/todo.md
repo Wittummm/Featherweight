@@ -3,8 +3,11 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - Bloom, cuz im bored
+    - Kawase Blur Bloom
 - Water
     - SSR
+        - SSR should reflect sky properly
+        - Fix ssr reflecting weirdly, like its streching some pixels for some reason -> might just need more steps
         - do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
         - support DH chunks **properly**
     - water refraction

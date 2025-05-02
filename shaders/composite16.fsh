@@ -26,10 +26,9 @@ in vec2 fragCoord;
 const bool colortex0MipmapEnabled = true;
 
 void main() {
+    // TODO: `readSSRLinear` should be edge-retaining, if the value change is too much then it should be limited or not filtered
     // TODO: fade out effect on edge of screen
     // TODO: Learn blurring, then apply actually good blurring here
-    // TODONOW: finalize config
-    // THEN do bloom -> blurring
     
     // blend ssr here
     Color = texture(colortex0, fragCoord); 
@@ -42,7 +41,6 @@ void main() {
         vec3 c0 = textureLod(colortex0, reflectedCoord.xy, floor(blur)).rgb;
         vec3 c1 = textureLod(colortex0, reflectedCoord.xy, ceil(blur)).rgb;
 
-  
         vec3 color = mix(c0, c1, fract(blur));
 
         float depth = textureLod(depthtex0, fragCoord, 0).r;

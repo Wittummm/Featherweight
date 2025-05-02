@@ -46,21 +46,21 @@ vec3 screenToViewSpace(vec3 screenPos) {
 vec3 ssr(vec3 startPos, vec3 endPos) {
     vec3 lastFrag;
 
-    for (float i = 0; i < steps; i++) {
-        vec3 currentFrag = viewToScreenSpace(mix(startPos, endPos, i/(steps-1)));
+    for (float i = 0; i < SSR_STEPS; i++) {
+        vec3 currentFrag = viewToScreenSpace(mix(startPos, endPos, i/(SSR_STEPS-1)));
         if (clamp(currentFrag, 0, 1) != currentFrag) break;
 
         float currentDepth = texture(depthtex0, currentFrag.xy).r;
 
-        if (currentDepth >= 1) {
-            return currentFrag;
-        }
+        // if (currentDepth >= 1) { // This is wrong
+        //     return currentFrag;
+        // }
 
         if (currentFrag.z > currentDepth && currentFrag.z - currentDepth < maxThickness) {
             // Binary Search
             vec3 startFrag = lastFrag;
             vec3 endFrag = currentFrag;
-            for (float j = 0; j < refineSteps; j++) {
+            for (float j = 0; j < SSR_REFINE_STEPS; j++) {
                 vec3 BcurrentFrag = (startFrag + endFrag)*0.5;
                 float BcurrentDepth = texture(depthtex0, BcurrentFrag.xy).r;
 
@@ -74,7 +74,7 @@ vec3 ssr(vec3 startPos, vec3 endPos) {
                 } else {
                     startFrag = BcurrentFrag;
                 }
-                if (j == refineSteps-1) {
+                if (j == SSR_REFINE_STEPS-1) {
                     return endFrag;
                 }
             }
@@ -102,14 +102,13 @@ void main() {
     Material material = Mat(color.rgb, gbuffer0, gbuffer1);
     vec3 normals = material.normals;
     ////////////////////////// 
-    vec3 startPos = depthToViewPos(fragCoord, depth) + normals*0.1;
+    vec3 startPos = depthToViewPos(fragCoord, depth) + normals*0.05;
     vec3 reflected = reflect(normalize(startPos), normals);
-    vec3 endPos = startPos + reflected*maxDist;
+    vec3 endPos = startPos + reflected*ssrDistance;
 
     vec3 hitCoord = ssr(startPos, endPos);
-
     vec3 hitPos = screenToViewSpace(hitCoord);
-    float softness = material.roughness * distance(hitPos, startPos)/maxDist;
+    float softness = material.roughness * distance(hitPos, startPos)/ssrDistance;
 
     SSR = writeSSR(hitCoord.xy, softness);
 }
