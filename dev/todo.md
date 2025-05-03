@@ -2,24 +2,28 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
-- Bloom, cuz im bored
-    - Kawase Blur Bloom
+- SSR
+    - (Composite 15) use `depthtex0 - (depthtex1 - depthtex2)` to isolate all geo BUT without hand
+    - do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
+
+- make this work on 1.20.1 -> possibly issue with vaUV2
+- Buffer Reworking
+    - (?) Add colortexx0 HDR (9/9/9/5) RGB Skylight
+    - Pack Gbuffers into one `RG32UI`(64) buffer
+        - `LOWER_PRECISION_GBUFFERS` -> `RGB16UI`(48) buffer for low precision (default)
 - Water
-    - SSR
-        - SSR should reflect sky properly
-        - Fix ssr reflecting weirdly, like its streching some pixels for some reason -> might just need more steps
-        - do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
-        - support DH chunks **properly**
+    - fix shadows bing broken when enabling water displacement
+        - consolidate the displacement code, so that we can reuse it in shadow.vsh
     - water refraction
     - caustics
     - shore foam(? maybe not)
-- make this work on 1.20.1 -> possibly issue with vaUV2
-- fix shadows bing broken when enabling water displacement
-    - consolidate the displacement code, so that we can reuse it in shadow.vsh
-- colored + translucent shadows + hardcoded translucent shadows like leaves
-- add colortexx0 HDR (10/10/10/2) and move `skylight` somewhere else like a new metadata buffer
+- Colored + translucent shadows + hardcoded translucent shadows like leaves
+
+
 ### To-do Planned:
-- Parallax reprojected SSR
+- SSR
+    - Parallax Reprojection
+    - Trace in Screen Space
 - Make sky non-physically based as it is inflexible. 
     - Make it artist friendly but still support, top, mid, bottom, sun/moon halo/horizon sky colors -> maybe use preetham's for sunset
 - water blur and underwater blur

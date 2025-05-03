@@ -52,16 +52,14 @@ vec3 ssr(vec3 startPos, vec3 endPos) {
 
         float currentDepth = texture(depthtex0, currentFrag.xy).r;
 
-        // if (currentDepth >= 1) { // This is wrong
-        //     return currentFrag;
-        // }
-
         if (currentFrag.z > currentDepth && currentFrag.z - currentDepth < maxThickness) {
             // Binary Search
+            // hit = currentFrag;
+            
             vec3 startFrag = lastFrag;
             vec3 endFrag = currentFrag;
             for (float j = 0; j < SSR_REFINE_STEPS; j++) {
-                vec3 BcurrentFrag = (startFrag + endFrag)*0.5;
+                vec3 BcurrentFrag = j == 0 ? endFrag : (startFrag + endFrag)*0.5;
                 float BcurrentDepth = texture(depthtex0, BcurrentFrag.xy).r;
 
                 if (BcurrentFrag.z > BcurrentDepth) {
@@ -74,9 +72,9 @@ vec3 ssr(vec3 startPos, vec3 endPos) {
                 } else {
                     startFrag = BcurrentFrag;
                 }
-                if (j == SSR_REFINE_STEPS-1) {
-                    return endFrag;
-                }
+                // if (j == SSR_REFINE_STEPS-1) {
+                //     return endFrag;
+                // }
             }
             break;
         }
@@ -86,29 +84,54 @@ vec3 ssr(vec3 startPos, vec3 endPos) {
     return vec3(-1);
 }
 
+vec3 reconstructNormalsSSR(vec2 coord, sampler2D depthtex, out float depth) {
+    vec2 resolution = vec2(textureSize(depthtex, 0));
+    vec2 oneOverRes = 1.0/resolution;
+
+    vec4 depths = textureGather(depthtex, coord);
+    vec3 normal0 = reconstructNormals(coord + vec2(0, oneOverRes.y), depths.x);
+    vec3 normal1 = reconstructNormals(coord + oneOverRes, depths.y);
+    vec3 normal2 = reconstructNormals(coord + vec2(oneOverRes.x, 0), depths.z);
+    vec3 normal3 = reconstructNormals(coord, depths.w);
+
+    depth = (depths.x + depths.y + depths.z + depths.w)*0.25;
+
+    return (normal0 + normal1 + normal2 + normal3)*0.25;
+}
+
 void main() {
     vec2 fragCoord = gl_FragCoord.xy*colortex3TexelSize;
     ivec2 pixelCoord = ivec2(fragCoord*vec2(viewWidth, viewHeight));
-    
-    float depth = texelFetch(depthtex0, pixelCoord, 0).r;
-    
+
+    #if SSR_NORMAL_STRENGTH < 100
+        float depth;
+        vec3 normalsImplied = normalize(reconstructNormalsSSR(pixelCoord/vec2(viewWidth, viewHeight), depthtex0, depth));
+    #else
+        float depth = texelFetch(depthtex0, pixelCoord, 0).r;
+    #endif
+
     SSR = 0;
     if (depth >= 1) return;
     /////  PBR  /////
     vec4 color = texelFetch(colortex0, pixelCoord, 0);
     vec4 gbuffer0 = texelFetch(colortex1, pixelCoord, 0);
 	vec4 gbuffer1 = texelFetch(colortex2, pixelCoord, 0);
-
     Material material = Mat(color.rgb, gbuffer0, gbuffer1);
+
+    #if SSR_NORMAL_STRENGTH < 100
+    vec3 normals = mix(normalsImplied, material.normals, 
+        max(ssrNormalStrength, step(dot(normalsImplied, material.normals), 0.99))
+    );
+    #else
     vec3 normals = material.normals;
+    #endif
     ////////////////////////// 
     vec3 startPos = depthToViewPos(fragCoord, depth) + normals*0.05;
     vec3 reflected = reflect(normalize(startPos), normals);
     vec3 endPos = startPos + reflected*ssrDistance;
 
     vec3 hitCoord = ssr(startPos, endPos);
-    vec3 hitPos = screenToViewSpace(hitCoord);
-    float softness = material.roughness * distance(hitPos, startPos)/ssrDistance;
+    float dist = hitCoord.x == -1 ? 0.0 : max(distance(screenToViewSpace(hitCoord), startPos)/ssrDistance, 0.004); // Need to clamp since `0` is used as invalid and valid ones should never be invalid
 
-    SSR = writeSSR(hitCoord.xy, softness);
+    SSR = writeSSR(hitCoord.xy, min(dist, 1));
 }

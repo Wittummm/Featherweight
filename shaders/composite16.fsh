@@ -10,6 +10,7 @@ uniform mat3 normalMatrix;
 #include "/func/shading/specular.glsl"
 #include "/lib/material.glsl"
 #include "/func/depthToViewPos.glsl"
+#include "/func/misc/reconstructNormals.glsl"
 
 uniform sampler2D depthtex0;
 uniform sampler2D colortex0;
@@ -26,27 +27,25 @@ in vec2 fragCoord;
 const bool colortex0MipmapEnabled = true;
 
 void main() {
-    // TODO: `readSSRLinear` should be edge-retaining, if the value change is too much then it should be limited or not filtered
-    // TODO: fade out effect on edge of screen
-    // TODO: Learn blurring, then apply actually good blurring here
-    
-    // blend ssr here
     Color = texture(colortex0, fragCoord); 
 
-    vec3 reflectedCoord = readSSRLinear(fragCoord); // I thought doing deferred resolve would slightly improve the quality BUT DAMN its sooo much better especially with linear filtering
+    #if SSR_RESOUTION >= SSR_LINEAR_TURNOFF_THRESHOLD
+        vec3 hitCoord = readSSR(fragCoord);
+    #else
+        vec3 hitCoord = readSSRLinear(fragCoord); // I thought doing deferred resolve would slightly improve the quality BUT DAMN its sooo much better especially with linear filtering
+    #endif
 
-    if (reflectedCoord.x > 0 || reflectedCoord.y > 0) {
-
-        float blur = reflectedCoord.z*20;
-        vec3 c0 = textureLod(colortex0, reflectedCoord.xy, floor(blur)).rgb;
-        vec3 c1 = textureLod(colortex0, reflectedCoord.xy, ceil(blur)).rgb;
-
-        vec3 color = mix(c0, c1, fract(blur));
-
+    if (hitCoord.z > 0) {
         float depth = textureLod(depthtex0, fragCoord, 0).r;
         vec4 gbuffer0 = textureLod(colortex1, fragCoord, 0);
         vec4 gbuffer1 = textureLod(colortex2, fragCoord, 0);
         Material material = Mat(Color.rgb, gbuffer0, gbuffer1);
+
+        float blur = 0.5 * hitCoord.z*ssrDistance*material.roughness;
+        vec3 c0 = textureLod(colortex0, hitCoord.xy, floor(blur)).rgb; // TODOEVENTUALLY: Use a better but simple blur, rather than mipmap levels
+        vec3 c1 = textureLod(colortex0, hitCoord.xy, ceil(blur)).rgb;
+
+        vec3 color = mix(c0, c1, fract(blur));
 
         float NdotV = max(dot(-normalize(depthToViewPos(fragCoord, depth)), material.normals), 0);
         vec3 fresnel = clamp(fresnelSchlick(NdotV, material.f0), 0, 1);

@@ -10,7 +10,7 @@ const vec2 colortex3TexelSize = 1.0/colortex3Size;
 uint writeSSR(vec2 _coord, float a) {
     uvec2 coord = uvec2(_coord.xy*4095.0);
 
-    return coord.x | (coord.y << 12) | (uint(a*255) << 24);
+    return coord.x | (coord.y << 12) | (uint(a*255.0) << 24);
 }
 
 vec3 readSSR(uint data) {
@@ -37,22 +37,14 @@ vec3 readSSRLinear(vec2 fragCoord) {
     vec3 v2 = readSSR(data.z); // 1 0
     vec3 v3 = readSSR(data.w); // 0 0
 
-    float x0 = mix(mix(frac.x
-        , 0, step(v3.x, 0)*step(v3.y, 0) )
-        , 1, step(v2.x, 0)*step(v2.y, 0) );
+    float x0 = frac.x + (v0.x - v1.x)*SHARPNESS;
+    float x1 = frac.x + (v3.x - v2.x)*SHARPNESS;
 
-    float x1 = mix(mix(frac.x
-        , 0, step(v0.x, 0)*step(v0.y, 0) )
-        , 1, step(v1.x, 0)*step(v1.y, 0) );
+    vec3 m = mix(v0, v1, clamp(x0, 0, 1));
+    vec3 n = mix(v3, v2, clamp(x1, 0, 1));
 
-    vec3 m = mix(v3, v2, x0);
-    vec3 n = mix(v0, v1, x1);
-
-    vec3 result = mix(m, n, 
-        mix(mix(frac.y
-        , 0, step(m.x, 0)*step(m.y, 0) )
-        , 1, step(n.x, 0)*step(n.y, 0) )
-    );
+    float y0 = frac.y + (n.y - m.y)*SHARPNESS;
+    vec3 result = mix(n, m, clamp(y0, 0, 1));
 
     return result;
 }
