@@ -3,8 +3,9 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - SSR
-    - Maybe reinforce with normals, must face in same directio ie dot > 0 to actually hit
-    - Support dh reflections too
+    - fix the bugs introduced somehow recently: 
+        - dh water is black at certain point: seems to be correlated to render distance, higher vanilla render distance makes the clipping distance further. issue is visible at 2 chunk render dist
+        - dh chunks causes ghosting
     - Do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
 
 - Buffer Reworking
@@ -21,6 +22,7 @@ It is meant to be a self note, but is **not** private.
     - caustics
     - shore foam(? maybe not)
 - Colored + translucent shadows + hardcoded translucent shadows like leaves
+- DH shadows support(1.20.1?)
 
 
 ### To-do Planned:

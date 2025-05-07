@@ -9,17 +9,16 @@ uniform mat3 normalMatrix;
 #include "/func/buffers/colortex3.glsl"
 #include "/func/shading/specular.glsl"
 #include "/lib/material.glsl"
-#include "/func/depthToViewPos.glsl"
 #include "/func/misc/reconstructNormals.glsl"
+#include "/settings/atmosphere.glsl"
+#include "/snippets/common_ssr.glsl"
 
-uniform sampler2D depthtex0;
 uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform float viewWidth;
 uniform float viewHeight;
 uniform float aspectRatio;
-uniform mat4 gbufferProjection;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 Color;
@@ -28,17 +27,6 @@ in vec2 fragCoord;
 
 const bool colortex0MipmapEnabled = true;
 
-vec3 viewToScreenSpace(vec3 viewPos) {
-    vec4 clipPos = gbufferProjection * vec4(viewPos, 1);
-    vec3 screenPos = (clipPos.xyz / clipPos.w)*0.5 + 0.5;
-    return screenPos;
-}
-
-vec3 screenToViewSpace(vec3 screenPos) {
-    vec4 clipPos = gbufferProjectionInverse * vec4(screenPos * 2.0 - 1.0, 1);
-    return clipPos.xyz/clipPos.w;
-}
-
 // NOTE: SSR Pixelization likely costs more than no pixelization
 void main() {
     Color = texture(colortex0, fragCoord); 
@@ -46,13 +34,11 @@ void main() {
     #if SSR_PIXELIZATION == 0
         vec2 fragUV = fragCoord;
     #else
-        float depth = texture(depthtex0, fragCoord).r;
-        vec3 fragView = screenToViewSpace(vec3(fragCoord, depth)); // prolly need depth
+        vec3 fragView = sampleViewPos(fragCoord);
         vec3 fragPlayer = (gbufferModelViewInverse * vec4(fragView, 1)).xyz;
         fragPlayer = pixelize(fragPlayer);
         fragView = (gbufferModelView * vec4(fragPlayer, 1)).xyz;
 
-        vec3 viewDir = normalize(fragView);
         vec2 fragUV = viewToScreenSpace(fragView).xy;
     #endif
 
@@ -64,15 +50,15 @@ void main() {
 
     if (hitCoord.z > 0) {
         #if SSR_PIXELIZATION == 0
-            float depth = texture(depthtex0, fragUV).r;
-            vec3 viewDir = normalize(depthToViewPos(fragUV, depth));
+            vec3 fragView = sampleViewPos(fragUV);
         #endif
+        vec3 viewDir = normalize(fragView);
 
         vec4 gbuffer0 = textureLod(colortex1, fragCoord, 0); // Using `fragCoord` cuz pixelized `fragUV` seems to jitter, not sure if using `fragCoord` is correct tho
         vec4 gbuffer1 = textureLod(colortex2, fragCoord, 0); // Using `fragCoord` cuz pixelized `fragUV` seems to jitter, not sure if using `fragCoord` is correct tho
         Material material = Mat(Color.rgb, gbuffer0, gbuffer1);
         //////////////
-        float blur = 0.4 * hitCoord.z*SSR_MAX_DISTANCE*material.roughness;
+        float blur = min(6, SSR_BLUR_STRENGTH * hitCoord.z*SSR_MAX_DISTANCE*material.roughness);
         vec3 c0 = textureLod(colortex0, hitCoord.xy, floor(blur)).rgb; // TODOEVENTUALLY: Use a better but simple blur, rather than mipmap levels
         vec3 c1 = textureLod(colortex0, hitCoord.xy, ceil(blur)).rgb;
 
@@ -93,6 +79,7 @@ void main() {
         vec3 fresnel = clamp(fresnelSchlick(NdotV, material.f0), 0, 1);
         /////////////////
 
+        reflectionFade *= (1-getFogFactor(length(fragView), far));
         Color.rgb = mix(Color.rgb, color, fresnel*reflectionFade);
     }
 }

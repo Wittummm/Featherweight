@@ -33,4 +33,6 @@ Major.Minor.Revision.Patch, pre v1 versions are highly volatile.
     - Improved the filtering on valid-invalid ssr pixels
     - Mitigated streaks. Cause: ssr depth imprecision. Solution: bias it by a bit
     - Changed to trace in screen space instead of view space for better efficiency
+ - v0.7.6.0 SSR
+    - SSR Dh support
 

@@ -10,7 +10,7 @@
 const float ssrNormalStrengthMax = SSR_NORMAL_STRENGTH/100.0;
 
 // Extras
-#define SSR_PIXELIZATION -100 // [-400 -300 -200 -100 -50 0 8 16 32 64 128 256] // CODE: sahj1283
+#define SSR_PIXELIZATION -200 // [-400 -300 -200 -100 -50 0 8 16 32 64 128 256] // CODE: sahj1283
 const float ssrPixelization = (SSR_PIXELIZATION < 0) ? PIXELIZATION * abs(SSR_PIXELIZATION) * 0.01 : SSR_PIXELIZATION;
 const float ssrPixelizationTexelSize = 1.0/ssrPixelization; 
 #undef pixelize 
@@ -31,6 +31,7 @@ const float bias = 0.5; // TODOMAYBE: Ideally shouldnt have a constant bias, per
 #define SSR_EDGE_FADE_END_MAX 0.1
 #define SSR_EDGE_FADE_START_MIN 0.0
 #define SSR_EDGE_FADE_END_MIN 0.013
-
+#define SSR_BLUR_STRENGTH 0.5
+// Technical
 #define SHARPNESS 10 // Sharpness of the naive edge retaining algo of linear filtering
-//
+// EXTRA-SETTINGS-END

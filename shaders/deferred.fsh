@@ -12,6 +12,7 @@ uniform sampler2D colortex0;
 uniform float sunAngle;
 uniform vec4 lightColor;
 uniform sampler2D depthtex1;
+uniform vec2 mc_Entity;
 
 #include "/common/const.glsl"
 #include "/lib/pbr.glsl"
@@ -27,8 +28,6 @@ uniform sampler2D depthtex1;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform vec3 skyColor;
-uniform float near;
-uniform float far;
 #ifdef DISTANT_HORIZONS
 	uniform sampler2D dhDepthTex1;
 	uniform mat4 dhProjectionInverse;
@@ -50,7 +49,7 @@ void main() {
 	float depth = texture(depthtex1, fragCoord).r;
 	// DUPLICATE CODE: SDKH213
 	#ifdef DISTANT_HORIZONS
-		float dhDepth = texture(dhDepthTex1, fragCoord).r;
+		float dhDepth = texture(dhDepthTex1, fragCoord).r; // CODE: 8dh91 This causes "ghosting" as `dhDepthTex1` seems to be delayed(or maybe projected wrong)
 		isSky = depth >= 1 && dhDepth >= 1;
 		vec3 viewPos = depth < 1 ? depthToViewPos(fragCoord, depth) : depthToViewPos(fragCoord, dhDepth, dhProjectionInverse);
 	#else

@@ -1,4 +1,4 @@
-// Required Uniforms: shadowModelView, shadowProjection, shadowLightPosition, gbufferModelViewInverse
+// Required Uniforms: mc_Entity, shadowModelView, shadowProjection, shadowLightPosition, gbufferModelViewInverse
 #include "/settings/main.glsl"
 #include "/settings/lighting.glsl"
 #include "/settings/atmosphere.glsl"
@@ -67,7 +67,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris
     */
-    if (wetness > 0.001) { // TODO: Check if is not fluid, cuz fluids cant get wet + that looks weird
+    if (wetness > 0.001 && mc_Entity.y == 1) {
         float upness = dot(normals, upDir);
         float skyExposure = clamp(smoothstep(PUDDLE_EXPOSURE_MIN, PUDDLE_EXPOSURE_MAX, skylight), 0, 1);
         

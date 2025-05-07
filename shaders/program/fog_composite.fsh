@@ -77,7 +77,7 @@ void main() {
 		#else
 			float renderDist = far;
 		#endif
-		float fogFactor = min(smoothstep(FOG_START*renderDist, FOG_END*renderDist, fragDist) * FOG_DENSITY, 1);
+		float fogFactor = getFogFactor(fragDist, renderDist);
 		if (fogFactor > 0) {
 			vec3 fogCoord = (mat3(gbufferModelView) * 
 				normalize((mat3(gbufferModelViewInverse)*viewPos*vec3(1,0,1))) 

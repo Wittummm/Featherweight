@@ -5,8 +5,7 @@
 #include "/settings/dh_main.glsl"
 
 uniform vec3 cameraPosition;
-uniform float near;
-uniform float far;
+uniform float renderDistance;
 uniform float viewWidth;
 uniform float viewHeight;
 uniform sampler2D lightmap;
@@ -40,9 +39,8 @@ uniform vec4 lightColor;
 #include "/settings/pbr.glsl"
 #include "/func/depthToViewPos.glsl"
 
-#include "/func/misc/linearizeDepth.glsl"
-// TEMPTMEP
 #ifdef FORWARD
+    uniform vec2 mc_Entity;
     #include "/lib/math_lighting.glsl"
     #include "/func/shading/calcWater.glsl"
     uniform sampler2D depthtex1;
@@ -90,12 +88,12 @@ void main() {
     #ifdef DISTANT_HORIZONS
         vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
         float distToPlayer = length(posPlayer);
-        float fade = clamp(smoothstep(DH_FADE_START*far, DH_FADE_END*far, distToPlayer), 0, 1);
+        float fade = clamp(smoothstep(DH_FADE_START*renderDistance, DH_FADE_END*renderDistance, distToPlayer), 0, 1);
 
         #if DH_FADE_DITHER > 0
             // Only DH chunks need dithering when using blending mode
             #if (DH_FADE_BLENDING == 2 && defined DISTANT_HORIZONS_SHADER) || DH_FADE_BLENDING == 1
-                if (fadeDH(length(posPlayer), far)) {
+                if (fadeDH(length(posPlayer), renderDistance)) {
                     discard;
                     return;
                 }
