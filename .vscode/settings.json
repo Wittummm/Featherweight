@@ -5,9 +5,6 @@
         "**/.hg": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
-        "Featherweight/shaders/composite10.fsh": true,
-        "Featherweight/shaders/composite99.fsh": true,
-        "Featherweight/shaders/composite99.vsh": true,
         "shaders/gbuffers_basic.vsh": true,
         "shaders/gbuffers_entities.vsh": true,
         "shaders/gbuffers_skybasic.vsh": true,
@@ -23,7 +20,6 @@
         "shaders/composite99.fsh": true,
         "shaders/composite1.vsh": true,
         "shaders/composite99.vsh": true,
-        "shaders/deferred.vsh": true,
         "shaders/composite1.fsh": true,
         "shaders/composite10.fsh": true,
         "shaders/composite10.vsh": true,
@@ -44,12 +40,12 @@
         "shaders/shadow_cutout.fsh": true,
         "shaders/shadow_cutout.vsh": true,
         "shaders/shadow.fsh": true,
-        "shaders/shadow.vsh": true
+        "shaders/shadow.vsh": true,
+        "shaders/deferred.vsh": true,
+        ".github": true,
+        ".vscode": true
     },
     "hide-files.files": [
-        "Featherweight/shaders/composite10.fsh",
-        "Featherweight/shaders/composite99.fsh",
-        "Featherweight/shaders/composite99.vsh",
         "shaders/gbuffers_basic.vsh",
         "shaders/gbuffers_entities.vsh",
         "shaders/gbuffers_skybasic.vsh",
@@ -65,7 +61,6 @@
         "shaders/composite99.fsh",
         "shaders/composite1.vsh",
         "shaders/composite99.vsh",
-        "shaders/deferred.vsh",
         "shaders/composite1.fsh",
         "shaders/composite10.fsh",
         "shaders/composite10.vsh",
@@ -86,6 +81,9 @@
         "shaders/shadow_cutout.fsh",
         "shaders/shadow_cutout.vsh",
         "shaders/shadow.fsh",
-        "shaders/shadow.vsh"
+        "shaders/shadow.vsh",
+        "shaders/deferred.vsh",
+        ".github",
+        ".vscode"
     ]
 }

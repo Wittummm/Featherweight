@@ -7,7 +7,7 @@ vec3 calcWater(in vec3 color, vec4 scatterColor, float waterDepth, float LdotV) 
     float scatterAmount = 1.0 - exp2(-waterDepth * scatterColor.a);
 
     vec3 inScattering = phase * scatterAmount * scatterColor.rgb; 
-    vec3 transmittance = pow(vec3(10), -waterDepth*waterConcentration*waterAbsorption);
+    vec3 transmittance = exp2(-waterDepth*waterConcentration*waterAbsorption);
 
     color = color*transmittance + transmittance*inScattering;
     return color;

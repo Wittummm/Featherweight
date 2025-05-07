@@ -2,10 +2,13 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
+- Actually Fix dh blending now
+
 - SSR
     - Do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
 - Water
     - Make water also scatter skylight(attenuates based on if sun is directly above)
+    - (Might defer to do later) Make shadows on water be softer than on solids(when pcf/pcss/non-hard shadows enabled)
 - Fix/Check if Fog works properly with translucents(rain, glass, etc) as it does not have depth
     - perhaps render fog in `shade()`(math_lighting.glsl) so it renders forward and deferred instead of in composite
 - change the release zip name `Featherweight` to `§6§lFeatherweight§r§r` (gold)

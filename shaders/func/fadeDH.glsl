@@ -30,7 +30,7 @@ bool fadeDH(float fadeOut) {
         // Creates a TON of branching, not ideal for performance
         if (fadeOut >= 0.9999 || r2(gl_FragCoord.xy) < fadeOut) {
             return true;
-        } 
+        }
     #endif
     return false;
 }

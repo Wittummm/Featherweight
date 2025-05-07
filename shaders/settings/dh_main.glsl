@@ -5,7 +5,7 @@
 #define DH_FADE_END 1 // [0.5 0.6 0.7 0.7 0.8 0.9 1]
 #define DH_FADE_DITHER 4 // [Off 2 4 8] {Off Dither2 Dither4 Dither8}
 
-#ifdef MC_GL_ARB_shader_image_load_store
+#ifdef IRIS_FEATURE_CUSTOM_IMAGES
     // Blending requires images
     #define DH_FADE_BLENDING 2 // [Off 1 2] {Off Dither Blend}
 #else

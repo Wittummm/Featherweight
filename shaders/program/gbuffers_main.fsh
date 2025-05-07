@@ -8,7 +8,6 @@ uniform vec3 cameraPosition;
 uniform float renderDistance;
 uniform float viewWidth;
 uniform float viewHeight;
-uniform sampler2D lightmap;
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
 uniform bool isEyeUnderwater;
@@ -215,6 +214,7 @@ void main() {
 
             float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
             Color.rgb = calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
+            // Color.rgb = vec3(waterDepth)*0.1; // TODONOW: fix the depth at the blending boundary being "wrong"
         }
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));

@@ -100,9 +100,3 @@ void writeMaterialToGbuffer(Material material, inout vec4 GBuffer0, inout vec4 G
     GBuffer1.rg = normalsWrite(mat3(gbufferModelViewInverse) * (material.normals));
     GBuffer0.g = reflectanceWriteFromF0(material.f0.x);
 }
-
-// REMOVAL: Unused so commented out, if unused for too long then remove this - 2025/28/4
-// bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posView) {
-//     float shadow;
-//     return shade(color, material, lightLevel, posView, shadow);
-// }

@@ -11,9 +11,9 @@ Bugs/Limitations:
 #include "/common/shader.glsl"
 //
 
-#define SUNRAYS_STRENGTH 1 // [1]
-#define SUNRAYS_SPREAD 1 // [1]
-#define SUNRAYS_ORIGIN_SIZE 1 // [1] 
+#define SUNRAYS_STRENGTH 1.5 // [0.5 0.75 1 1.25 1.5 1.75 2 2.5]
+#define SUNRAYS_SPREAD 1 // [0.5 0.75 1 1.25 1.5]
+#define SUNRAYS_ORIGIN_SIZE 1 // [0.75 1 1.25 1.5] 
 
 uniform float sunraysStrength;
 uniform float sunraysSpread; 
@@ -68,7 +68,9 @@ layout(location = 0) out vec4 Color;
 const vec2 applyAspectRatio = vec2(aspectRatio, 1);
 
 float sampleDepth0(vec2 samplePos) {
-    float depth = textureLod(depthtex0, samplePos, 0).r;
+    vec4 depths = textureGather(depthtex0, samplePos);
+    float depth = min(depths.x, min(depths.y, min(depths.z, depths.w))); // Soft, less streaky, less flickerly than naive sampling, multi-tap would be nicer but probably overkill
+
     #ifdef DISTANT_HORIZONS
         if (depth < 1) { return depth; }
         else { return textureLod(dhDepthTex0, samplePos, 0).r; }
@@ -78,7 +80,9 @@ float sampleDepth0(vec2 samplePos) {
 }
 
 float sampleDepth1(vec2 samplePos) {
-    float depth = textureLod(depthtex1, samplePos, 0).r;
+    vec4 depths = textureGather(depthtex1, samplePos);
+    float depth = min(depths.x, min(depths.y, min(depths.z, depths.w))); // Soft, less streaky, less flickerly than naive sampling, multi-tap would be nicer but probably overkill
+
     #ifdef DISTANT_HORIZONS
         if (depth < 1) { return depth; }
         else { return textureLod(dhDepthTex1, samplePos, 0).r; }

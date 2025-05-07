@@ -2,6 +2,7 @@ uniform float alphaTestRef = 0.1;
 const int noiseTextureResolution = 256;
 const float wetnessHalflife = 50.0;
 const float centerDepthHalflife = 2.0;
+const float shadowDistanceRenderMul = 1;
 
 #define PI 3.14159265358979323846264338327950288419716939937510
 #define ONE_OVER_PI 0.3183098861837907
