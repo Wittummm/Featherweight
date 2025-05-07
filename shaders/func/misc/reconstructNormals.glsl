@@ -12,15 +12,20 @@ vec3 reconstructNormals(vec2 coord, sampler2D depthtex, out float depth) {
     vec2 resolution = vec2(textureSize(depthtex, 0));
     vec2 oneOverRes = 1.0/resolution;
 
-    vec4 depths = textureGather(depthtex, floor(coord*resolution)*oneOverRes);
-    vec3 normal0 = reconstructNormals(coord + vec2(0, oneOverRes.y), depths.x);
-    vec3 normal1 = reconstructNormals(coord + oneOverRes, depths.y);
-    vec3 normal2 = reconstructNormals(coord + vec2(oneOverRes.x, 0), depths.z);
-    vec3 normal3 = reconstructNormals(coord, depths.w);
-
+    vec2 pixelCoord = ceil(coord*resolution)*oneOverRes;
+    vec4 depths = textureGather(depthtex, pixelCoord);
     depth = (depths.x + depths.y + depths.z + depths.w)*0.25;
 
-    return (normal0 + normal1 + normal2 + normal3)*0.25;
+    // x y
+    // w z
+    vec3 p = depthToViewPos(pixelCoord, depths.w);
+    vec3 p0 = depthToViewPos(pixelCoord + vec2(0, oneOverRes.y), depths.x);
+    vec3 p3 = depthToViewPos(pixelCoord + vec2(oneOverRes.x, 0), depths.z);
+
+    vec3 dx = p0 - p;
+    vec3 dy = p3 - p;
+
+    return normalize(cross(dy, dx));
 }
 
 vec3 reconstructNormals(vec2 coord, sampler2D depthtex) {

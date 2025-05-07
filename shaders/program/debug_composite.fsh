@@ -6,6 +6,14 @@ uniform mat4 gbufferModelViewInverse;
 #include "/settings/debug.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/lib/pbr.glsl"
+#if _SHOW_FRAME_TIME == 1
+#include "/lib/text_renderer.glsl"
+uniform float frameTimeSmooth;
+#endif
+#if _SHOW_SSR != Off
+#include "/settings/screen_space_reflections.glsl"
+#include "/func/buffers/colortex3.glsl"
+#endif
 
 uniform float aspectRatio;
 uniform sampler2D colortex0;
@@ -53,6 +61,7 @@ bool clip(ivec2 coord) {
 }
 
 void main() {
+    vec2 pixelSize = 1/vec2(viewWidth,viewHeight);
     ivec2 coord = ivec2(floor(fragCoord*vec2(viewWidth,viewHeight)));
     ivec2 squareCoord = ivec2(coord * vec2(aspectRatio, 1));
     vec4 color = texture(colortex0, fragCoord);
@@ -97,4 +106,32 @@ void main() {
 
     ivec2 J = moveTo(_SHOW_POSITION, coord);
     if (clip(J)) { Color.rgb = depthToViewPos(J, texelFetch(depthtex0, J, 0).r); }
+
+    #if _SHOW_SSR != Off && SSR_ENABLED == 1
+        ivec2 K = moveTo(_SHOW_SSR, coord);
+        if (clip(K)) { 
+            #if SSR_RESOUTION >= SSR_LINEAR_TURNOFF_THRESHOLD || _SHOW_SSR_FILTERING == 0
+                vec3 hitCoord = readSSR(K*pixelSize);
+            #elif SSR_RESOUTION < SSR_LINEAR_TURNOFF_THRESHOLD || _SHOW_SSR_FILTERING == 1
+                vec3 hitCoord = readSSRLinear(K*pixelSize); 
+            #endif
+            
+            Color.rgb = vec3(0);
+            if (hitCoord.z > 0) {
+                #if _SHOW_SSR_MODE == 0
+                    Color.rgb = texture(colortex0, hitCoord.xy).rgb; 
+                #elif _SHOW_SSR_MODE == 1
+                    Color.rgb = vec3(hitCoord.xy, 0); 
+                #elif _SHOW_SSR_MODE == 2
+                    Color.rgb = vec3(hitCoord.z); 
+                #endif
+            }
+        }
+    #endif
+
+    #if _SHOW_FRAME_TIME == 1
+        beginText(ivec2(gl_FragCoord.xy*0.5), ivec2(0, viewHeight*0.5));
+        printFloat(frameTimeSmooth*1000); printString((_space, _m, _s));
+        endText(Color.rgb);
+    #endif
 }

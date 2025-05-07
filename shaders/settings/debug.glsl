@@ -10,6 +10,7 @@ Debug settings start with "_"
 */
 
 #define DEBUG 1 // [0 1] 
+#define _SHOW_FRAME_TIME 0 // [0 1]
 
 #define Off -100
 
@@ -36,3 +37,8 @@ Debug settings start with "_"
 #define _SHOW_NORMALS Off // [Off Fullscreen TopLeft TopRight BottomLeft BottomRight]
 #define _SHOW_AO Off // [Off Fullscreen TopLeft TopRight BottomLeft BottomRight]
 #define _SHOW_HEIGHT Off // [Off Fullscreen TopLeft TopRight BottomLeft BottomRight]
+
+// SSR
+#define _SHOW_SSR Off // [Off Fullscreen TopLeft TopRight BottomLeft BottomRight]
+#define _SHOW_SSR_MODE 0 // [0 1 2] {Color Coord Distanace}
+#define _SHOW_SSR_FILTERING -1 // [-1 0 1] {Auto Nearest Linear}

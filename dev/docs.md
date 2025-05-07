@@ -32,6 +32,11 @@ Search for these keywords to see what extra features you can toggle, most are di
     - "REMOVAL" to remove for some reasoon
   - **Notes**
     - Put "#define DISTANT_HORIZONS_SHADER" in the top of DH shader stages
+    - Pixelization Overrides syntax:
+      - Negative refers to relative scaling; Example `75` for 0.75 scale
+      - Positive refers to absolute scaling; Example `32` for 32 pixels per block
+      - `0` is unused
+      - Example, CODE: sahj1283
 
 ### Buffers & Storage
  - colortex0, render buffer
@@ -57,3 +62,11 @@ Search for these keywords to see what extra features you can toggle, most are di
     - `/` is used to go into deeper paths
     - `#` usually refers to page or header
     - `1.0` a float-like text usually refers to chapters, writing as integer alone is not recommended and there should always be a decimal even if it is zero.
+
+### Code Snippets
+pixelization scaling ```
+  const float ssrPixelization = (SSR_PIXELIZATION < 0) ? PIXELIZATION * abs(SSR_PIXELIZATION) * 0.01 : SSR_PIXELIZATION;
+  const float ssrPixelizationTexelSize = 1.0/ssrPixelization; 
+  #undef pixelize 
+  #define pixelize(pos) _pixelize(pos, ssrPixelization, ssrPixelizationTexelSize); 
+```

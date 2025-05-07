@@ -148,6 +148,7 @@ void main() {
         }
     #endif
 
+    // Encode PBR data to buffers here
     GBuffer0 = texture(specular, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
     GBuffer1 = texture(normals, texCoord, -6); // TODOEVENTUALLY: should actually fix mipmaps
     
@@ -155,7 +156,7 @@ void main() {
     GBuffer1.rg = normalsWrite(vertNormal, tangent, reconstructZ(normal*NORMAL_STRENGTH));
 #endif
     // NOTE: Ideally we should disable alpha blending for GBuffer0 and 1 OR pack it into 32 bit buffer
-    GBuffer0.a = fract(GBuffer0.a);
+    GBuffer0.a = GBuffer0.a == 0 ? 1 : GBuffer0.a;
     
     // "Alpha" blend vanilla chunks to dh
     #if defined DISTANT_HORIZONS && !defined DISTANT_HORIZONS_SHADER && DH_FADE_BLENDING == 2
@@ -172,7 +173,8 @@ void main() {
     #ifdef FORWARD
         Material material = Mat(Color.rgb, GBuffer0, GBuffer1);
         float shadow = 0;
-        shade(Color, material, lightmapCoord, vertPosition, shadow);
+        bool shouldUpdate = shade(Color, material, lightmapCoord, vertPosition, shadow);
+        if (shouldUpdate) writeMaterialToGbuffer(material, GBuffer0, GBuffer1);
 
         #ifdef DISTANT_HORIZONS_SHADER
             // Below is a bad solution and hacky, should not hardcode the alpha, color, etc

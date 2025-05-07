@@ -3,17 +3,20 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - SSR
-    - (Composite 15) use `depthtex0 - (depthtex1 - depthtex2)` to isolate all geo BUT without hand
-    - do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
+    - Maybe reinforce with normals, must face in same directio ie dot > 0 to actually hit
+    - Support dh reflections too
+    - Do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
 
-- make this work on 1.20.1 -> possibly issue with vaUV2
 - Buffer Reworking
     - (?) Add colortexx0 HDR (9/9/9/5) RGB Skylight
     - Pack Gbuffers into one `RG32UI`(64) buffer
         - `LOWER_PRECISION_GBUFFERS` -> `RGB16UI`(48) buffer for low precision (default)
 - Water
+    - use hardcoded water colors per biome, dont do auto color
+    - use a small scale noise layer the scrolls vertically to add movement to water puddles
     - fix shadows bing broken when enabling water displacement
         - consolidate the displacement code, so that we can reuse it in shadow.vsh
+    - Total internal reflection using snells law, and if TIR then use ssr for reflection
     - water refraction
     - caustics
     - shore foam(? maybe not)
@@ -23,7 +26,7 @@ It is meant to be a self note, but is **not** private.
 ### To-do Planned:
 - SSR
     - Parallax Reprojection
-    - Trace in Screen Space
+    - Trace in Screen Space(More efficient and uniform in step size relative to screen)
 - Make sky non-physically based as it is inflexible. 
     - Make it artist friendly but still support, top, mid, bottom, sun/moon halo/horizon sky colors -> maybe use preetham's for sunset
 - water blur and underwater blur
@@ -53,6 +56,7 @@ It is meant to be a self note, but is **not** private.
 - Sky reflection should be cached/precomputed like 128 directions or something instead of runtime computation
 - Integrated pbr
 - Reimplement fog color adjustment based on mood and player light level like pre-deferred version
+- Moving rain particles -> shear the rain based on weather/wind
 
 ### Issues
  - (!) Entity shadows disappear at certain angles, may be iris bug? (1.21.4)
@@ -62,9 +66,10 @@ It is meant to be a self note, but is **not** private.
  - Current fog implementation has an issue as it uses a hack by multiply by 0, resulting in the bottommost part of the fog(if you fly up) being pitched
  - (!) The auto water color detection is flickering `CODE: 12jk3h`
  - DH shadowmap's depth rn doesnt blend according to the vanila-dh chunk blend, should do this eventually but needs to be after supporting dh chunks casting shadows
+ - #WontFix SSR cannot trace behind hand and trying to do so is too impractical as it requires a **color buffer without hand and a depth buffer without hand**
+ - #ShouldFixEventually Rain-Fog does not fog properly
 
 ### Ideas:
-- Physically based sky via **Bruneton's** precomputed model..
 - Exponential shadow mapping(medium)
 - Temporal Shadows(medium priority). Store the history of shadow in a buffer
 - Fake Soft Clouds(medium priority)

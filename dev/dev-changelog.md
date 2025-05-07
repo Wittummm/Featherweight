@@ -11,6 +11,10 @@ Major.Minor.Revision.Patch, pre v1 versions are highly volatile.
  - `feature-some-feature` for working on features
  - `patch-some-patch` for working on patches (Uncommon unless issue is hard to patch)
 
+### Notes, Caution
+ - Iris v1.7.6 is incompatible. v1.7.6 parses `vaUV2` weirdly/differently.
+    - v1.7.6 patching of `vaUV2` in **Sodium** shader stages errors. The patching itself causes the crash, not the value it patches to. This issue is presumably a bug in Iris 1.7.6
+
 ### Change Logs Summary
  - v0.1.0.0 Initial Features, deferred rendering, shadows, sunrays
  - v0.2.0.0 (Lab) PBR Support
@@ -21,3 +25,12 @@ Major.Minor.Revision.Patch, pre v1 versions are highly volatile.
  - v0.6.6.0 Extra Distant Horizons Support -> Handles translucency, supports non-dithered blending
  - v0.7.0.0 Initial Screen Space Reflections
  - v0.7.3.0 SSR: Full-res resolve, crude blurring
+ - v0.7.4.0 SSR: Edge retaining linear filtering for deferred resolve, Allow control of normal strength by reconstructing normals
+ - v0.7.4.1 SSR
+    - Normal softening at grazing angles
+    - Fixed translucents not reflection due to alt/main frame buffers
+ - v0.7.5.0 SSR
+    - Improved the filtering on valid-invalid ssr pixels
+    - Mitigated streaks. Cause: ssr depth imprecision. Solution: bias it by a bit
+    - Changed to trace in screen space instead of view space for better efficiency
+

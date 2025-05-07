@@ -31,7 +31,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
 
     vec3 posWorld = (mat3(gbufferModelViewInverse) * posView) + cameraPosition;
     #if PIXELIZATION != Off
-    posWorld = (floor((posWorld*PIXELIZATION)+0.002)/PIXELIZATION);
+    posWorld = pixelize(posWorld);
     posView = (gbufferModelView * vec4(posWorld - cameraPosition, 1)).xyz;
     #endif
     vec3 viewDir = normalize(posView);
@@ -93,6 +93,12 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     #endif
 
     return editGBuffers;
+}
+
+void writeMaterialToGbuffer(Material material, inout vec4 GBuffer0, inout vec4 GBuffer1) {
+    GBuffer0.r = roughnessWrite(material.roughness);
+    GBuffer1.rg = normalsWrite(mat3(gbufferModelViewInverse) * (material.normals));
+    GBuffer0.g = reflectanceWriteFromF0(material.f0.x);
 }
 
 // REMOVAL: Unused so commented out, if unused for too long then remove this - 2025/28/4

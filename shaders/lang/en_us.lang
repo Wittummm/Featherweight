@@ -1,23 +1,23 @@
-/*
-https://htmlcolorcodes.com/minecraft-color-codes/
-
-Default Value = §l§nUnderline Boldd§r§r
-Option Value = §lBold§r
-
-## Performance Impact Tags
-    --------------------------------------
-    | Display Text           | CPU | GPU |
-    +------------------------+-----+-----+
-    | §7No GPU Impact§r      | Cx  |  Gx |
-    | §aMinimal CPU Impact§r | C_  |  G_ |
-    | §eLow CPU Impact§r     | Cv  |  Gv |
-    | §6Medium GPU Impact§r  | C=  |  G= |
-    | §4High GPU Impact§r    | C^  |  G^ |
-    | §5Unknown GPU Impact§r | C?  |  G? |
-    --------------------------------------
-    Tags are initially written then replaced with full display text using Find and Replace all.
-
-*/
+#
+# https://htmlcolorcodes.com/minecraft-color-codes/
+#
+# Default Value = §l§nUnderline Boldd§r§r
+# Option Value = §lBold§r
+#
+# ## Performance Impact Tags
+#     --------------------------------------
+#     | Display Text           | CPU | GPU |
+#     +------------------------+-----+-----+
+#     | §7No GPU Impact§r      | Cx  |  Gx |
+#     | §aMinimal CPU Impact§r | C_  |  G_ |
+#     | §eLow CPU Impact§r     | Cv  |  Gv |
+#     | §6Medium GPU Impact§r  | C=  |  G= |
+#     | §4High GPU Impact§r    | C^  |  G^ |
+#     | §5Unknown GPU Impact§r | C?  |  G? |
+#     --------------------------------------
+#  Tags are initially written then replaced with full display text using Find and Replace all.
+#
+#
 
 option.sunPathRotation.comment = Being Non-Zero worsens aliasing
 §6Medium GPU Impactl§r \n§4High GPU Impactl§r \n§mUnknown GPU Impactl§r
@@ -47,5 +47,13 @@ value.DH_FADE_DITHER.1 = Blend
 value.DH_FADE_BLENDING.1 = Dither
 value.DH_FADE_BLENDING.2 = Blend
 
-// Debug
+# Debug
 option.DEBUG.comment = Toggles debugging. This doesn't stop it from loading, it simply turns it off after doing so.
+
+value._SHOW_SSR_MODE.0 = Color
+value._SHOW_SSR_MODE.1 = Coord
+value._SHOW_SSR_MODE.2 = Distance
+
+value._SHOW_SSR_FILTERING.-1 = Auto
+value._SHOW_SSR_FILTERING.0 = Nearest
+value._SHOW_SSR_FILTERING.1 = Linear

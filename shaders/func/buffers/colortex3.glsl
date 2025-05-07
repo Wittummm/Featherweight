@@ -40,11 +40,14 @@ vec3 readSSRLinear(vec2 fragCoord) {
     float x0 = frac.x + (v0.x - v1.x)*SHARPNESS;
     float x1 = frac.x + (v3.x - v2.x)*SHARPNESS;
 
-    vec3 m = mix(v0, v1, clamp(x0, 0, 1));
-    vec3 n = mix(v3, v2, clamp(x1, 0, 1));
+    vec2 m = mix(v0.xy, v1.xy, clamp(x0, 0, 1));
+    vec2 n = mix(v3.xy, v2.xy, clamp(x1, 0, 1));
 
     float y0 = frac.y + (n.y - m.y)*SHARPNESS;
-    vec3 result = mix(n, m, clamp(y0, 0, 1));
+    vec3 result = vec3(
+        mix(n, m, clamp(y0, 0, 1)), 
+        v3.z
+    );
 
     return result;
 }
