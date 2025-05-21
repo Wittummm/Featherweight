@@ -8,8 +8,8 @@ Major.Minor.Revision.Patch, pre v1 versions are highly volatile.
 ### Branches
  - `main` stable releases
  - `dev` unstable releases
- - `feature-some-feature` for working on features
- - `patch-some-patch` for working on patches (Uncommon unless issue is hard to patch)
+ - `v0.0.0.0_feature-some-feature` for working on features
+ - `v0.0.0.0_patch-some-patch` for working on patches (Uncommon unless issue is hard to patch)
 
 ### Notes, Caution
  - Iris v1.7.6 is incompatible. v1.7.6 parses `vaUV2` weirdly/differently.
@@ -35,4 +35,9 @@ Major.Minor.Revision.Patch, pre v1 versions are highly volatile.
     - Changed to trace in screen space instead of view space for better efficiency
  - v0.7.6.0 SSR
     - SSR Dh support
+ - v0.7.6.1 Patched new dh bugs
+    - Fixed dh causing ghosting; caused by sampling dhdepthtex1 instead of 0
+    - Fixed dh water getting "clipped" arbitrary; code was legacy and supposedly wrong
+    - Fixed dh water(translucents) getting masked by invisible vanilla fragemnts; fixed by dithering *some* vanilla chunks, specificially one where we think the dh-vanilla block is not the same block ie foliage doesnt exist in DH chunks
+    - Ongoing Patch: Properly dithering dh-vanilla chunks -> need to dither out dh chunks too :/
 

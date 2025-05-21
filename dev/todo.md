@@ -2,14 +2,14 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
+- Actually Fix dh blending now
+
 - SSR
-    - fix the bugs introduced somehow recently: 
-        - dh water is black at certain point: seems to be correlated to render distance, higher vanilla render distance makes the clipping distance further. issue is visible at 2 chunk render dist
-        - dh chunks causes ghosting
+    - The dh-vanilla chunk boundary/blending seem to make the ssr reflect wrongly, perhaps fix that if possible
     - Do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
 
 - Buffer Reworking
-    - (?) Add colortexx0 HDR (9/9/9/5) RGB Skylight
+    - HDR colortex0 [10 11 11 8]
     - Pack Gbuffers into one `RG32UI`(64) buffer
         - `LOWER_PRECISION_GBUFFERS` -> `RGB16UI`(48) buffer for low precision (default)
 - Water
@@ -26,12 +26,10 @@ It is meant to be a self note, but is **not** private.
 
 
 ### To-do Planned:
-- SSR
-    - Parallax Reprojection
-    - Trace in Screen Space(More efficient and uniform in step size relative to screen)
 - Make sky non-physically based as it is inflexible. 
     - Make it artist friendly but still support, top, mid, bottom, sun/moon halo/horizon sky colors -> maybe use preetham's for sunset
-- water blur and underwater blur
+- Water blur and underwater blur
+-  Disable alpha blending on gbuffers, ISSUECODE: 12xnd
 
 ### To-do Later:
 - `PUDDLE_EXPOSURE_MIN` should correlate with the unimplemented `WIND_STRENGTH`
@@ -39,7 +37,6 @@ It is meant to be a self note, but is **not** private.
 - Fix mip maps
     - Albedo
     - All gbuffers
-- Pack gbuffers into `rgba16` instead of 2 `rgba8`s
 - Distant Horizons support
     - Add noise for DH like vanilla DH
     - Particles fade out when out of vanilla range due to DH sorting issues
@@ -70,6 +67,7 @@ It is meant to be a self note, but is **not** private.
  - DH shadowmap's depth rn doesnt blend according to the vanila-dh chunk blend, should do this eventually but needs to be after supporting dh chunks casting shadows
  - #WontFix SSR cannot trace behind hand and trying to do so is too impractical as it requires a **color buffer without hand and a depth buffer without hand**
  - #ShouldFixEventually Rain-Fog does not fog properly
+ - #ShouldMaybeFix SSR has noisy results at grazing reflection angles which exaggerates the effect of normal maps
 
 ### Ideas:
 - Exponential shadow mapping(medium)

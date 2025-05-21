@@ -23,7 +23,7 @@ Debug settings start with "_"
 #define _SHADOW_FADE_OUT 0 // [0 0.1 0.2 0.3 0.8 1]
 #define _ISOLATE_DIFFUSE 0 // [0 1 2 3 4] {off diffuse shade light shade&light}
 #define _ISOLATE_VERT_COLOR 0 // [0 1]
-#define _ISOLATE_LIGHTMAP 0 // [0 1]
+#define _ISOLATE_SKYLIGHT 0 // [0 1]
 
 #define _SHOW_SHADOWMAP Off // [Off Fullscreen TopLeft TopRight BottomLeft BottomRight]
 #define _SHOW_DH_DEPTH Off // [Off Fullscreen TopLeft TopRight BottomLeft BottomRight]
