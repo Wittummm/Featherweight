@@ -88,7 +88,6 @@ layout(location = 2) out vec4 GBuffer1;
 void main() {
     #include "/snippets/core_to_compat.fsh"
     vec2 fragCoord = gl_FragCoord.xy*pixelSize;
-    Color = srgbToLinear(vertColor);
 
     #ifdef DISTANT_HORIZONS
         #if defined DISTANT_HORIZONS_SHADER && defined FORWARD 
@@ -105,27 +104,28 @@ void main() {
         float fade = clamp(smoothstep(DH_FADE_START*renderDistance, DH_FADE_END*renderDistance, distToPlayer), 0, 1);
 
         #if DH_FADE_DITHER > 0
-            // Only need to dither out Vanilla chunks
-            // FALSE! need to also dither dh chunks, ESPECIALLY on vanilla translucents
             #ifndef DISTANT_HORIZONS_SHADER
                 #if DH_FADE_BLENDING == 1
                     bool shouldDither = true;
                 #else
                      // This fixes the "invisible" vanilla chunks by dithering some vanilla chunks
+                    const float thresholdToDither = 0.25; // This is how far behind in blocks until it starts dithering
                     vec3 dhPos = depthToViewPos(fragCoord, texture(dhDepthTex0, fragCoord).r, dhProjectionInverse);
-                    bool shouldDither = -vertPosition.z > dhNearPlane && vertPosition.z - dhPos.z > 0.25;
+                    bool shouldDither = -vertPosition.z > dhNearPlane && vertPosition.z - dhPos.z > thresholdToDither;
                 #endif
                 if (shouldDither && fadeDH(fade)) { discard; return; }
-            #else
-                // TODONOW: This is improper as it causes transluecents fragments
-                // TODONOW: So fix issue somehow :)
-                if (fadeDHInverted(fade)) { discard; return; }
-                // fade = 1.0-fade;
+            #elif defined FORWARD
+                /* As dithering is a threshold method it is inherently non-uniform meaning 
+                it does not gurantee that the inverse will have the exact opposite pixel resulting in "holes"
+                We could mitigate this by biasing the fade value, but that causes some pixels to double up drawing both dh and vanilla */
+
+                // TODOLATER: it still has holes at grazing angles, perhaps make it dynamic on viewing angle?
+                if (!fadeDH(smoothstep(DH_FADE_START*renderDistance, DH_FADE_END*renderDistance, distToPlayer*1.1))) { discard; return; } // NOTE: 1.1 here is arbitrary, and probably shouldnt be
             #endif
         #endif
     #endif
 
-    // Color = srgbToLinear(vertColor); commented out fot tetsing
+    Color = srgbToLinear(vertColor);
 
 #ifdef DISTANT_HORIZONS_SHADER
     // TODOEVENTUALLY: Move this somewhere else for better organization
@@ -215,16 +215,15 @@ void main() {
 
             float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
             Color.rgb = calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
-            // Color.rgb = vec3(waterDepth)*0.1; // TODONOW: fix the depth at the blending boundary being "wrong"
         }
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));
     #endif
 
-    // "Alpha" blend vanilla chunks to dh
+    // "Alpha" blend vanilla chunks to dh (Cannot blend dh to vanilla as dh renders first and thus have no data to vanilla color)
     #if defined DISTANT_HORIZONS && !defined DISTANT_HORIZONS_SHADER && DH_FADE_BLENDING == 2
-        vec3 dhColor = srgbToLinear(imageLoad(colorimg0, ivec2(gl_FragCoord.xy)).rgb);
-        Color.rgb = mix(Color.rgb, dhColor, fade);
+        vec4 dhColor = srgbToLinear(imageLoad(colorimg0, ivec2(gl_FragCoord.xy)));
+        Color.rgb = mix(Color.rgb, dhColor.rgb, fade);
     #endif
 
     Color = linearToSRGB(Color);

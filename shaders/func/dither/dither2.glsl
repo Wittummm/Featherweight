@@ -1,7 +1,6 @@
-/* 
-    From [https://www.shadertoy.com/view/7sfXDn] 
-    CREDIT: joshtheb(jbritain) https://discord.com/channels/237199950235041794/736928196162879510/1359165099344134338
-*/
+// From [https://www.shadertoy.com/view/7sfXDn] 
+// CREDIT: joshtheb(jbritain) https://discord.com/channels/237199950235041794/736928196162879510/1359165099344134338
+
 float dither2(vec2 a) {
     a = floor(a);
     return fract(a.x / 2. + a.y * a.y * .75);
