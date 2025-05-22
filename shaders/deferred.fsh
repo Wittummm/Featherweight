@@ -52,7 +52,7 @@ void main() {
 		/*
 			Using `dhDepthTex1` instead of `dhDepthTex0` causes ghosting
 			because supposedly DH copies depth0 over to depth1 at deferred and is not the intuitive way
-			Reference: joshtheb(jbritain) https://discord.com/channels/237199950235041794/736928196162879510/1369707060597358773
+			CREDIT: joshtheb(jbritain) https://discord.com/channels/237199950235041794/736928196162879510/1369707060597358773
 		*/
 		float dhDepth = texture(dhDepthTex0, fragCoord).r; // CODE: 8dh91 This causes "ghosting" as `dhDepthTex1` seems to be delayed(or maybe projected wrong)
 		isSky = depth >= 1 && dhDepth >= 1;

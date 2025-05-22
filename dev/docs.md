@@ -19,17 +19,22 @@ Search for these keywords to see what extra features you can toggle, most are di
 
 ### Dev 
   - **Keywords**
-    - "POINT" a weak "NOTICE"
-    - "TODO" to do
-    - "TODOMAYBE" maybe do
-    - "TODONOW" ongoing code
-    - "TODOLATER" to do in the foreseeable future
-    - "TODONOWBUTLATER" should do at the end of the session/feature.
-    - "TODOEVENTUALLY" should do eventually
-    - "NOTE" a note for readers, including oneself
-    - "PIN" likely will come back to, usually to edit/add features
-    - "CODE: xxx" a random code(literally button mash) 
-    - "REMOVAL" to remove for some reasoon
+    - Crediting
+      - `CREDIT: someName (someLink)`
+      - `ACKNOWLEDGEMENT: someName (someLink)` More important/significant than CREDIT
+      - `ACKNOWLEDGED: someName (someLink)` same as `ACKNOWLEDGEMENT` but is acknowledge in front page
+      - `SOURCE:` or `SOURCES:` refers to original source code
+    - `POINT` a weak "NOTICE"
+    - `TODO` to do
+    - `TODOMAYBE` maybe do
+    - `TODONOW` ongoing code
+    - `TODOLATER` to do in the foreseeable future
+    - `TODONOWBUTLATER` should do at the end of the session/feature.
+    - `TODOEVENTUALLY` should do eventually
+    - `NOTE` a note for readers, including oneself
+    - `PIN` likely will come back to, usually to edit/add features
+    - `CODE: xxx` a random code(literally button mash) 
+    - `REMOVAL` to remove for some reasoon
   - **Notes**
     - Put "#define DISTANT_HORIZONS_SHADER" in the top of DH shader stages
     - Pixelization Overrides syntax:
