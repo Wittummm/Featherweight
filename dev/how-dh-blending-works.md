@@ -10,3 +10,7 @@ This is non-simple blending which combines dithering and actually blending the c
 It fallbacks to dithering when
  - DH and vanilla block has a discrepancy ie not same block (shape) or missing block.
  - Translucents
+
+## Technicals
+ - Blend = Dither DH + Blend Vanilla + Dither Some Vanilla
+ - Dither = Dither DH + Dither Vanilla

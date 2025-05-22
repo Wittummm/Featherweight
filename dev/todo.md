@@ -2,8 +2,6 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
-- Actually Fix dh blending now
-
 - SSR
     - The dh-vanilla chunk boundary/blending seem to make the ssr reflect wrongly, perhaps fix that if possible
     - Do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
