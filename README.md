@@ -8,3 +8,7 @@ An Iris minecraft shader focusing on lightweight features.
 ## Acknowledgements
 - ...
 - Search `CREDIT:` and `ACKNOWLEDGE:` in the code for potentially missing or omitted references.
+
+## Contact
+You can contact me in the ShaderLABS discord(wittummm). 
+Feel free to open Issues and Pull Requests!
