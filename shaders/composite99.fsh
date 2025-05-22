@@ -1,1 +1,0 @@
-#include "/program/debug_composite.fsh"

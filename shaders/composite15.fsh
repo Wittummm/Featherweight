@@ -1,1 +1,0 @@
-#include "/program/ssr_compute.fsh"

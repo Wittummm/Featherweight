@@ -1,1 +1,0 @@
-#include "/program/default_composite.vsh"

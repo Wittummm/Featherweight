@@ -1,1 +1,0 @@
-#include "/program/fog_composite.fsh"
