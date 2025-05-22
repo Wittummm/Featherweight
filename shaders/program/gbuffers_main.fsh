@@ -103,15 +103,6 @@ void main() {
         vec3 posPlayer = (gbufferModelViewInverse * vec4(vertPosition, 1)).xyz;
         float distToPlayer = length(posPlayer);
         float fade = clamp(smoothstep(DH_FADE_START*renderDistance, DH_FADE_END*renderDistance, distToPlayer), 0, 1);
-        // #ifndef DISTANT_HORIZONS_SHADER
-        //     // if near the front of near plane
-        //     if (-vertPosition.z >= dhNearPlane) {
-        //         float s = -vertPosition.z - dhNearPlane;
-        //         float a = 4.0;
-        //         // fade = max(1-clamp(s/a, 0, 1), fade);
-        //         Color.rgb = vec3(1-clamp(s/a, 0, 1));
-        //     }
-        // #endif
 
         #if DH_FADE_DITHER > 0
             // Only need to dither out Vanilla chunks
@@ -128,7 +119,8 @@ void main() {
             #else
                 // TODONOW: This is improper as it causes transluecents fragments
                 // TODONOW: So fix issue somehow :)
-                if (fadeDH(1-fade)) { discard; return; }
+                if (fadeDHInverted(fade)) { discard; return; }
+                // fade = 1.0-fade;
             #endif
         #endif
     #endif
@@ -239,3 +231,4 @@ void main() {
 
     #include "/snippets/debug.fsh"
 }
+

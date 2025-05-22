@@ -13,9 +13,19 @@
 bool fadeDH(float fadeOut) {
     #if defined DISTANT_HORIZONS && DH_FADE_DITHER != Off
         // Creates a TON of branching, not ideal for performance
-        if (fadeOut >= 0.999 || dither(gl_FragCoord.xy) + 0.001 <= fadeOut) {
+        if (fadeOut >= 0.9999 || dither(gl_FragCoord.xy) + 0.001 <= fadeOut) {
             return true;
         } 
+    #endif
+    return false;
+}
+
+bool fadeDHInverted(float fadeOut) {
+    #if defined DISTANT_HORIZONS && DH_FADE_DITHER != Off
+        // Creates a TON of branching, not ideal for performance
+        if (fadeOut <= 0.0001 || dither(gl_FragCoord.xy) - 0.001  > fadeOut) {
+            return true;
+        }
     #endif
     return false;
 }

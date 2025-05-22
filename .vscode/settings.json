@@ -38,7 +38,9 @@
         "shaders/composite16.fsh": true,
         "shaders/composite15.fsh": true,
         "shaders/gbuffers_entities.fsh": true,
-        "shaders/gbuffers_basic.fsh": true
+        "shaders/gbuffers_basic.fsh": true,
+        "dev/sample.glsl": true,
+        "dev/how-dh-blending-works.md": true
     },
     "hide-files.files": [
         "Featherweight/shaders/composite10.fsh",
@@ -74,6 +76,8 @@
         "shaders/composite16.fsh",
         "shaders/composite15.fsh",
         "shaders/gbuffers_entities.fsh",
-        "shaders/gbuffers_basic.fsh"
+        "shaders/gbuffers_basic.fsh",
+        "dev/sample.glsl",
+        "dev/how-dh-blending-works.md"
     ]
 }
