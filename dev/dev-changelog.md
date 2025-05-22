@@ -1,8 +1,8 @@
-Version: v0.x.x.x.Prototype (Refer to changelog as pre v1 is volatile)
+Version: v0.x.x.x.Dev (Refer to changelog as pre v1 is volatile)
 
 ### Version Phases
-Major.Minor.Revision.Patch, pre v1 versions are highly volatile.
- - Prototype - Unstable, features are easily phased in and out
+Major.Minor.Revision.Patch.Tag, pre v1 versions are highly volatile.
+ - Dev - Unstable
  - Alpha - Core mechanics
 
 ### Branches
