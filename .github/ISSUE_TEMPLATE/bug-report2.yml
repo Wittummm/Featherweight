@@ -1,11 +1,11 @@
-name: Bug Report
-description: Report a bug.
+name: "Bug Report"
+description: "Report a bug."
 title: "[Bug]: "
 labels: ["bug"]
 body: 
   - type: markdown
     attributes:
-      value: Please see if there is an already existing Issue with the same bug before posting a Bug Report! 
+      value: "Please see if there is an already existing Issue with the same bug before posting a Bug Report!" 
   - type: dropdown
     attributes:
       label: Bug Severity
@@ -25,7 +25,7 @@ body:
       description: Attach the full F3 screenshot if possible
   - type: markdown
     attributes:
-      value: If you cannot attach an F3 screenshot then please provide the information below!
+      value: "If you cannot attach an F3 screenshot then please provide the information below!"
   - type: dropdown
     attributes:
       label: Operating System
