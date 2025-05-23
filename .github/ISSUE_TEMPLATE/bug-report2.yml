@@ -33,7 +33,7 @@ body:
     - Windows
     - Mac
     - Linux
-    default: 0
+  default: 0
   validations:
     required: true
 - type: dropdown
