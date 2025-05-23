@@ -13,7 +13,7 @@ body:
         - High
         - Medium
         - Low
-	- type: textarea
+  - type: textarea
     attributes:
       label: The Bug
       placeholder: Describe the bug here clearly
