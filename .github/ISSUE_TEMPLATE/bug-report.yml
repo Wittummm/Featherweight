@@ -1,11 +1,11 @@
 name: "Bug Report"
 description: "Report a bug."
-title: "[Bug]: "
+title: "[Bug]: SomeBugHere"
 labels: [ "bug" ]
 body:
 - type: markdown
   attributes:
-    value: "Please see if there is an already existing Issue with the same bug before posting a Bug Report!"
+    value: "## Please see if there is an already existing Issue with the same bug before posting a Bug Report!"
 - type: dropdown
   attributes:
     label: Bug Severity
@@ -15,7 +15,7 @@ body:
     - Low
 - type: textarea
   attributes:
-    label: The Bug
+    label: Bug Description
     placeholder: Describe the bug here clearly
   validations:
     required: true
@@ -26,10 +26,36 @@ body:
 - type: markdown
   attributes:
     value: "If you cannot attach an F3 screenshot then please provide the information below!"
+- type: input
+  attributes:
+    label: Shader Loader
+    description: This shader is only built for Iris, other shader loaders may not work!
+    placeholder: SomeShaderLoader v1.0.0
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: GPU Name
+- type: input
+  attributes:
+    label: Minecraft Version
+    placeholder: v0.0.0
+- type: input
+  attributes:
+    label: Minecraft Client
+    value: Official
+    placeholder: Lunar, Prism, etc
+- type: input
+  attributes:
+    label: Shader Version
+    placeholder: Featherweight v0.0.0.0.tag
+  validations:
+    required: true
 - type: dropdown
   attributes:
     label: Operating System
     options:
+    - Unfilled
     - Windows
     - Mac
     - Linux
@@ -40,6 +66,7 @@ body:
   attributes:
     label: Driver Vendor
     options:
+    - Unfilled
     - Nivida
     - AMD
     - Intel
@@ -47,31 +74,8 @@ body:
     - Mesa
     - XORG
     - Other
-- type: dropdown
-  attributes:
-    label: Shader Loader
-    description: This shader is only built for Iris, other shader loaders may not work!
-    options:
-    - Iris
-    - Optifine
-  validations:
-      required: true
+    default: 0
 - type: input
-  attributes:
-    label: GPU Name
-- type: input
-  attributes:
-    label: Minecraft Version
-- type: input
-  attributes:
-    label: Minecraft Client
-    value: Official
-- type: input
-  attributes:
-    label: Shader Version
-    placeholder: Featherweight v0.0.0.0.tag
-    value: Featherweight v...
-- type: textarea
   attributes:
     label: Suspect (rendering) mods
 - type: textarea
