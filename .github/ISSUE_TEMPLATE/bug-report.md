@@ -4,6 +4,10 @@ about: Report bugs
 title: "[Bug] SomeBugHere"
 labels: ''
 assignees: ''
+body:
+- type: markdown
+  attributes:
+    value: "## Welcome!"
 
 ---
 
