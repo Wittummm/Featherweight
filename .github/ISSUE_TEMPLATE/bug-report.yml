@@ -5,7 +5,7 @@ labels: [ "bug" ]
 body:
 - type: markdown
   attributes:
-    value: "## Please see if there is an already existing Issue with the same bug before posting a Bug Report!"
+    value: "## Please see if there is an already existing Issue with the same bug before posting a Bug Report! \n You can attach files or embed images with links"
 - type: dropdown
   attributes:
     label: Bug Severity
