@@ -1,0 +1,94 @@
+name: "Bug Report"
+description: "Report a bug."
+title: "[Bug]: SomeBugHere"
+labels: [ "bug" ]
+body:
+- type: markdown
+  attributes:
+    value: "## Please see if there is an already existing Issue with the same bug before posting a Bug Report!\ 
+
+      \ You can attach files or embed images with links"
+- type: dropdown
+  attributes:
+    label: Bug Severity
+    options:
+    - Unfilled
+    - High
+    - Medium
+    - Low
+    - Insignificant
+    default: 0
+- type: textarea
+  attributes:
+    label: Bug Description
+    placeholder: Describe the bug here clearly. You can also attach media showing the issue.
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: F3 screenshot
+    description: Attach the full F3 screenshot if possible
+- type: markdown
+  attributes:
+    value: "If you cannot attach an F3 screenshot then please provide the information below!"
+- type: input
+  attributes:
+    label: Shader Version
+    placeholder: Featherweight v0.0.0.0.tag
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Shader Loader
+    description: This shader is only built for Iris, other shader loaders may not work!
+    placeholder: SomeShaderLoader v1.0.0
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Minecraft Version & Client
+    placeholder: Vanilla v0.0.0
+- type: input
+  attributes:
+    label: GPU Name
+    placeholder: Brand Series 0000
+- type: dropdown
+  attributes:
+    label: Driver Vendor
+    options:
+    - Unfilled
+    - Nivida
+    - AMD
+    - Intel
+    - ATI
+    - Mesa
+    - XORG
+    - Other
+    default: 0
+- type: dropdown
+  attributes:
+    label: Operating System
+    options:
+    - Unfilled
+    - Windows
+    - Mac
+    - Linux
+    default: 0
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Cause of bug
+    description: Put [Unknown cause] if you cannot find the cause, please try to isolate the cause to make resolving the issue easier!
+    placeholder: Causes can be mods, minecraft client, shader setting, etc
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Shader Settings
+    description: Include the shader settings file (`shaderpacks/SomeShaderName.txt`) if possible
+    placeholder: Attach your file link here
+- type: textarea
+  attributes:
+    label: Extra
+    description: Put extra information or information that does not fit the form here

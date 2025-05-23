@@ -1,0 +1,38 @@
+# Source: https://github.com/jbritain/glimmer-shaders/blob/main/.github/workflows/zip-release.yml
+# Do I really understand all this? No :).
+
+name: Build and Distribute Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  zip-release:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v2
+      - uses: vimtor/action-zip@v1.2
+        with:
+          files: LICENSE shaders/
+          dest: "Featherweight-${{ github.event.release.tag_name }}.zip"
+          recursive: false
+      - uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: "Featherweight-${{ github.event.release.tag_name }}.zip"
+          asset_name: "Featherweight-${{ github.event.release.tag_name }}.zip"
+          tag: ${{ github.ref }}
+      - uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          #modrinth-id: xxx
+          #modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          #curseforge-id: xxx
+          #curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          
+          files: "Featherweight-${{ github.event.release.tag_name }}.zip"
+          loaders: iris
+          game-versions: ">=1.20"
+
+          
