@@ -16,6 +16,7 @@ body:
     - High
     - Medium
     - Low
+    - Insignificant
     default: 0
 - type: textarea
   attributes:
@@ -45,22 +46,12 @@ body:
     required: true
 - type: input
   attributes:
-    label: GPU Name
-- type: input
-  attributes:
     label: Minecraft Version & Client
     placeholder: Vanilla v0.0.0
-- type: dropdown
+- type: input
   attributes:
-    label: Operating System
-    options:
-    - Unfilled
-    - Windows
-    - Mac
-    - Linux
-    default: 0
-  validations:
-    required: true
+    label: GPU Name
+    placeholder: Brand Series 0000
 - type: dropdown
   attributes:
     label: Driver Vendor
@@ -74,9 +65,17 @@ body:
     - XORG
     - Other
     default: 0
-- type: input
+- type: dropdown
   attributes:
-    label: Suspect (rendering) mods
+    label: Operating System
+    options:
+    - Unfilled
+    - Windows
+    - Mac
+    - Linux
+    default: 0
+  validations:
+    required: true
 - type: textarea
   attributes:
     label: Cause of bug
