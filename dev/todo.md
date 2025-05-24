@@ -3,8 +3,12 @@ It is meant to be a self note, but is **not** private.
 
 ### To-do:
 - SSR
-    - The dh-vanilla chunk boundary/blending seem to make the ssr reflect wrongly, perhaps fix that if possible
     - Do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
+- Water
+    - Make water also scatter skylight(attenuates based on if sun is directly above)
+- Fix/Check if Fog works properly with translucents(rain, glass, etc) as it does not have depth
+    - perhaps render fog in `shade()`(math_lighting.glsl) so it renders forward and deferred instead of in composite
+- change the release zip name `Featherweight` to `§6§lFeatherweight§r§r` (gold)
 
 - Buffer Reworking
     - HDR colortex0 [10 11 11 8]

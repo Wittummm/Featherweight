@@ -295,4 +295,9 @@ void printLine() {
 	++text.charPos.y;
 }
 
+void printLine(int lineSize) {
+	text.charPos.x = 0;
+	text.charPos.y += lineSize;
+}
+
 #endif // UTILITY_TEXTRENDERING_INCLUDED

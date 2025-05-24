@@ -9,7 +9,7 @@
 const float waterConcentration = 0.5;
 const vec3 waterAbsorption = vec3(0.025, 0.03, 0.03)*0.3;
 
-const float waterScattering = 0.7;
+const float waterScattering = 0.8;
 const float waterScattering2 = waterScattering*waterScattering;
 
 #endif

@@ -2,11 +2,13 @@
 
 uniform mat3 normalMatrix;
 uniform mat4 gbufferModelViewInverse;
+uniform float viewWidth;
+uniform float viewHeight;
 
 #include "/settings/debug.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/lib/pbr.glsl"
-#if _SHOW_FRAME_TIME == 1
+#if _SHOW_DEBUG_STATS == 1
 #include "/lib/text_renderer.glsl"
 uniform float frameTimeSmooth;
 #endif
@@ -22,8 +24,6 @@ uniform sampler2D colortex2;
 uniform sampler2D shadowtex0;
 uniform sampler2D depthtex0;
 uniform float far;
-uniform float viewWidth;
-uniform float viewHeight;
 
 #ifdef DISTANT_HORIZONS
     uniform sampler2D dhDepthTex0;
@@ -129,9 +129,22 @@ void main() {
         }
     #endif
 
-    #if _SHOW_FRAME_TIME == 1
-        beginText(ivec2(gl_FragCoord.xy*0.5), ivec2(0, viewHeight*0.5));
+    #if _SHOW_DEBUG_STATS == 1
+        beginText(ivec2(gl_FragCoord.xy*0.5), ivec2(5, viewHeight*0.5 - 40));
         printFloat(frameTimeSmooth*1000); printString((_space, _m, _s));
+        printLine(2);
+        
+        printString((_G, _L, _S, _L, _colon, _v)); printUnsignedInt(MC_GL_VERSION);
+        printLine(2);
+
+        uint fix = IRIS_VERSION % 100;
+        uint minor = (IRIS_VERSION/100) % 100;
+        uint major = IRIS_VERSION/10000;
+        printString((_I, _r, _i, _s, _space, _v));
+        printUnsignedInt(major); printString((_dot));
+        printUnsignedInt(minor); printString((_dot));
+        printUnsignedInt(fix);
+
         endText(Color.rgb);
     #endif
 }

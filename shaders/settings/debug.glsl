@@ -10,7 +10,7 @@ Debug settings start with "_"
 */
 
 #define DEBUG 1 // [0 1] 
-#define _SHOW_FRAME_TIME 0 // [0 1]
+#define _SHOW_DEBUG_STATS 0 // [0 1]
 
 #define Off -100
 

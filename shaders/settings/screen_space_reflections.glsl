@@ -3,7 +3,7 @@
 #define SSR_ENABLED 1 // [0 1]
 #define SSR_RESOUTION 5 // [1 2 3 4 5 6 7 8 9 10] {4}
 #define SSR_MAX_DISTANCE 90 // [20 30 40 50 60 75 90 120 150 180 220 260 300]
-#define SSR_STEPS_PER_BLOCK 0.25 // [0.25 0.5 1 1.5 2 2.5 3] {0.25}
+#define SSR_STEPS_PER_BLOCK 0.5 // [0.25 0.5 0.75 1 1.5 2 2.5 3] {0.25}
 #define SSR_STEPS ceil(SSR_MAX_DISTANCE*SSR_STEPS_PER_BLOCK)
 #define SSR_REFINE_STEPS 5 // [3 5 7 8 10 14 18 24] {5}
 #define SSR_NORMAL_STRENGTH 60 // [0 10 20 30 40 50 60 70 80 90 100 150] {Sporadic normals can cause more artifacts especially at lower SSR resolutions}
@@ -22,7 +22,7 @@ const float ssrPixelizationTexelSize = 1.0/ssrPixelization;
 const float ssrNormalStrengthMin = SSR_NORMAL_STRENGTH_MIN/100.0;
 
 // EXTRA_SETTINGS | You can edit values below, but they are finicky and somewhat technical
-const float margin = 0.15;
+const float margin = 0.25; // 1 would cover 100% of the slice, but most of the times we dont need the whole slice, TODOLATER: It would be better quality if this was dynamic and potentially changing according to viewing angle
 const float maxThickness = (SSR_MAX_DISTANCE/SSR_STEPS_PER_BLOCK)*margin;
 const float refineMaxThickness = (maxThickness/SSR_REFINE_STEPS)*margin; 
 const float bias = 0.5; // TODOMAYBE: Ideally shouldnt have a constant bias, perhaps weigh based on normals
