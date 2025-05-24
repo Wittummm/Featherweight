@@ -58,7 +58,7 @@ void main() {
         vec4 gbuffer1 = textureLod(colortex2, fragCoord, 0); // Using `fragCoord` cuz pixelized `fragUV` seems to jitter, not sure if using `fragCoord` is correct tho
         Material material = Mat(Color.rgb, gbuffer0, gbuffer1);
         //////////////
-        float blur = min(6, SSR_BLUR_STRENGTH * hitCoord.z*SSR_MAX_DISTANCE*material.roughness);
+        float blur = min(5, SSR_BLUR_STRENGTH * hitCoord.z*SSR_MAX_DISTANCE*material.roughness);
         vec3 c0 = textureLod(colortex0, hitCoord.xy, floor(blur)).rgb; // TODOEVENTUALLY: Use a better but simple blur, rather than mipmap levels
         vec3 c1 = textureLod(colortex0, hitCoord.xy, ceil(blur)).rgb;
 

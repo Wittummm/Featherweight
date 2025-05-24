@@ -40,4 +40,8 @@ Major.Minor.Revision.Patch.Tag, pre v1 versions are highly volatile.
     - Fixed dh water getting "clipped" arbitrary; code was legacy and supposedly wrong
     - Fixed dh water(translucents) getting masked by invisible vanilla fragemnts; fixed by dithering *some* vanilla chunks, specificially one where we think the dh-vanilla block is not the same block ie foliage doesnt exist in DH chunks
     - Ongoing Patch: Properly dithering dh-vanilla chunks -> need to dither out dh chunks too :/
+ - v0.7.6.2 Misc Patches & Changes
+    - `block_entities` now have `CUTOUT` flag
+    - Specfically only `CUTOUT` in `shadow_cutout` program if Iris v1.8+
+    - (Untested) Remove `DH_FADE_BLENDING.Blend` option when images are not supported(glsl 420)
 
