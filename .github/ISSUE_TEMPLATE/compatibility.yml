@@ -1,0 +1,47 @@
+name: "(Mod) Compatability"
+description: "Issue about a mod."
+title: "[Compat]: SomeIssueHere"
+labels: [ "compat" ]
+body:
+- type: markdown
+  attributes:
+    value: "## Please see if there is an already existing Issue with the same problem before posting!\ 
+
+      \ You can attach files or embed images with links"
+- type: dropdown
+  attributes:
+    label: Bug Severity
+    options:
+    - Unfilled
+    - High
+    - Medium
+    - Low
+    - Insignificant
+    default: 0
+- type: textarea
+  attributes:
+    label: Bug Description
+    placeholder: Describe the bug here clearly. You can also attach media showing the issue.
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Shader Version
+    placeholder: Featherweight v0.0.0.0.tag
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Mod(s) causing the issue
+    description: The name or link the mod causing the issue
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Shader Settings
+    description: Include the shader settings file (`shaderpacks/SomeShaderName.txt`) if possible
+    placeholder: Attach your file link here
+- type: textarea
+  attributes:
+    label: Extra
+    description: Put extra information or information that does not fit the form here
