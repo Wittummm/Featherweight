@@ -5,14 +5,9 @@
         "**/.hg": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
-        "shaders/gbuffers_basic.vsh": true,
         "shaders/gbuffers_entities.vsh": true,
-        "shaders/gbuffers_skybasic.vsh": true,
-        "shaders/gbuffers_skytextured.vsh": true,
-        "shaders/gbuffers_skytextured.fsh": true,
         "shaders/gbuffers_water.fsh": true,
         "shaders/gbuffers_water.vsh": true,
-        "shaders/gbuffers_skybasic.fsh": true,
         "shaders/dh_terrain.fsh": true,
         "shaders/dh_terrain.vsh": true,
         "shaders/gbuffers_terrain_cutout.fsh": true,
@@ -43,17 +38,17 @@
         "shaders/shadow.vsh": true,
         "shaders/deferred.vsh": true,
         ".github": true,
-        ".vscode": true
+        ".vscode": true,
+        "shaders/gbuffers_weather.fsh": true,
+        "shaders/gbuffers_skybasic.vsh": true,
+        "shaders/gbuffers_skybasic.fsh": true,
+        "shaders/gbuffers_skytextured.vsh": true,
+        "shaders/gbuffers_skytextured.fsh": true
     },
     "hide-files.files": [
-        "shaders/gbuffers_basic.vsh",
         "shaders/gbuffers_entities.vsh",
-        "shaders/gbuffers_skybasic.vsh",
-        "shaders/gbuffers_skytextured.vsh",
-        "shaders/gbuffers_skytextured.fsh",
         "shaders/gbuffers_water.fsh",
         "shaders/gbuffers_water.vsh",
-        "shaders/gbuffers_skybasic.fsh",
         "shaders/dh_terrain.fsh",
         "shaders/dh_terrain.vsh",
         "shaders/gbuffers_terrain_cutout.fsh",
@@ -84,6 +79,11 @@
         "shaders/shadow.vsh",
         "shaders/deferred.vsh",
         ".github",
-        ".vscode"
+        ".vscode",
+        "shaders/gbuffers_weather.fsh",
+        "shaders/gbuffers_skybasic.vsh",
+        "shaders/gbuffers_skybasic.fsh",
+        "shaders/gbuffers_skytextured.vsh",
+        "shaders/gbuffers_skytextured.fsh"
     ]
 }

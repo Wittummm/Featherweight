@@ -44,12 +44,20 @@ value.DH_FADE_DITHER.4 = 4x4 Dither
 value.DH_FADE_DITHER.8 = 8x8 Dither
 value.DH_FADE_DITHER.1 = Blend
 
+option.DH_FADE_BLENDING.comment = [Blend] requires GLSL 4.20+
 value.DH_FADE_BLENDING.1 = Dither
 value.DH_FADE_BLENDING.2 = Blend
 
+value.SKY.0 = Vanilla
+value.SKY.1 = Shader's
+#'
+value.STARS.0 = Vanilla
+value.STARS.1 = Low
+value.STARS.2 = Medium
+
 # Debug
 option.DEBUG.comment = Toggles debugging. This doesn't stop it from loading, it simply turns it off after doing so.
-
+#'
 value._SHOW_SSR_MODE.0 = Color
 value._SHOW_SSR_MODE.1 = Coord
 value._SHOW_SSR_MODE.2 = Distance

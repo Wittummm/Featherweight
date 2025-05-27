@@ -214,7 +214,6 @@ void main() {
 
             float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
             Color.rgb = calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
-            // Color.rgb = vec3(waterDepth)*0.1; // TODONOW: fix the depth at the blending boundary being "wrong"
         }
     #else
         Color = vec4(Color.rgb, packLightLevel(lightmapCoord));

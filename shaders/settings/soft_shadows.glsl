@@ -34,7 +34,7 @@
     #endif
 #endif
 
-#define PRESET_PCF_PATTERNS On // [Off On] {Reduces code amount, harcoded patterns is recommended for low sample counts}
+#define PRESET_PCF_PATTERNS // {Reduces code amount, harcoded patterns is recommended for low sample counts}
 // DEBUG
 #define DEBUG_SHOW_SHADOW_SOFTNESS_FADE Off // [Off On]
 

@@ -19,6 +19,7 @@ uniform sampler2D colortex2;
 uniform float viewWidth;
 uniform float viewHeight;
 uniform float aspectRatio;
+uniform float renderDistance;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 Color;
@@ -73,13 +74,17 @@ void main() {
         vec2 f0 = smoothstep(vec2(fadeStart, fadeStart*aspectRatio), vec2(fadeEnd, fadeEnd*aspectRatio), 
             mix(vec2(1)-hitCoord.xy, hitCoord.xy, step(hitCoord.xy, vec2(0.5))));
 
-        float reflectionFade = min(f0.x*f0.y, 1);
         //// Fresnel ////
         float NdotV = max(dot(-viewDir, material.normals), 0);
         vec3 fresnel = clamp(fresnelSchlick(NdotV, material.f0), 0, 1);
         /////////////////
 
-        reflectionFade *= (1-getFogFactor(length(fragView), far));
+        #if DISTANT_HORIZONS
+            float renderDist = dhRenderDistance;
+        #else
+            float renderDist = renderDistance;
+        #endif
+        vec3 reflectionFade = min(f0.x*f0.y, 1) * (1-getFogFactor(length(fragView), renderDist));
         Color.rgb = mix(Color.rgb, color, fresnel*reflectionFade);
     }
 }

@@ -2,10 +2,12 @@ This document is **heavily** subject to change, DO NOT expect any of these featu
 It is meant to be a self note, but is **not** private.
 
 ### To-do:
-- Actually Fix dh blending now
-
+- Remove pixelization on the hand as it looks bad + no one would notice if its pixelated or not
 - SSR
+    - Make sky non-physically based as it is inflexible. 
+      - Make it artist friendly but still support, top, mid, bottom, sun/moon halo/horizon sky colors -> maybe use preetham's for sunset
     - Do sky/ambient reflection in composite instead of deferred, just like ssr -> maybe even do in same pass as ssr
+- Convert my composites/deferred to compute, if not supported then fallback to vsh and fsh -> it is trivial to make compute/composite use same codebase if it only requires `fragCoord`
 - Water
     - Make water also scatter skylight(attenuates based on if sun is directly above)
     - (Might defer to do later) Make shadows on water be softer than on solids(when pcf/pcss/non-hard shadows enabled)
@@ -31,10 +33,11 @@ It is meant to be a self note, but is **not** private.
 
 
 ### To-do Planned:
-- Make sky non-physically based as it is inflexible. 
-    - Make it artist friendly but still support, top, mid, bottom, sun/moon halo/horizon sky colors -> maybe use preetham's for sunset
+- ~~Make sky non-physically based as it is inflexible. ~~
+    - ~~Make it artist friendly but still support, top, mid, bottom, sun/moon halo/horizon sky colors -> maybe use preetham's for sunset~~
 - Water blur and underwater blur
--  Disable alpha blending on gbuffers, ISSUECODE: 12xnd
+- Disable alpha blending on gbuffers, ISSUECODE: 12xnd
+- Improve Rain, make it realistic/clear and not a vibrant blue
 
 ### To-do Later:
 - `PUDDLE_EXPOSURE_MIN` should correlate with the unimplemented `WIND_STRENGTH`

@@ -37,7 +37,7 @@ const float SHADOW_NEAR_DISTORT_INVERTED = 1 - SHADOW_NEAR_DISTORT;
 const float shadowIntervalSize = 3; // [0.1 0.5 1 2 3 4 6 8 10] // Shadow Snap Grid Size
 #define Z_BIAS_DISPLAY 5 // [0 1 2 3 4 5 6 7 8 9 10 11 12 14 15 17 20]
 const float Z_BIAS = Z_BIAS_DISPLAY/50000.0;
-#define DISTORT_USING_LIGHT_ANGLE On // [Off On] (Small Performance Impact)
+#define DISTORT_USING_LIGHT_ANGLE // (Small Performance Impact)
 #define SHADOW_MIP_MAP_BIAS -1.25 // [0 -0.25 -0.5 -1 -1.25 -1.5 -1.75 -2 -3] (No Performance Impact) {How sharp cutout shadows are, extreme values may cause shadow flickering}
 
 // Constants
@@ -50,7 +50,6 @@ const bool shadowHardwareFiltering = true;
 const bool shadowtex0Nearest = true;
 #endif
 // DEBUG
-#define DEBUG_SHOW_SHADOW_FADE Off // [Off On]
 
 ////////////////////
 //////////////////

@@ -34,7 +34,7 @@ Search for these keywords to see what extra features you can toggle, most are di
     - `NOTE` a note for readers, including oneself
     - `PIN` likely will come back to, usually to edit/add features
     - `CODE: xxx` a random code(literally button mash) 
-    - `REMOVAL` to remove for some reasoon
+    - `REMOVE` to remove for some reasoon
   - **Notes**
     - Put "#define DISTANT_HORIZONS_SHADER" in the top of DH shader stages
     - Pixelization Overrides syntax:
@@ -62,9 +62,9 @@ Search for these keywords to see what extra features you can toggle, most are di
  - "common" stores *very* common files.
 
 ### Citing, Sources, Referencing
- - List of "Sources" at top of file with links. Each link has an index
+ - List of "Sources" at top of file with links. Each link has an `sourceIndex`
     - `[x]` means it is purely a resource.
- - Cite by doing `[index/anyArbitraryPath]` for example: `[1]` `[2/#100]` `[3/5.3]`
+ - Cite by doing `[sourceIndex/anyArbitraryPath]` for example: `[1]` `[2/#100]` `[3/5.3]`
     - `/` is used to go into deeper paths
     - `#` usually refers to page or header
     - `1.0` a float-like text usually refers to chapters, writing as integer alone is not recommended and there should always be a decimal even if it is zero.

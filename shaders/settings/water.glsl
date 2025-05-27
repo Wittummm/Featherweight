@@ -4,7 +4,7 @@
 
 #define WATER_FOG_END 0.6
 
-#define WATER_WAVES Off // [Off On]
+// #define WATER_WAVES
 
 const float waterConcentration = 0.5;
 const vec3 waterAbsorption = vec3(0.025, 0.03, 0.03)*0.3;
