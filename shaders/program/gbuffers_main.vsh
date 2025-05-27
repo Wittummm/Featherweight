@@ -9,7 +9,6 @@ uniform mat4 gbufferModelView;
 	uniform int renderStage;
 	uniform mat4 modelViewMatrix;
 	uniform mat4 projectionMatrix;
-	uniform sampler2D noisetex; // temp, actually use runtime noise
 	uniform float frameTimeCounter;
 	uniform vec3 cameraPosition;
 
@@ -37,7 +36,7 @@ uniform mat4 gbufferModelView;
 		uniform int isEyeInWater;
 		in vec2 mc_Entity;
 		out vec2 blockType;
-		#include "/func/noise/noiseSimplex.glsl"
+		#include "/func/random/noiseSimplex.glsl"
 		#include "/func/depthToViewPos.glsl"
 		#include "/settings/water.glsl"
 		#include "/lib/metadata.glsl"

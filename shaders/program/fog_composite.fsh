@@ -12,6 +12,8 @@ uniform sampler2D colortex0;
 uniform float sunAngle;
 uniform sampler2D shadowtex1;
 uniform sampler2DShadow shadowtex1HW;
+uniform float viewWidth;
+uniform float viewHeight;
 
 #include "/common/const.glsl"
 #include "/settings/lighting.glsl"

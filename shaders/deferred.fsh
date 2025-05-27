@@ -13,6 +13,8 @@ uniform float sunAngle;
 uniform vec4 lightColor;
 uniform sampler2D depthtex1;
 uniform vec2 mc_Entity;
+uniform float viewWidth;
+uniform float viewHeight;
 
 #include "/common/const.glsl"
 #include "/lib/pbr.glsl"
@@ -54,7 +56,7 @@ void main() {
 			because supposedly DH copies depth0 over to depth1 at deferred and is not the intuitive way
 			CREDIT: joshtheb(jbritain) https://discord.com/channels/237199950235041794/736928196162879510/1369707060597358773
 		*/
-		float dhDepth = texture(dhDepthTex0, fragCoord).r; // CODE: 8dh91 This causes "ghosting" as `dhDepthTex1` seems to be delayed(or maybe projected wrong)
+		float dhDepth = texture(dhDepthTex0, fragCoord).r;
 		isSky = depth >= 1 && dhDepth >= 1;
 		vec3 viewPos = depth < 1 ? depthToViewPos(fragCoord, depth) : depthToViewPos(fragCoord, dhDepth, dhProjectionInverse);
 	#else
