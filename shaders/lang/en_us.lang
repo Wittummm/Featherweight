@@ -44,6 +44,7 @@ value.DH_FADE_DITHER.4 = 4x4 Dither
 value.DH_FADE_DITHER.8 = 8x8 Dither
 value.DH_FADE_DITHER.1 = Blend
 
+option.DH_FADE_BLENDING.comment = [Blend] requires GLSL 4.20+
 value.DH_FADE_BLENDING.1 = Dither
 value.DH_FADE_BLENDING.2 = Blend
 

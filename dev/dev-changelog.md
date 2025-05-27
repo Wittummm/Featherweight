@@ -48,4 +48,8 @@ Major.Minor.Revision.Patch.Tag, pre v1 versions are highly volatile.
     - `block_entities` now have `CUTOUT` flag
     - Specfically only `CUTOUT` in `shadow_cutout` program if Iris v1.8+
     - (Untested) Remove `DH_FADE_BLENDING.Blend` option when images are not supported(glsl 420)
+ - v0.8.0.0 New Custom Sky! Supports Stellar view.
+  - Sky
+  - Stars(appears based on sky brightness!)
+  - Changed `getFogFactor` to use a biased Beer's Law
 

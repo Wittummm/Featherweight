@@ -7,8 +7,8 @@
 #include "/func/shading/specular.glsl"
 #include "/func/shading/diffuse.glsl"
 #include "/func/shading/clearcoat.glsl"
-#include "/func/noise/noiseSimplex.glsl"
-#include "/func/noise/noise.glsl"
+#include "/func/random/noiseSimplex.glsl"
+#include "/func/random/noise.glsl"
 #include "/func/depthToViewPos.glsl"
 #include "/settings/shadows.glsl"
 #include "/lib/shadow/shadow0.glsl"
@@ -52,7 +52,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     float lit = min(diffuseFactor,1-shadow)*lightColor.a; //*lightColor.rgb;
 
     vec3 kS = vec3(0.0);
-    #if SPECULAR == On
+    #ifdef SPECULAR
     vec3 colorSpecular = calcSpecular(lightDir, outDir, normals, roughness, f0, kS);
     #else
     vec3 colorSpecular = vec3(0);
@@ -63,7 +63,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     color.rgb = (color.rgb*AMBIENT) + (color.rgb*lit); // NOTE: This darkens everything including lightmap as lightmap isnt included in `lit`
     color.rgb = color.rgb*(1-kS)*(1-metallic) + ambientSpecular*kS*(0.5+lit*0.5) + colorSpecular*lit + albedo*emission;
 
-    #if PUDDLES == On
+    #ifdef PUDDLES
     /* Rain Puddles using Clearcoat layer
         Issue: When block is light source the skylight goes dark, is an issue with mc/iris
     */

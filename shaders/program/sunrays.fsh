@@ -22,7 +22,7 @@ uniform float sunraysOriginSize;
 
 #define SUNRAYS_SAMPLES 1 // [0.25 0.5 1 1.5 2 2.5 3 3.5 4]
 #define SUNRAYS_FAKE_SAMPLES 1 // [0 0.5 1 1.5 2 2.5 3 3.5 4] {Multiples the sample count via dithering}
-#define SUNRAYS_AUTO_FAKE_SAMPLES On // [Off On]
+#define SUNRAYS_AUTO_FAKE_SAMPLES
 const float falloff = 5; // How tight the falloff is, higher is tighter
 
 #define Diamond Low
@@ -98,7 +98,7 @@ void main() {
     float strength = -lightDir.z*1.4;
     if (strength <= 0) {return;}
 
-#if SUNRAYS_AUTO_FAKE_SAMPLES == On
+#ifdef SUNRAYS_AUTO_FAKE_SAMPLES
     float adjustedFakeSampleMult = SUNRAYS_FAKE_SAMPLES > 0 ? SUNRAYS_FAKE_SAMPLES + ceil((1+lightDir.z)*4)*0.5 : SUNRAYS_FAKE_SAMPLES;
 #else
     float adjustedFakeSampleMult = SUNRAYS_FAKE_SAMPLES;
@@ -131,7 +131,6 @@ void main() {
            
         #if SUNRAYS_MODE == 1
             float depth = isEyeUnderwater ? sampleDepth1(samplePos) : sampleDepth0(samplePos);
-            // TODO: adjust the spread and strength and color when underwater here
         #elif SUNRAYS_MODE == 2 || SUNRAYS_MODE == 3
             float depth = sampleDepth1(samplePos);
             blockTransparency = depth - sampleDepth0(samplePos) > 0 ? SUNRAYS_MAX_TRANSPARENCY : 1; 

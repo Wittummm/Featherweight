@@ -12,6 +12,8 @@ uniform sampler2D colortex0;
 uniform float sunAngle;
 uniform sampler2D shadowtex1;
 uniform sampler2DShadow shadowtex1HW;
+uniform float viewWidth;
+uniform float viewHeight;
 
 #include "/common/const.glsl"
 #include "/settings/lighting.glsl"
@@ -31,10 +33,14 @@ uniform float near;
 uniform float far;
 uniform bool isEyeUnderwater;
 uniform vec4 lightColor;
+uniform float renderDistance;
 #ifdef DISTANT_HORIZONS
 	uniform sampler2D dhDepthTex0;
 	uniform int dhRenderDistance;
 	uniform mat4 dhProjectionInverse;
+#endif
+#if SKY == 0
+uniform vec3 fogColor;
 #endif
 
 in vec2 fragCoord;
@@ -75,15 +81,17 @@ void main() {
 		#ifdef DISTANT_HORIZONS
 			float renderDist = dhRenderDistance;
 		#else
-			float renderDist = far;
+			float renderDist = renderDistance;
 		#endif
-		float fogFactor = getFogFactor(fragDist, renderDist);
-		if (fogFactor > 0) {
-			vec3 fogCoord = (mat3(gbufferModelView) * 
-				normalize((mat3(gbufferModelViewInverse)*viewPos*vec3(1,0,1))) 
-			);
-			Color.rgb = mix(Color.rgb, calcSky(fogCoord), fogFactor);
+		vec3 fogFactor = getFogFactor(fragDist, renderDist);
+		#if SKY == 0
+			Color.rgb = mix(Color.rgb, srgbToLinear(fogColor), fogFactor);
+		#else
+		if (all(greaterThan(fogFactor, vec3(0)))) {
+			vec3 fog = calcSky(normalize(viewPos), vec2(1, fogFactor.r), vec2(100, 1));
+			Color.rgb = mix(Color.rgb, fog, fogFactor);
 		}
+		#endif
 	}
 
 	Color = linearToSRGB(Color);

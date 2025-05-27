@@ -1,3 +1,5 @@
+#ifndef PI
+
 uniform float alphaTestRef = 0.1;
 const int noiseTextureResolution = 256;
 const float wetnessHalflife = 50.0;
@@ -10,3 +12,5 @@ const float shadowDistanceRenderMul = 1;
 // Derived
 const int noiseTexRes = noiseTextureResolution;
 const vec2 noiseTexSize = vec2(noiseTexRes, noiseTexRes);
+
+#endif

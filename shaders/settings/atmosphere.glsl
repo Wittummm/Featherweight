@@ -9,6 +9,9 @@ vec3 ATMOSPHERE_COLOR = vec3(176, 204, 255)*0.00392156862745098;
 
 #define AMBIENT_REFLECTION_QUALITY 2 // [Off 1 2 3 4 6 8 10 12 15 20 25 30]
 
-//
+//////////////////
 
-#define getFogFactor(fragDist, renderDist) min(smoothstep(FOG_START*renderDist, FOG_END*renderDist, fragDist) * FOG_DENSITY, 1)
+// NOTE: we could optimize this by computing it once, then passing it but that would need a metadata framebuffer to be ideal
+// uniform vec3 fogCoefficient;
+const vec3 fogCoefficient = vec3(5.5e-6, 13.0e-6, 22.4e-6); // TODONOW: add fog density
+#define getFogFactor(dist, renderDist) min( ( 1.0-exp(-fogCoefficient*dist) ) / (1.0-exp(-fogCoefficient*renderDist)), 1)

@@ -11,7 +11,7 @@
 float pcfSampleShadow(vec3 coord, float sampleCount, float offset) {
     float totalDepth = 0;
 
-#if PRESET_PCF_PATTERNS == On
+#ifdef PRESET_PCF_PATTERNS
     switch (int(sampleCount)) {
         case 2:
             totalDepth += sampleShadowMap(coord - vec3(offset, offset, 0));
@@ -49,7 +49,7 @@ float pcfSampleShadow(vec3 coord, float sampleCount, float offset) {
 
         totalDepth += sampleShadowMap(coord + vec3(sampleOffset.xy,0));
     }
-#if PRESET_PCF_PATTERNS == On
+#ifdef PRESET_PCF_PATTERNS
             break;
         }
 #endif

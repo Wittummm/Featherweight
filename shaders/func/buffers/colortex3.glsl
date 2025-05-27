@@ -24,7 +24,6 @@ vec3 readSSR(vec2 fragCoord) {
 }
 
 vec3 readSSRLinear(vec2 fragCoord) {
-    // TODONOW: ignore pixel if it is invalid ie 0,0
     vec2 frac = fract(fragCoord*colortex3Size);
 
     vec2 p = fragCoord - frac*colortex3TexelSize;
