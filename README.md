@@ -10,7 +10,8 @@ An Iris minecraft shader focusing on lightweight features.
 
 ## Mod Integrations/Support
 - Distant Horizons
-- TODO: FabricSkyBoxes(Custom Sky)
+- CONSIDER: FabricSkyBoxes(Custom Sky)
+- CONSIDER: Better Clouds
 - CONSIDER: Physics mod(Better Oceans)
 - CONSIDER: Stellar View
 
