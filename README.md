@@ -5,6 +5,14 @@ User-insignificant/developer-oriented details should be included as comments and
 # Featherweight
 An Iris minecraft shader focusing on lightweight features.
 
+## Features
+- Currently Unlisted
+
+## Mod Integrations/Support
+- Distant Horizons
+- CONSIDER: Physics mod(ocean)
+- CONSIDER: Stellar View
+
 ## Notes
 - Built for and on Iris, other shader loaders may or may not work.
   - Iris v1.7.6 is incompatible.
