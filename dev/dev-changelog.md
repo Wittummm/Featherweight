@@ -2,12 +2,21 @@
 The shader developer should make use of Issues(bugs), Discussions(ideas), and Pull Requests(changes) especially when it is significant to do so and when not in a dev version.
 -->
 
-Version: v0.x.x.x.Dev (Refer to changelog as pre v1 is volatile)
+Version: v0.x.x.x-alpha (Refer to changelog as pre v1 is volatile)
 
 ### Version Phases
-Major.Minor.Revision.Patch.Tag, pre v1 versions are highly volatile.
- - Dev - Unstable
- - Alpha - Core mechanics
+Major.Minor.Revision.Patch-Tag, pre v1 versions are highly volatile.
+- Major = A set of new features, likely breaking
+- Minor = New feature, potentially breaking
+- Revision = Changes to how a feature works, should not be breaking
+- Patch = Fix an issue, cannot be breaking
+
+#### Tags
+ - `-alpha` Alpha - Unstable, Development version
+ - `-beta` Beta - Non-stable
+ - `-rc0.0.0.0` RC(Release Candidate) - Mostly stable, can be applied every Major version(There may be exceptions)
+   - Release Candidate version(`0.0.0.0` part) is optional. The normal version must still be used even when the RC version is used, it is simply a parallel version of how close it is to being released. The RC version should be: `currentVersion - lastNonRCVersion` which is the diff of the two.
+ - `noTag` Release - Stable
 
 ### Branches
  - `main` stable releases
@@ -44,7 +53,7 @@ Major.Minor.Revision.Patch.Tag, pre v1 versions are highly volatile.
     - Fixed dh water getting "clipped" arbitrary; code was legacy and supposedly wrong
     - Fixed dh water(translucents) getting masked by invisible vanilla fragemnts; fixed by dithering *some* vanilla chunks, specificially one where we think the dh-vanilla block is not the same block ie foliage doesnt exist in DH chunks
     - Ongoing Patch: Properly dithering dh-vanilla chunks -> need to dither out dh chunks too :/
- - v0.7.6.2.dev Misc Patches & Changes
+ - v0.7.6.2-alpha Misc Patches & Changes
     - `block_entities` now have `CUTOUT` flag
     - Specfically only `CUTOUT` in `shadow_cutout` program if Iris v1.8+
     - (Untested) Remove `DH_FADE_BLENDING.Blend` option when images are not supported(glsl 420)
