@@ -32,6 +32,7 @@ jobs:
           #curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           
           files: "Featherweight-${{ github.event.release.tag_name }}.zip"
+          version : "${{ github.event.release.tag_name }}"
           loaders: iris
           game-versions: ">=1.20"
 
