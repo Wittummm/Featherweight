@@ -8,6 +8,7 @@ An Iris minecraft shader focusing on lightweight features.
 ## Notes
 - Built for and on Iris, other shader loaders may or may not work.
   - Iris v1.7.6 is incompatible.
+- Built for OpenGL 4.2 or higher, lower versions may or may not work.
 ### Specific Behavior <!--- Behavior specific to versions of Sodium, Iris, Minecraft, or OpenGL -->
 - `DH_FADE_BLENDING.Blend` requires GLSL 420 or higher; as it uses images.
 <!---
