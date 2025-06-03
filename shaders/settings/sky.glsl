@@ -7,6 +7,14 @@
 
 #define STAR_AMOUNT 50 // [0 10 20 30 40 50 60 70 80 90 100]
 #define STAR_SHAPE 1 // [0 1] {Textured Circle}
+<<<<<<< HEAD
+=======
+
+// Stellar View
+// #define STELLAR_VIEW
+// #define REMOVE_STELLAR_VIEW_UNTEXTURED_STARS
+#define DISABLE_MOON_HALO
+>>>>>>> 2140e76e913e0299d6d9c8230e9e1b23f9a4b04b
 //
 
 const float starAmount = STAR_AMOUNT*0.001;
