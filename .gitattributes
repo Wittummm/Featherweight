@@ -5,3 +5,6 @@
 *.tes text linguist-language=glsl
 *.fsh text linguist-language=glsl
 *.csh text linguist-language=glsl
+*.glsl text eol=lf
+*.fsh text eol=lf
+*.vsh text eol=lf
