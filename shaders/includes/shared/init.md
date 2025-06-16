@@ -1,0 +1,1 @@
+The "shared" folder is like the "common" folder but looser.

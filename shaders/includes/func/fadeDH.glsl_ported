@@ -1,0 +1,37 @@
+#ifdef DISTANT_HORIZONS
+// REMOVE: Unused, if unused after a while then remove, date: 2025/22/5
+// #include "/includes/func/dither/dither8.glsl"
+
+// #if DH_FADE_DITHER == 2
+//     #define dither dither2
+// #elif DH_FADE_DITHER == 4
+//     #define dither dither4
+// #elif DH_FADE_DITHER == 8
+//     #define dither dither8
+// #endif
+
+// bool fadeDH(float fadeOut) {
+//     #if defined DISTANT_HORIZONS && DH_FADE_DITHER != Off
+//         // Creates a TON of branching, not ideal for performance
+//         if (fadeOut >= 0.9999 || dither(gl_FragCoord.xy) + 0.002 <= fadeOut) {
+//             return true;
+//         } 
+//     #endif
+//     return false;
+// }
+
+float r2(vec2 coord) {
+    return fract(coord.x*0.7548776662466927 + coord.y*0.5698402909980532);
+}
+
+bool fadeDH(float fadeOut) {
+    #if defined DISTANT_HORIZONS && DH_FADE_DITHER != Off
+        // Creates a TON of branching, not ideal for performance
+        if (fadeOut >= 0.9999 || r2(gl_FragCoord.xy) < fadeOut) {
+            return true;
+        }
+    #endif
+    return false;
+}
+
+#endif

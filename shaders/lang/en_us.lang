@@ -1,0 +1,86 @@
+# Auto generated using `/build/generateLang.ts` (Featherweight)
+
+value.ShadowFilter.0 = Nearest
+value.ShadowFilter.1 = Linear
+value.ShadowFilter.2 = Uniform Soft
+
+option._DebugEnabled = §oEnable Debug§r
+
+option._DebugStats = Debug Stats
+
+option._SliceScreen = Slice Screen
+
+option._ShowShadows = Isolate Shadows
+
+option._ShowShadowMap = ShowShadowMap
+value._ShowShadowMap.-1 = Off
+value._ShowShadowMap.0 = Full
+value._ShowShadowMap.1 = Top Left
+value._ShowShadowMap.2 = Top Right
+value._ShowShadowMap.3 = Bottom Left
+value._ShowShadowMap.4 = Bottom Right
+
+option._ShowDepth = ShowDepth
+value._ShowDepth.-1 = Off
+value._ShowDepth.0 = Full
+value._ShowDepth.1 = Top Left
+value._ShowDepth.2 = Top Right
+value._ShowDepth.3 = Bottom Left
+value._ShowDepth.4 = Bottom Right
+
+option._ShowRoughness = ShowRoughness
+value._ShowRoughness.-1 = Off
+value._ShowRoughness.0 = Full
+value._ShowRoughness.1 = Top Left
+value._ShowRoughness.2 = Top Right
+value._ShowRoughness.3 = Bottom Left
+value._ShowRoughness.4 = Bottom Right
+
+option._ShowReflectance = ShowReflectance
+value._ShowReflectance.-1 = Off
+value._ShowReflectance.0 = Full
+value._ShowReflectance.1 = Top Left
+value._ShowReflectance.2 = Top Right
+value._ShowReflectance.3 = Bottom Left
+value._ShowReflectance.4 = Bottom Right
+
+option._ShowPorosity = ShowPorosity
+value._ShowPorosity.-1 = Off
+value._ShowPorosity.0 = Full
+value._ShowPorosity.1 = Top Left
+value._ShowPorosity.2 = Top Right
+value._ShowPorosity.3 = Bottom Left
+value._ShowPorosity.4 = Bottom Right
+
+option._ShowEmission = ShowEmission
+value._ShowEmission.-1 = Off
+value._ShowEmission.0 = Full
+value._ShowEmission.1 = Top Left
+value._ShowEmission.2 = Top Right
+value._ShowEmission.3 = Bottom Left
+value._ShowEmission.4 = Bottom Right
+
+option._ShowNormals = ShowNormals
+value._ShowNormals.-1 = Off
+value._ShowNormals.0 = Full
+value._ShowNormals.1 = Top Left
+value._ShowNormals.2 = Top Right
+value._ShowNormals.3 = Bottom Left
+value._ShowNormals.4 = Bottom Right
+
+option._ShowAmbientOcclusion = ShowAmbientOcclusion
+value._ShowAmbientOcclusion.-1 = Off
+value._ShowAmbientOcclusion.0 = Full
+value._ShowAmbientOcclusion.1 = Top Left
+value._ShowAmbientOcclusion.2 = Top Right
+value._ShowAmbientOcclusion.3 = Bottom Left
+value._ShowAmbientOcclusion.4 = Bottom Right
+
+option._ShowHeight = ShowHeight
+value._ShowHeight.-1 = Off
+value._ShowHeight.0 = Full
+value._ShowHeight.1 = Top Left
+value._ShowHeight.2 = Top Right
+value._ShowHeight.3 = Bottom Left
+value._ShowHeight.4 = Bottom Right
+

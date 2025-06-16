@@ -1,0 +1,8 @@
+{
+  "include": ["shaders/**/*"],
+  "compilerOptions": {
+    "target": "esnext",
+    "moduleResolution": "nodenext",
+    "module": "nodenext"
+  }
+}

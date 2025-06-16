@@ -1,0 +1,608 @@
+{
+	"camera.pos": {
+		"scope": "glsl",
+		"prefix": "camera.pos",
+		"body": ["camera.pos"],
+		"description": "vec3"
+	},
+	"camera.fractPos": {
+		"scope": "glsl",
+		"prefix": "camera.fractPos",
+		"body": ["camera.fractPos"],
+		"description": "vec3"
+	},
+	"camera.intPos": {
+		"scope": "glsl",
+		"prefix": "camera.intPos",
+		"body": ["camera.intPos"],
+		"description": "ivec3"
+	},
+	"camera.blockPos": {
+		"scope": "glsl",
+		"prefix": "camera.blockPos",
+		"body": ["camera.blockPos"],
+		"description": "ivec3"
+	},
+	"camera.fluid": {
+		"scope": "glsl",
+		"prefix": "camera.fluid",
+		"body": ["camera.fluid"],
+		"description": "int"
+	},
+	"camera.near": {
+		"scope": "glsl",
+		"prefix": "camera.near",
+		"body": ["camera.near"],
+		"description": "float"
+	},
+	"camera.far": {
+		"scope": "glsl",
+		"prefix": "camera.far",
+		"body": ["camera.far"],
+		"description": "float"
+	},
+	"camera.renderDistance": {
+		"scope": "glsl",
+		"prefix": "camera.renderDistance",
+		"body": ["camera.renderDistance"],
+		"description": "float"
+	},
+	"camera.view": {
+		"scope": "glsl",
+		"prefix": "camera.view",
+		"body": ["camera.view"],
+		"description": "mat4"
+	},
+	"camera.viewInv": {
+		"scope": "glsl",
+		"prefix": "camera.viewInv",
+		"body": ["camera.viewInv"],
+		"description": "mat4"
+	},
+	"camera.projection": {
+		"scope": "glsl",
+		"prefix": "camera.projection",
+		"body": ["camera.projection"],
+		"description": "mat4"
+	},
+	"camera.projectionInv": {
+		"scope": "glsl",
+		"prefix": "camera.projectionInv",
+		"body": ["camera.projectionInv"],
+		"description": "mat4"
+	},
+	"camera.brightness": {
+		"scope": "glsl",
+		"prefix": "camera.brightness",
+		"body": ["camera.brightness"],
+		"description": "vec2"
+	},
+	"temporal.view": {
+		"scope": "glsl",
+		"prefix": "temporal.view",
+		"body": ["temporal.view"],
+		"description": "mat4"
+	},
+	"temporal.viewInv": {
+		"scope": "glsl",
+		"prefix": "temporal.viewInv",
+		"body": ["temporal.viewInv"],
+		"description": "mat4"
+	},
+	"temporal.projection": {
+		"scope": "glsl",
+		"prefix": "temporal.projection",
+		"body": ["temporal.projection"],
+		"description": "mat4"
+	},
+	"temporal.projectionInv": {
+		"scope": "glsl",
+		"prefix": "temporal.projectionInv",
+		"body": ["temporal.projectionInv"],
+		"description": "mat4"
+	},
+	"temporal.pos": {
+		"scope": "glsl",
+		"prefix": "temporal.pos",
+		"body": ["temporal.pos"],
+		"description": "vec3"
+	},
+	"world.rain": {
+		"scope": "glsl",
+		"prefix": "world.rain",
+		"body": ["world.rain"],
+		"description": "float"
+	},
+	"world.thunder": {
+		"scope": "glsl",
+		"prefix": "world.thunder",
+		"body": ["world.thunder"],
+		"description": "float"
+	},
+	"world.time": {
+		"scope": "glsl",
+		"prefix": "world.time",
+		"body": ["world.time"],
+		"description": "int"
+	},
+	"world.day": {
+		"scope": "glsl",
+		"prefix": "world.day",
+		"body": ["world.day"],
+		"description": "int"
+	},
+	"world.skyColor": {
+		"scope": "glsl",
+		"prefix": "world.skyColor",
+		"body": ["world.skyColor"],
+		"description": "vec3"
+	},
+	"world.fogStart": {
+		"scope": "glsl",
+		"prefix": "world.fogStart",
+		"body": ["world.fogStart"],
+		"description": "float"
+	},
+	"world.fogEnd": {
+		"scope": "glsl",
+		"prefix": "world.fogEnd",
+		"body": ["world.fogEnd"],
+		"description": "float"
+	},
+	"world.fogColor": {
+		"scope": "glsl",
+		"prefix": "world.fogColor",
+		"body": ["world.fogColor"],
+		"description": "vec4"
+	},
+	"world.internal_chunkDiameter": {
+		"scope": "glsl",
+		"prefix": "world.internal_chunkDiameter",
+		"body": ["world.internal_chunkDiameter"],
+		"description": "ivec3"
+	},
+	"game.screenSize": {
+		"scope": "glsl",
+		"prefix": "game.screenSize",
+		"body": ["game.screenSize"],
+		"description": "vec2"
+	},
+	"game.guiHidden": {
+		"scope": "glsl",
+		"prefix": "game.guiHidden",
+		"body": ["game.guiHidden"],
+		"description": "bool"
+	},
+	"game.brightness": {
+		"scope": "glsl",
+		"prefix": "game.brightness",
+		"body": ["game.brightness"],
+		"description": "float"
+	},
+	"game.mainHand": {
+		"scope": "glsl",
+		"prefix": "game.mainHand",
+		"body": ["game.mainHand"],
+		"description": "int"
+	},
+	"game.offHand": {
+		"scope": "glsl",
+		"prefix": "game.offHand",
+		"body": ["game.offHand"],
+		"description": "int"
+	},
+	"time.frames": {
+		"scope": "glsl",
+		"prefix": "time.frames",
+		"body": ["time.frames"],
+		"description": "int"
+	},
+	"time.delta": {
+		"scope": "glsl",
+		"prefix": "time.delta",
+		"body": ["time.delta"],
+		"description": "float"
+	},
+	"time.elapsed": {
+		"scope": "glsl",
+		"prefix": "time.elapsed",
+		"body": ["time.elapsed"],
+		"description": "float"
+	},
+	"celestial.angle": {
+		"scope": "glsl",
+		"prefix": "celestial.angle",
+		"body": ["celestial.angle"],
+		"description": "float"
+	},
+	"celestial.phase": {
+		"scope": "glsl",
+		"prefix": "celestial.phase",
+		"body": ["celestial.phase"],
+		"description": "int"
+	},
+	"celestial.pos": {
+		"scope": "glsl",
+		"prefix": "celestial.pos",
+		"body": ["celestial.pos"],
+		"description": "vec3"
+	},
+	"celestial.sunPos": {
+		"scope": "glsl",
+		"prefix": "celestial.sunPos",
+		"body": ["celestial.sunPos"],
+		"description": "vec3"
+	},
+	"celestial.upPos": {
+		"scope": "glsl",
+		"prefix": "celestial.upPos",
+		"body": ["celestial.upPos"],
+		"description": "vec3"
+	},
+	"celestial.moonPos": {
+		"scope": "glsl",
+		"prefix": "celestial.moonPos",
+		"body": ["celestial.moonPos"],
+		"description": "vec3"
+	},
+	"celestial.view": {
+		"scope": "glsl",
+		"prefix": "celestial.view",
+		"body": ["celestial.view"],
+		"description": "mat4"
+	},
+	"celestial.viewInv": {
+		"scope": "glsl",
+		"prefix": "celestial.viewInv",
+		"body": ["celestial.viewInv"],
+		"description": "mat4"
+	},
+	"celestial.projection": {
+		"scope": "glsl",
+		"prefix": "celestial.projection",
+		"body": ["celestial.projection"],
+		"description": "mat4[8]"
+	},
+	"celestial.projectionInv": {
+		"scope": "glsl",
+		"prefix": "celestial.projectionInv",
+		"body": ["celestial.projectionInv"],
+		"description": "mat4[8]"
+	},
+	"celestial.bsl_shadowFade": {
+		"scope": "glsl",
+		"prefix": "celestial.bsl_shadowFade",
+		"body": ["celestial.bsl_shadowFade"],
+		"description": "float"
+	},
+	"celestial.makeUp_lightMix": {
+		"scope": "glsl",
+		"prefix": "celestial.makeUp_lightMix",
+		"body": ["celestial.makeUp_lightMix"],
+		"description": "float"
+	},
+    "data.modelPos": {
+        "scope": "glsl",
+        "prefix": "data.modelPos",
+        "body": ["data.modelPos"],
+        "description": "vec4"
+    },
+    "data.clipPos": {
+        "scope": "glsl",
+        "prefix": "data.clipPos",
+        "body": ["data.clipPos"],
+        "description": "vec4"
+    },
+    "data.uv": {
+        "scope": "glsl",
+        "prefix": "data.uv",
+        "body": ["data.uv"],
+        "description": "vec2"
+    },
+    "data.light": {
+        "scope": "glsl",
+        "prefix": "data.light",
+        "body": ["data.light"],
+        "description": "vec2"
+    },
+    "data.color": {
+        "scope": "glsl",
+        "prefix": "data.color",
+        "body": ["data.color"],
+        "description": "vec4"
+    },
+    "data.normal": {
+        "scope": "glsl",
+        "prefix": "data.normal",
+        "body": ["data.normal"],
+        "description": "vec3"
+    },
+    "data.tangent": {
+        "scope": "glsl",
+        "prefix": "data.tangent",
+        "body": ["data.tangent"],
+        "description": "vec4"
+    },
+    "data.overlayColor": {
+        "scope": "glsl",
+        "prefix": "data.overlayColor",
+        "body": ["data.overlayColor"],
+        "description": "vec4"
+    },
+    "data.midBlock": {
+        "scope": "glsl",
+        "prefix": "data.midBlock",
+        "body": ["data.midBlock"],
+        "description": "vec3"
+    },
+    "data.blockId": {
+        "scope": "glsl",
+        "prefix": "data.blockId",
+        "body": ["data.blockId"],
+        "description": "uint"
+    },
+    "data.textureId": {
+        "scope": "glsl",
+        "prefix": "data.textureId",
+        "body": ["data.textureId"],
+        "description": "uint"
+    },
+    "data.midCoord": {
+        "scope": "glsl",
+        "prefix": "data.midCoord",
+        "body": ["data.midCoord"],
+        "description": "vec2"
+    },
+    "data.ao": {
+        "scope": "glsl",
+        "prefix": "data.ao",
+        "body": ["data.ao"],
+        "description": "float"
+    },
+    "iris_emitVertex(inout VertexData data)": {
+        "scope": "glsl",
+        "prefix": "iris_emitVertex(inout VertexData data)",
+        "body": ["iris_emitVertex(inout VertexData data)"],
+        "description": "void"
+    },
+    "iris_sendParameters(VertexData data)": {
+        "scope": "glsl",
+        "prefix": "iris_sendParameters(VertexData data)",
+        "body": ["iris_sendParameters(VertexData data)"],
+        "description": "void"
+    },
+    "iris_emitFragment()": {
+        "scope": "glsl",
+        "prefix": "iris_emitFragment()",
+        "body": ["iris_emitFragment()"],
+        "description": "void"
+    },
+    "iris_getTexture(uint textureId)": {
+        "scope": "glsl",
+        "prefix": "iris_getTexture(uint textureId)",
+        "body": ["iris_getTexture(uint textureId)"],
+        "description": "iris_TextureInfo"
+    },
+    "iris_hasTag(uint blockId, uint tag)": {
+        "scope": "glsl",
+        "prefix": "iris_hasTag(uint blockId, uint tag)",
+        "body": ["iris_hasTag(uint blockId, uint tag)"],
+        "description": "bool"
+    },
+    "iris_getLightColor(uint blockId)": {
+        "scope": "glsl",
+        "prefix": "iris_getLightColor(uint blockId)",
+        "body": ["iris_getLightColor(uint blockId)"],
+        "description": "vec4"
+    },
+    "iris_getMetadata(uint blockId)": {
+        "scope": "glsl",
+        "prefix": "iris_getMetadata(uint blockId)",
+        "body": ["iris_getMetadata(uint blockId)"],
+        "description": "uint"
+    },
+    "iris_getCustomId(uint blockId)": {
+        "scope": "glsl",
+        "prefix": "iris_getCustomId(uint blockId)",
+        "body": ["iris_getCustomId(uint blockId)"],
+        "description": "uint"
+    },
+    "iris_isFullBlock(uint blockId)": {
+        "scope": "glsl",
+        "prefix": "iris_isFullBlock(uint blockId)",
+        "body": ["iris_isFullBlock(uint blockId)"],
+        "description": "bool"
+    },
+    "iris_hasFluid(uint blockId)": {
+        "scope": "glsl",
+        "prefix": "iris_hasFluid(uint blockId)",
+        "body": ["iris_hasFluid(uint blockId)"],
+        "description": "bool"
+    },
+    "iris_getEmission(uint blockId)": {
+        "scope": "glsl",
+        "prefix": "iris_getEmission(uint blockId)",
+        "body": ["iris_getEmission(uint blockId)"],
+        "description": "int"
+    },
+    "iris_getBlockIndex(ivec3 pos)": {
+        "scope": "glsl",
+        "prefix": "iris_getBlockIndex(ivec3 pos)",
+        "body": ["iris_getBlockIndex(ivec3 pos)"],
+        "description": "uint"
+    },
+    "iris_getBlockAtPos(ivec3 loc)": {
+        "scope": "glsl",
+        "prefix": "iris_getBlockAtPos(ivec3 loc)",
+        "body": ["iris_getBlockAtPos(ivec3 loc)"],
+        "description": "ivec2"
+    },
+    "iris_getSection(ivec3 loc)": {
+        "scope": "glsl",
+        "prefix": "iris_getSection(ivec3 loc)",
+        "body": ["iris_getSection(ivec3 loc)"],
+        "description": "iris_chunkSection"
+    },
+    "iris_isSectionLoaded(ivec3 loc)": {
+        "scope": "glsl",
+        "prefix": "iris_isSectionLoaded(ivec3 loc)",
+        "body": ["iris_isSectionLoaded(ivec3 loc)"],
+        "description": "bool"
+    },
+    "iris_getBlockInSection(iris_chunkSection sect, ivec3 blockPos)": {
+        "scope": "glsl",
+        "prefix": "iris_getBlockInSection(iris_chunkSection sect, ivec3 blockPos)",
+        "body": ["iris_getBlockInSection(iris_chunkSection sect, ivec3 blockPos)"],
+        "description": "ivec2"
+    },
+    "iris_sampleBaseTex(vec2 uv)": {
+        "scope": "glsl",
+        "prefix": "iris_sampleBaseTex(vec2 uv)",
+        "body": ["iris_sampleBaseTex(vec2 uv)"],
+        "description": "vec4"
+    },
+    "iris_sampleBaseTexLod(vec2 uv, float lod)": {
+        "scope": "glsl",
+        "prefix": "iris_sampleBaseTexLod(vec2 uv, float lod)",
+        "body": ["iris_sampleBaseTexLod(vec2 uv, float lod)"],
+        "description": "vec4"
+    },
+    "iris_sampleBaseTexGrad(vec2 uv, vec2 dx, vec2 dy)": {
+        "scope": "glsl",
+        "prefix": "iris_sampleBaseTexGrad(vec2 uv, vec2 dx, vec2 dy)",
+        "body": ["iris_sampleBaseTexGrad(vec2 uv, vec2 dx, vec2 dy)"],
+        "description": "vec4"
+    },
+    "iris_sampleNormalMap(vec2 uv)": {
+        "scope": "glsl",
+        "prefix": "iris_sampleNormalMap(vec2 uv)",
+        "body": ["iris_sampleNormalMap(vec2 uv)"],
+        "description": "vec4"
+    },
+    "iris_sampleNormalMapLod(vec2 uv, float lod)": {
+        "scope": "glsl",
+        "prefix": "iris_sampleNormalMapLod(vec2 uv, float lod)",
+        "body": ["iris_sampleNormalMapLod(vec2 uv, float lod)"],
+        "description": "vec4"
+    },
+    "iris_sampleNormalMapGrad(vec2 uv, vec2 dx, vec2 dy)": {
+        "scope": "glsl",
+        "prefix": "iris_sampleNormalMapGrad(vec2 uv, vec2 dx, vec2 dy)",
+        "body": ["iris_sampleNormalMapGrad(vec2 uv, vec2 dx, vec2 dy)"],
+        "description": "vec4"
+    },
+    "iris_sampleSpecularMap(vec2 uv)": {
+        "scope": "glsl",
+        "prefix": "iris_sampleSpecularMap(vec2 uv)",
+        "body": ["iris_sampleSpecularMap(vec2 uv)"],
+        "description": "vec4"
+    },
+    "iris_sampleSpecularMapLod(vec2 uv, float lod)": {
+        "scope": "glsl",
+        "prefix": "iris_sampleSpecularMapLod(vec2 uv, float lod)",
+        "body": ["iris_sampleSpecularMapLod(vec2 uv, float lod)"],
+        "description": "vec4"
+    },
+    "iris_sampleSpecularMapGrad(vec2 uv, vec2 dx, vec2 dy)": {
+        "scope": "glsl",
+        "prefix": "iris_sampleSpecularMapGrad(vec2 uv, vec2 dx, vec2 dy)",
+        "body": ["iris_sampleSpecularMapGrad(vec2 uv, vec2 dx, vec2 dy)"],
+        "description": "vec4"
+    },
+    "iris_sampleLightmap(vec2 uv)": {
+        "scope": "glsl",
+        "prefix": "iris_sampleLightmap(vec2 uv)",
+        "body": ["iris_sampleLightmap(vec2 uv)"],
+        "description": "vec4"
+    },
+    "iris_modifyBase(inout vec2 uv, inout vec4 color, inout vec2 light)": {
+        "scope": "glsl",
+        "prefix": "iris_modifyBase(inout vec2 uv, inout vec4 color, inout vec2 light)",
+        "body": ["iris_modifyBase(inout vec2 uv, inout vec4 color, inout vec2 light)"],
+        "description": "void"
+    },
+    "iris_discardFragment(vec4 color)": {
+        "scope": "glsl",
+        "prefix": "iris_discardFragment(vec4 color)",
+        "body": ["iris_discardFragment(vec4 color)"],
+        "description": "bool"
+    },
+    "iris_modelViewMatrix": {
+	    "scope": "glsl",
+	    "prefix": "iris_modelViewMatrix",
+	    "body": ["iris_modelViewMatrix"],
+	    "description": "mat4"
+	},
+	"iris_modelViewMatrixInverse": {
+	    "scope": "glsl",
+	    "prefix": "iris_modelViewMatrixInverse",
+	    "body": ["iris_modelViewMatrixInverse"],
+	    "description": "mat4"
+	},
+	"iris_projectionMatrix": {
+	    "scope": "glsl",
+	    "prefix": "iris_projectionMatrix",
+	    "body": ["iris_projectionMatrix"],
+	    "description": "mat4"
+	},
+	"iris_projectionMatrixInverse": {
+	    "scope": "glsl",
+	    "prefix": "iris_projectionMatrixInverse",
+	    "body": ["iris_projectionMatrixInverse"],
+	    "description": "mat4"
+	},
+	"iris_normalMatrix": {
+	    "scope": "glsl",
+	    "prefix": "iris_normalMatrix",
+	    "body": ["iris_normalMatrix"],
+	    "description": "mat3"
+	},
+	"iris_currentCascade": {
+	    "scope": "glsl",
+	    "prefix": "iris_currentCascade",
+	    "body": ["iris_currentCascade"],
+	    "description": "int"
+	},
+	"shadowMapFiltered": {
+	    "scope": "glsl",
+	    "prefix": "shadowMapFiltered",
+	    "body": ["shadowMapFiltered"],
+	    "description": "sampler2DArrayShadow"
+	},
+	"solidShadowMapFiltered": {
+	    "scope": "glsl",
+	    "prefix": "solidShadowMapFiltered",
+	    "body": ["solidShadowMapFiltered"],
+	    "description": "sampler2DArrayShadow"
+	},
+	"shadowMap": {
+	    "scope": "glsl",
+	    "prefix": "shadowMap",
+	    "body": ["shadowMap"],
+	    "description": "sampler2DArray, non-solid"
+	},
+	"solidShadowMap": {
+	    "scope": "glsl",
+	    "prefix": "solidShadowMap",
+	    "body": ["solidShadowMap"],
+	    "description": "sampler2DArray, solid"
+	},
+	"blockAtlas": {
+	    "scope": "glsl",
+	    "prefix": "blockAtlas",
+	    "body": ["blockAtlas"],
+	    "description": "sampler2D, diffuse map"
+	},
+	"blockAtlasN": {
+	    "scope": "glsl",
+	    "prefix": "blockAtlasN",
+	    "body": ["blockAtlasN"],
+	    "description": "sampler2D, normal map"
+	},
+	"blockAtlasS": {
+	    "scope": "glsl",
+	    "prefix": "blockAtlasS",
+	    "body": ["blockAtlasS"],
+	    "description": "sampler2D, specular map"
+	}
+}

@@ -1,0 +1,10 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+        "label": "Generate lang file",
+        "type": "shell",
+        "command": "npx ts-node shaders/options.ts",
+        "problemMatcher": []
+    }
+}
