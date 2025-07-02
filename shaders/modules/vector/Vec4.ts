@@ -11,12 +11,12 @@ export class Vec4 {
   constructor(x: number);
   constructor(x: number, y: number, z: number, w: number);
   constructor(x: number | Vector4f, y?: number, z?: number, w?: number) {
-    if (typeof x === "number") {
+    if (typeof x === "number" && typeof y !== "number") {
       this.x = x; this.y = x; this.z = x; this.w = x;
     } else if (x instanceof Vector4f) {
       this.x = x.x(); this.y = x.y(); this.z = x.z(); this.w = x.w();
     } else {
-      this.x = x; this.y = y!; this.z = z!; this.z = w!;
+      this.x = x; this.y = y!; this.z = z!; this.w = w!;
     }
   }
 

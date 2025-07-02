@@ -1,6 +1,5 @@
-void fadeShadows(vec3 playerPos, out float alpha, out float softness) {
+void fadeShadows(vec3 playerPos, out float alpha) {
     alpha = 1;
-    softness = 1;
     // TODONOWBUTLATER: port below to use uniforms settings
 // #if SHADOW_FADE_OUT == Circle
 //     float dist = length(playerPos.xyz)/shadowDistance;
@@ -18,15 +17,5 @@ void fadeShadows(vec3 playerPos, out float alpha, out float softness) {
 //         alpha = 1-((maxAxis-SHADOW_FADE_OUT_START)*SHADOW_FADE_OUT_STRENGTH);
 //     }
 
-//     #ifdef SHADOW_SOFTNESS
-//         if (SHADOW_SOFTNESS_FADE_OUT_STRENGTH > 0 && maxAxis > SHADOW_SOFTNESS_FADE_OUT_START) {
-//            softness = max(1-((maxAxis-SHADOW_SOFTNESS_FADE_OUT_START)*SHADOW_FADE_OUT_STRENGTH), 0);
-//         }
-//     #endif
 // #endif
-}
-
-void fadeShadows(vec3 playerPos, out float alpha) {
-    float _ = 0;
-    fadeShadows(playerPos, alpha, _);
 }

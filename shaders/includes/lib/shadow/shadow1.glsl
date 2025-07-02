@@ -1,4 +1,6 @@
 // Required Uniforms: solidShadowMapFiltered
+#include "/includes/shared/settings.glsl"
+
 float sampleShadowMap(vec3 coord) {
     return texture(solidShadowMapFiltered, coord);
 }

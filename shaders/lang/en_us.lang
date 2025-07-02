@@ -1,18 +1,64 @@
-# Auto generated using `/build/generateLang.ts` (Featherweight)
+# Auto generated using `/build/generateLang.ts` (Featherweight); Tue, 01 Jul 2025 15:11:55 GMT 
 
+option.ShadowPixelization = Shadow Pixelization
+value.ShadowPixelization.-0.25 = 25 %
+value.ShadowPixelization.-0.5 = 50 %
+value.ShadowPixelization.-1 = 100 %
+
+option.ShadingPixelization = Shading Pixelization
+value.ShadingPixelization.-0.25 = 25 %
+value.ShadingPixelization.-0.5 = 50 %
+value.ShadingPixelization.-1 = 100 %
+
+option.SunPathRotation = Sun Path Rotation
+
+screen.Page_Pixelization = Pixelization
+
+value.Pixelization.0 = Off
+
+option.ShadowsEnabled = §oEnable Shadows§r
+
+option.ShadowResolution = §oShadow Resolution§r
+
+option.ShadowDistance = Shadow Distance
+
+option.ShadowFilter = Shadow Filter
 value.ShadowFilter.0 = Nearest
 value.ShadowFilter.1 = Linear
 value.ShadowFilter.2 = Uniform Soft
 
+option.ShadowSamples = Shadow Samples
+value.ShadowSamples.-1 = Auto
+
+option.ShadowSoftness = Shadow Softness
+
+screen.ShadowsExtra = Shadows Extra
+
+option.ShadowDistort = Shadow Distort
+option.ShadowDistort.comment = Allocate more resolution closer to the player.
+ When using Shadow Cascades, this value should generally be lowered.
+
+option.ShadowCascadeCount = §oShadow Cascade Count§r
+value.ShadowCascadeCount.0 = Auto
+
+option.ShadowBias = Shadow Bias
+option.ShadowBias.comment = Increase to reduce shadow acne at the cost of increasing peter panning.
+
 option._DebugEnabled = §oEnable Debug§r
 
-option._DebugStats = Debug Stats
+option._ShadowLightBrightness = Shadow Light Brightness
+
+option._ShowShadows = Show Shadows
+
+option._ShowShadowCascades = Show Shadow Cascades
+
+option._ShadowCascadeIndex = Shadow Cascade Index
+
+screen.ShowTextures = Show Textures
 
 option._SliceScreen = Slice Screen
 
-option._ShowShadows = Isolate Shadows
-
-option._ShowShadowMap = ShowShadowMap
+option._ShowShadowMap = Show ShadowMap
 value._ShowShadowMap.-1 = Off
 value._ShowShadowMap.0 = Full
 value._ShowShadowMap.1 = Top Left
@@ -20,7 +66,7 @@ value._ShowShadowMap.2 = Top Right
 value._ShowShadowMap.3 = Bottom Left
 value._ShowShadowMap.4 = Bottom Right
 
-option._ShowDepth = ShowDepth
+option._ShowDepth = Show Depth
 value._ShowDepth.-1 = Off
 value._ShowDepth.0 = Full
 value._ShowDepth.1 = Top Left
@@ -28,7 +74,7 @@ value._ShowDepth.2 = Top Right
 value._ShowDepth.3 = Bottom Left
 value._ShowDepth.4 = Bottom Right
 
-option._ShowRoughness = ShowRoughness
+option._ShowRoughness = Show Roughness
 value._ShowRoughness.-1 = Off
 value._ShowRoughness.0 = Full
 value._ShowRoughness.1 = Top Left
@@ -36,7 +82,7 @@ value._ShowRoughness.2 = Top Right
 value._ShowRoughness.3 = Bottom Left
 value._ShowRoughness.4 = Bottom Right
 
-option._ShowReflectance = ShowReflectance
+option._ShowReflectance = Show Reflectance
 value._ShowReflectance.-1 = Off
 value._ShowReflectance.0 = Full
 value._ShowReflectance.1 = Top Left
@@ -44,7 +90,7 @@ value._ShowReflectance.2 = Top Right
 value._ShowReflectance.3 = Bottom Left
 value._ShowReflectance.4 = Bottom Right
 
-option._ShowPorosity = ShowPorosity
+option._ShowPorosity = Show Porosity
 value._ShowPorosity.-1 = Off
 value._ShowPorosity.0 = Full
 value._ShowPorosity.1 = Top Left
@@ -52,7 +98,7 @@ value._ShowPorosity.2 = Top Right
 value._ShowPorosity.3 = Bottom Left
 value._ShowPorosity.4 = Bottom Right
 
-option._ShowEmission = ShowEmission
+option._ShowEmission = Show Emission
 value._ShowEmission.-1 = Off
 value._ShowEmission.0 = Full
 value._ShowEmission.1 = Top Left
@@ -60,7 +106,7 @@ value._ShowEmission.2 = Top Right
 value._ShowEmission.3 = Bottom Left
 value._ShowEmission.4 = Bottom Right
 
-option._ShowNormals = ShowNormals
+option._ShowNormals = Show Normals
 value._ShowNormals.-1 = Off
 value._ShowNormals.0 = Full
 value._ShowNormals.1 = Top Left
@@ -68,7 +114,7 @@ value._ShowNormals.2 = Top Right
 value._ShowNormals.3 = Bottom Left
 value._ShowNormals.4 = Bottom Right
 
-option._ShowAmbientOcclusion = ShowAmbientOcclusion
+option._ShowAmbientOcclusion = Show AmbientOcclusion
 value._ShowAmbientOcclusion.-1 = Off
 value._ShowAmbientOcclusion.0 = Full
 value._ShowAmbientOcclusion.1 = Top Left
@@ -76,11 +122,21 @@ value._ShowAmbientOcclusion.2 = Top Right
 value._ShowAmbientOcclusion.3 = Bottom Left
 value._ShowAmbientOcclusion.4 = Bottom Right
 
-option._ShowHeight = ShowHeight
+option._ShowHeight = Show Height
 value._ShowHeight.-1 = Off
 value._ShowHeight.0 = Full
 value._ShowHeight.1 = Top Left
 value._ShowHeight.2 = Top Right
 value._ShowHeight.3 = Bottom Left
 value._ShowHeight.4 = Bottom Right
+
+screen.DebugUI = Debug UI
+
+option._DebugUIScale = Debug UI Scale
+
+option._DebugStats = Debug Stats
+
+option._DisplayAtmospheric = Atmospheric
+
+option._DisplaySunlightColors = Sunlight Colors
 

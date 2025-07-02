@@ -4,6 +4,7 @@ out vec2 texCoord;
 out vec2 lightmapCoord;
 out vec3 vertColor;
 out mat3 tbn;
+out vec3 posView;
 
 mat3 tbnNormalTangent(vec3 normal, vec4 tangent) {
     mat3 tbnMatrix;
@@ -15,7 +16,8 @@ mat3 tbnNormalTangent(vec3 normal, vec4 tangent) {
 }
 
 void iris_emitVertex(inout VertexData data) {
-	data.clipPos = iris_projectionMatrix * iris_modelViewMatrix * data.modelPos;
+	posView = (iris_modelViewMatrix * data.modelPos).xyz;
+	data.clipPos = iris_projectionMatrix * vec4(posView, 1);
 }
 
 void iris_sendParameters(VertexData data) {

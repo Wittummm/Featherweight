@@ -604,5 +604,11 @@
 	    "prefix": "blockAtlasS",
 	    "body": ["blockAtlasS"],
 	    "description": "sampler2D, specular map"
+	},
+	"shadowMapUniform": {
+	    "scope": "glsl",
+	    "prefix": "shadowMapUniform",
+	    "body": ["#include \"/includes/snippets/shadowMapUniform.glsl\""],
+	    "description": ""
 	}
 }

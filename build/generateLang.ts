@@ -1,17 +1,30 @@
 /*
     Emulates Aperture's setting builder but adds lang file support
 */
-const formattedSettings: (BoolSetting | IntSetting | FloatSetting | StringSetting)[] = [];
+const formattedSettings: (BoolSetting | IntSetting | FloatSetting | StringSetting | Page)[] = [];
 
-export class FormattedSetting {
+function autoFormat(text: string): string {
+    text = text.replace(/Page_/gi, "").replace(/_display/gi, "").replace(/^_+/, "")
+    if (text.includes("Enabled")) {
+        text = text.replace("Enabled", "");
+        text = "Enable" + text;
+    }
+
+  return text.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+export class FormattedName {
     settingName: string
     nameDisplay?: string // option.[this.name] = nameDisplay
+
+    name(displayName?: string): this {this.nameDisplay = displayName ? displayName : autoFormat(this.settingName); return this;};
+}
+export class FormattedSetting extends FormattedName {
     valueDisplay: string[] = [] // value.[this.name].[index] = valueDisplay[index]
     valuePrefix?: string // prefix.[this.name]
     valueSuffix?: string // suffix.[this.name]
     description?: string // option.[this.name].comment
 
-    name(displayName: string): this {this.nameDisplay = displayName; return this;};
     values(...displayValues: string[]): this {this.valueDisplay = displayValues; return this;};
     prefix(prefix: string): this {this.valuePrefix = prefix; return this;};
     suffix(suffix: string): this {this.valueSuffix = suffix; return this;};
@@ -48,7 +61,7 @@ export class IntSetting extends FormattedSetting  {
     reload: boolean = true;
 
     needsReload(reload: boolean): IntSetting { this.reload = reload; return this; }
-    build(defaultValue: number): BuiltSetting { this.value = defaultValue; return this; }
+    build(defaultValue: number): this { this.value = defaultValue; return this; }
 }
 export class FloatSetting extends FormattedSetting  {
     constructor(name: string, values: number[]) {
@@ -62,7 +75,7 @@ export class FloatSetting extends FormattedSetting  {
     reload: boolean = true;
 
     needsReload(reload: boolean): FloatSetting { this.reload = reload; return this; }
-    build(defaultValue: number): BuiltSetting { this.value = defaultValue; return this; }
+    build(defaultValue: number): this { this.value = defaultValue; return this; }
 }
 export class StringSetting extends FormattedSetting  {
     constructor(name: string, values: string[]) {
@@ -76,12 +89,12 @@ export class StringSetting extends FormattedSetting  {
     reload: boolean = true;
 
     needsReload(reload: boolean): StringSetting { this.reload = reload; return this; }
-    build(defaultValue: string): BuiltSetting { this.value = defaultValue; return this; }
+    build(defaultValue: string): this { this.value = defaultValue; return this; }
 }
 export class BuiltSetting { }
 
-export class Page {
-    constructor(name: string) { }
+export class Page extends FormattedName{
+    constructor(name: string) { super(); this.settingName = name; formattedSettings.push(this); }
 
     add(...settings): Page { return this; };
     build(): BuiltPage { return this; };
@@ -103,25 +116,32 @@ import * as fs from "fs";
 import * as path from 'path';
 
 export function generateLang() {
-    let generated = "# Auto generated using `/build/generateLang.ts` (Featherweight)\n\n";
+    let generated = `# Auto generated using \`/build/generateLang.ts\` (Featherweight); ${new Date().toUTCString()} \n\n`;
 
     for (let setting of formattedSettings) {
-        const settingName = setting.settingName;
         let edited = false;
+        if (setting instanceof Page) {
+            if (setting.nameDisplay) {
+                generated += `screen.${setting.settingName} = ${setting.nameDisplay}\n`; 
+                edited = true;
+            }
+        } else {
+            const settingName = setting.settingName;
+            
+            if (setting.nameDisplay) {
+                let displayName = setting.reload ? `§o${setting.nameDisplay}§r`: setting.nameDisplay; // Italic
 
-        if (setting.nameDisplay) {
-            let displayName = setting.reload ? `§o${setting.nameDisplay}§r`: setting.nameDisplay; // Italic
+                generated += `option.${settingName} = ${displayName}\n`; 
+                edited = true;
+            }
+            if (setting.description) {generated += `option.${settingName}.comment = ${setting.description}\n`; edited = true;}
+            if (setting.valuePrefix) {generated += `prefix.${settingName} = ${setting.valuePrefix}\n`; edited = true;}
+            if (setting.valueSuffix) {generated += `suffix.${settingName} = ${setting.valueSuffix}\n`; edited = true;}
 
-            generated += `option.${settingName} = ${displayName}\n`; 
-            edited = true;
-        }
-        if (setting.description) {generated += `option.${settingName}.comment = ${setting.description}\n`; edited = true;}
-        if (setting.valuePrefix) {generated += `prefix.${settingName} = ${setting.valuePrefix}\n`; edited = true;}
-        if (setting.valueSuffix) {generated += `suffix.${settingName} = ${setting.valueSuffix}\n`; edited = true;}
-
-        for (let i = 0; i < setting.valueDisplay.length; i++) {
-            generated += `value.${settingName}.${setting._values[i]} = ${setting.valueDisplay[i]}\n`
-            edited = true;
+            for (let i = 0; i < setting.valueDisplay.length; i++) {
+                generated += `value.${settingName}.${setting._values[i]} = ${setting.valueDisplay[i]}\n`
+                edited = true;
+            }
         }
 
         if (edited) {generated += "\n";}

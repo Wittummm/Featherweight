@@ -10,7 +10,7 @@ export class Vec3 {
   constructor(x: number);
   constructor(x: number, y: number, z: number);
   constructor(x: number | Vector3f, y?: number, z?: number) {
-    if (typeof x === "number") {
+    if (typeof x === "number" && typeof y !== "number") {
       this.x = x; this.y = x; this.z = x;
     } else if (x instanceof Vector3f) {
       this.x = x.x(); this.y = x.y(); this.z = x.z();

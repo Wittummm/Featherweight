@@ -2,9 +2,10 @@
   "version": "2.0.0",
   "tasks": [
     {
-        "label": "Generate lang file",
-        "type": "shell",
-        "command": "npx ts-node shaders/options.ts",
-        "problemMatcher": []
+      "label": "Generate lang file",
+      "type": "shell",
+      "command": "npx ts-node build/comment.ts; npx ts-node shaders/options.ts; npx ts-node build/uncomment.ts",
+      "problemMatcher": []
     }
+  ]
 }

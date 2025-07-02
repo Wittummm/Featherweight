@@ -51,11 +51,12 @@
         "shaders/pack.js": true,
         "shaders/options.js.map": true,
         "shaders/options.js": true,
-        "shaders/includes/lib/text_renderer.glsl": true,
         ".iris": true,
         "tsconfig.json": true,
         "node_modules": true,
-        "shaders/.gitignore": true
+        "shaders/.gitignore": true,
+        ".vscode": true,
+        ".gitignore": true
     },
     "hide-files.files": [
         "shaders/gbuffers_entities.vsh",
@@ -104,10 +105,11 @@
         "shaders/pack.js",
         "shaders/options.js.map",
         "shaders/options.js",
-        "shaders/includes/lib/text_renderer.glsl",
         ".iris",
         "tsconfig.json",
         "node_modules",
-        "shaders/.gitignore"
+        "shaders/.gitignore",
+        ".vscode",
+        ".gitignore"
     ]
 }

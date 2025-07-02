@@ -9,7 +9,7 @@ export class Vec2 {
   constructor(x: number);
   constructor(x: number, y: number);
   constructor(x: number | Vector2f, y?: number) {
-    if (typeof x === "number") {
+    if (typeof x === "number" && typeof y !== "number") {
       this.x = x; this.y = x;
     } else if (x instanceof Vector2f) {
       this.x = x.x(); this.y = x.y();

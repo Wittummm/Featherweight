@@ -13,7 +13,7 @@ float diffuseBurley(float NdotL, float NdotV, float LdotH, float roughness) {
     return ONE_OVER_PI*(1.0 + f90MinusOne*pow(1-NdotL, 5))*(1.0 + f90MinusOne*pow(1-NdotV, 5));
 }
 
-float calcDiffuseFactor(vec3 color, vec3 inDir, vec3 outDir, vec3 normal, float roughness) {
+float calcDiffuseFactor(vec3 inDir, vec3 outDir, vec3 normal, float roughness) {
     vec3 halfway = normalize(inDir + outDir);
     float NdotL = max(dot(normal, inDir), 0.0);
     float NdotV = max(dot(normal, outDir), 0.0);
