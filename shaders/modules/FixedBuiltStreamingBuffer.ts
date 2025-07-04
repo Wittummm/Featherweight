@@ -2,7 +2,7 @@
 
 let outputSettingValues = true;
 
-export function setOutputSettingValues(bool: boolean) {
+export function dumpSettings(bool: boolean) {
     outputSettingValues = bool;
 }
 
@@ -31,12 +31,17 @@ export class FixedStreamingBuffer {
     private align(alignment: number) { this.offset = Math.ceil(this.offset/alignment)*alignment; }
 
     int(_?: any): FixedStreamingBuffer {this.align(4); this.offset += 4; return this;}
+    uint(_?: any): FixedStreamingBuffer {return this.int();}
     float(_?: any): FixedStreamingBuffer {this.align(4); this.offset += 4; return this;}
     bool(_?: any): FixedStreamingBuffer {this.align(4); this.offset += 4; return this;}
 
     vec4(_?: any): FixedStreamingBuffer {this.align(16); this.offset += 4*4; return this;}
     vec3(_?: any): FixedStreamingBuffer {return this.vec4();}
     vec2(_?: any): FixedStreamingBuffer {this.align(8); this.offset += 4*2; return this;}
+
+    ivec4(_?: any): FixedStreamingBuffer {return this.vec4();;}
+    ivec3(_?: any): FixedStreamingBuffer {return this.ivec4();}
+    ivec2(_?: any): FixedStreamingBuffer {return this.vec2();}
 
     build() { return new FixedBuiltStreamingBuffer(this.offset);}
 }
@@ -69,6 +74,7 @@ export class FixedBuiltStreamingBuffer {
         this.offset += 4;
         return this;
     }
+    uint(value: number | string, display?: string) {return this.int(value, display);}
     float(value: number | string, display?: string) {
         if (this.offset + 4 > this.size) throw new Error(`Cannot add value beyond FixedBuiltStreamingBuffer's size, ${this.offset + 4} > ${this.size}`);
         value = typeof value == "string" ? _getFloatSetting(value) : value;

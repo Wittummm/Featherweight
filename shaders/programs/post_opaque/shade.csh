@@ -8,12 +8,13 @@ uniform sampler2DArrayShadow shadowMapFiltered;
 #include "/includes/func/buffers/gbuffer.glsl"
 #include "/includes/func/depthToViewPos.glsl"
 #include "/includes/lib/math_lighting.glsl"
+#include "/includes/func/color/srgb.glsl"
 
 uniform sampler2D sceneTex;
 uniform usampler2D gbufferTex;
 uniform sampler2D solidDepthTex;
 
-layout(rgba16f) uniform image2D sceneImg;
+layout(SCENE_FORMAT) uniform image2D sceneImg;
 layout(rg32ui) uniform uimage2D gbufferImg;
 
 void main() {
@@ -41,7 +42,7 @@ void main() {
 		} 
 	} 
 	else {
-
+		// TODONOW: add sky
 	}
 
     imageStore(sceneImg, pixelPos, Color);

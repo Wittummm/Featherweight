@@ -3,6 +3,8 @@
 #define settings_glsl
 
 layout(std430, binding = 0) buffer settings {
+    uint CameraBlockId;
+
     vec3 AmbientColor;
     vec4 LightColor;
     float Rain;
@@ -31,5 +33,11 @@ layout(std430, binding = 0) buffer settings {
 
     int Specular;
     float NormalStrength;
+
+    /// Camera related
+    float Exposure;
+    int Tonemap;
+    bool CompareTonemaps;
+    ivec4 TonemapIndices;
 };
 #endif

@@ -446,7 +446,7 @@ var Vec2 = _Vec2;
 
 // modules/FixedBuiltStreamingBuffer.ts
 var outputSettingValues = true;
-function setOutputSettingValues(bool) {
+function dumpSettings(bool) {
   outputSettingValues = bool;
 }
 function output(display, value) {
@@ -482,6 +482,9 @@ var FixedStreamingBuffer = class {
     this.offset += 4;
     return this;
   }
+  uint(_) {
+    return this.int();
+  }
   float(_) {
     this.align(4);
     this.offset += 4;
@@ -504,6 +507,16 @@ var FixedStreamingBuffer = class {
     this.align(8);
     this.offset += 4 * 2;
     return this;
+  }
+  ivec4(_) {
+    return this.vec4();
+    ;
+  }
+  ivec3(_) {
+    return this.ivec4();
+  }
+  ivec2(_) {
+    return this.vec2();
   }
   build() {
     return new FixedBuiltStreamingBuffer(this.offset);
@@ -540,6 +553,9 @@ var FixedBuiltStreamingBuffer = class {
     this.b.setInt(this.offset, value);
     this.offset += 4;
     return this;
+  }
+  uint(value, display) {
+    return this.int(value, display);
   }
   float(value, display) {
     if (this.offset + 4 > this.size) throw new Error(`Cannot add value beyond FixedBuiltStreamingBuffer's size, ${this.offset + 4} > ${this.size}`);
@@ -759,6 +775,89 @@ function toggleBoolSetting(name) {
   setBoolSetting(name, !getBoolSetting(name));
 }
 
+// modules/BlockTag.ts
+function autoName(name, internalName) {
+  return name ? name : "TAG_" + internalName.toUpperCase();
+}
+var outputTags = false;
+function dumpTags(bool) {
+  outputTags = bool;
+}
+var _Tagger = class _Tagger {
+  static tagNamespace(namespace, name) {
+    if (this.index >= 32) {
+      throw new RangeError(`Tag index is more than 32: ${this.index}`);
+    }
+    name = autoName(name, namespace.getNamespace());
+    if (_Tagger.nameIndexMap[name]) {
+      throw new Error(`Duplicate tag: ${name}`);
+    }
+    if (outputTags) {
+      sendInChat(`${this.index} ${name}`);
+    }
+    addTag(this.index, namespace);
+    defineGlobally(name, this.index);
+    this.index++;
+  }
+  static tag(namespace, value, name) {
+    name = autoName(name, value ? value : namespace);
+    this.tagNamespace(value ? new NamespacedId(namespace, value) : new NamespacedId(namespace), name);
+  }
+  static tags(name, namespace, ...values) {
+    name = autoName(name, namespace);
+    let namespaces = [];
+    for (let value of values) {
+      namespaces.push(new NamespacedId(value));
+    }
+    this.tagNamespace(createTag(new NamespacedId(namespace), ...namespaces), name);
+  }
+};
+__publicField(_Tagger, "index", 0);
+__publicField(_Tagger, "nameIndexMap", []);
+var Tagger = _Tagger;
+var mc = "minecraft";
+var sh = "shader";
+var ap = "aperture";
+
+// modules/BlockType.ts
+var index = 1;
+var namespacedIdData = [];
+function addType(type, ...paths) {
+  defineGlobally("TYPE_" + type.toUpperCase(), index);
+  for (let path of paths) {
+    let splits = path.split(":");
+    let namespacedId = splits[0] + ":" + splits[1];
+    let properties = [];
+    for (let part of splits) {
+      if (part.includes("=")) {
+        let sepIndex = part.indexOf("=");
+        let property = part.substring(0, sepIndex);
+        let values = part.substring(sepIndex + 1);
+        properties[property] = values.split(",");
+      }
+    }
+    namespacedIdData[namespacedId] = { id: index, properties };
+  }
+  index++;
+}
+function getType(blockState) {
+  let data = namespacedIdData[blockState.getNamespace() + ":" + blockState.getName()];
+  if (data !== void 0) {
+    let doesNotMatch = false;
+    for (let [property, values] of data.properties.entries()) {
+      if (blockState.hasState(property)) {
+        for (let value in values) {
+          doesNotMatch = blockState.getState(property) != value;
+        }
+      }
+    }
+    if (!doesNotMatch) {
+      return data.id < 4096 ? data.id : 0;
+    }
+  }
+  return 0;
+}
+
 // pack.ts
 var DEBUG_CONFIG = {
   debug: true,
@@ -772,6 +871,7 @@ function initSettings(state) {
   worldSettings.ambientOcclusionLevel = 1;
   worldSettings.mergedHandDepth = true;
   worldSettings.shadowMapDistance = getIntSetting("ShadowDistance");
+  dumpTags(getBoolSetting("_DumpTags"));
 }
 function setupSettings(state) {
   function requestReload(msg) {
@@ -788,7 +888,7 @@ function setupSettings(state) {
     worldSettings.shadowNearPlane = 1.5 * -worldSettings.shadowMapDistance;
     worldSettings.shadowFarPlane = 1.5 * worldSettings.shadowMapDistance;
   }
-  setOutputSettingValues(getBoolSetting("_DumpUniforms"));
+  dumpSettings(getBoolSetting("_DumpUniforms"));
   const shadowBias = getFloatSetting("ShadowBias") / worldSettings.shadowMapResolution;
   let LightSunrise = new Vec4(0.984, 0.702, 0.275, 0.9);
   let LightMorning = new Vec4(0.941, 0.855, 0.7, 1);
@@ -811,10 +911,16 @@ function setupSettings(state) {
     LightRain.w *= getFloatSetting("_ShadowLightBrightness");
     debugBuffer.bool("_DebugEnabled").bool("_DebugStats").bool("_SliceScreen").int("_ShowDepth").int("_ShowRoughness").int("_ShowReflectance").int("_ShowPorosity").int("_ShowEmission").int("_ShowNormals").int("_ShowAmbientOcclusion").int("_ShowHeight").int("_ShowShadowMap").bool("_ShowShadows").bool("_ShowShadowCascades").int("_ShadowCascadeIndex").float("_DebugUIScale").bool("_DisplayAtmospheric").bool("_DisplaySunlightColors").end();
   }
-  settingsBuffer.vec3(1, 0, 0, "AmbientColor").vec4(0, 1, 0, 1, "SunlightColor").float(0, "Rain").float(0, "Wetness").vec4(...LightSunrise.xyzw(), "LightSunrise").vec4(...LightMorning.xyzw(), "LightMorning").vec4(...LightNoon.xyzw(), "LightNoon").vec4(...LightAfternoon.xyzw(), "LightAfternoon").vec4(...LightSunset.xyzw(), "LightSunset").vec4(...LightNightStart.xyzw(), "LightNightStart").vec4(...LightMidnight.xyzw(), "LightMidnight").vec4(...LightNightEnd.xyzw(), "LightNightEnd").vec4(...LightRain.xyzw(), "LightRain").int(shadowCascadeCount, "ShadowCascadeCount").int(Settings.ShadowSamples, "ShadowSamples").int("ShadowFilter").float("ShadowDistort").float("ShadowSoftness").float(shadowBias, "Initial ShadowBias").int(getPixelizationOverride("ShadingPixelization"), "ShadingPixelization").int(getPixelizationOverride("ShadowPixelization"), "ShadowPixelization").int("Specular").float("NormalStrength").end();
+  settingsBuffer.uint(0).vec3(1, 0, 0, "AmbientColor").vec4(0, 1, 0, 1, "SunlightColor").float(0, "Rain").float(0, "Wetness").vec4(...LightSunrise.xyzw(), "LightSunrise").vec4(...LightMorning.xyzw(), "LightMorning").vec4(...LightNoon.xyzw(), "LightNoon").vec4(...LightAfternoon.xyzw(), "LightAfternoon").vec4(...LightSunset.xyzw(), "LightSunset").vec4(...LightNightStart.xyzw(), "LightNightStart").vec4(...LightMidnight.xyzw(), "LightMidnight").vec4(...LightNightEnd.xyzw(), "LightNightEnd").vec4(...LightRain.xyzw(), "LightRain").int(shadowCascadeCount, "ShadowCascadeCount").int(Settings.ShadowSamples, "ShadowSamples").int("ShadowFilter").float("ShadowDistort").float("ShadowSoftness").float(shadowBias, "Initial ShadowBias").int(getPixelizationOverride("ShadingPixelization"), "ShadingPixelization").int(getPixelizationOverride("ShadowPixelization"), "ShadowPixelization").int("Specular").float("NormalStrength").float(Math.exp(getFloatSetting("Exposure")), "Exposure").int("Tonemap").bool("CompareTonemaps").ivec4(getIntSetting("Tonemap1"), getIntSetting("Tonemap2"), getIntSetting("Tonemap3"), getIntSetting("Tonemap4")).end();
+}
+function setupTags() {
+}
+function setupTypes() {
+  addType("water", "minecraft:water", "minecraft:flowing_water");
 }
 function setup() {
-  let sceneTexture = new Texture("sceneTex").imageName("sceneImg").format(Format.RGBA16F).build();
+  defineGlobally("SCENE_FORMAT", "r11f_g11f_b10f");
+  let sceneTexture = new Texture("sceneTex").imageName("sceneImg").format(Format.R11F_G11F_B10F).build();
   let gbufferTexture = new Texture("gbufferTex").imageName("gbufferImg").format(Format.RG32UI).build();
   function terrainProgram(usage, name, programName) {
     return bindSettings(new ObjectShader(programName || name, usage)).vertex(`programs/geometry/${name}.vsh`).fragment(`programs/geometry/${name}.fsh`).target(0, sceneTexture).target(1, gbufferTexture).blendOff(1);
@@ -830,7 +936,7 @@ function setup() {
   }
   function setupResources() {
     debugBuffer = getBoolSetting("_DebugEnabled") ? new FixedStreamingBuffer().bool().bool().bool().int().int().int().int().int().int().int().int().int().bool().bool().int().float().bool().bool().build() : null;
-    settingsBuffer = new FixedStreamingBuffer().vec3().vec4().float().float().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().int().int().int().float().float().float().int().int().int().float().build();
+    settingsBuffer = new FixedStreamingBuffer().uint().vec3().vec4().float().float().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().int().int().int().float().float().float().int().int().int().float().float().int().bool().ivec4().build();
   }
   function setupPrograms() {
     registerShader(Stage.PRE_RENDER, bindSettings(new Compute("init_settings")).location("programs/init/settings.csh").workGroups(1, 1, 1).build());
@@ -842,6 +948,10 @@ function setup() {
     );
     registerShader(
       terrainProgram(Usage.TERRAIN_TRANSLUCENT, "geometry_main", "terrain_translucent").define("FORWARD", "").build()
+    );
+    registerShader(
+      Stage.PRE_TRANSLUCENT,
+      bindSettings(new Compute("shade")).location("programs/post_opaque/shade.csh").workGroups(Math.ceil(screenWidth / 16), Math.ceil(screenHeight / 16), 1).build()
     );
     if (Settings.ShadowsEnabled) {
       shadowCascadeCount = getIntSetting("ShadowCascadeCount");
@@ -859,8 +969,11 @@ function setup() {
         bindSettings(new Compute("debug")).location("programs/post_render/debug.csh").workGroups(Math.ceil(screenWidth / 16), Math.ceil(screenHeight / 16), 1).ubo(0, debugBuffer.buffer).build()
       );
     }
+    setCombinationPass(bindSettings(new CombinationPass("programs/finalize/final.fsh")).build());
   }
   initSettings();
+  setupTags();
+  setupTypes();
   setupResources();
   setupPrograms();
   setupSettings();
@@ -870,13 +983,15 @@ function onSettingsChanged(state) {
 }
 function setupShader(dimension) {
   setup();
-  setCombinationPass(new CombinationPass("programs/finalize/final.fsh").build());
   if (DEBUG_CONFIG.debug) {
     let dumpDebugInfo = function(chat = false) {
       let output2 = chat ? sendInChat : print;
     };
     dumpDebugInfo(DEBUG_CONFIG.outputToChat);
   }
+}
+function getBlockId(block) {
+  return getType(block);
 }
 function setupFrame(state) {
   settingsBuffer.uploadData();
@@ -903,6 +1018,7 @@ function getPixelizationOverride(name) {
   return Math.floor(pixelization < 0 ? -pixelization * basePixelization : pixelization);
 }
 export {
+  getBlockId,
   onSettingsChanged,
   setupFrame,
   setupShader

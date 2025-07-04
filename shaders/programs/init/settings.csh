@@ -21,6 +21,7 @@ void main() {
 
     // TODOEVENTUALLY: NOTE: As currently WorldState on JS side does not have time, we must this on the gpu. -> If it is possible to do on cpu, then do so.
     float sunAngle = ap.celestial.angle;
+    vec4 lightColor = vec4(1,0,1,0);
     if (sunAngle >= NIGHT_END) {
         LightColor = mix(LightNightEnd, LightSunrise, mappedLerp(NIGHT_END, SUNRISE1));
     } else if (sunAngle >= MIDNIGHT) {
@@ -37,9 +38,9 @@ void main() {
         LightColor = mix(LightMorning, LightNoon, mappedLerp(MORNING, NOON));
     } else if (sunAngle >= SUNRISE0) {
         LightColor = mix(LightSunrise, LightMorning, mappedLerp(SUNRISE0, MORNING));
-    } else {
-        LightColor = vec4(1,0,1,0);
     }
 
     LightColor = mix(LightColor, LightRain, ap.world.rain);
+
+    iris_getBlockAtPos(ap.camera.blockPos);
 }

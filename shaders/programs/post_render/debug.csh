@@ -41,7 +41,7 @@ uniform sampler2D sceneTex;
 uniform usampler2D gbufferTex;
 uniform sampler2D mainDepthTex;
 
-layout(rgba16f) uniform image2D sceneImg;
+layout(SCENE_FORMAT) uniform image2D sceneImg;
 
 ivec2 moveTo(int position, ivec2 coord) {
 	if (_SliceScreen && position >= 0) {
@@ -185,7 +185,8 @@ void main() {
 		float shadowDepth = texture(shadowMap, pos).r;
 		color.rgb = shadowDepth.rrr * (shadowDepth < 1 ? 1 : 0.5); 
 	}
-	
+
+	t = moveTo(_ShowHeight, coord);
 
 	// Visualize Settings //
 	vec4 uiCoord = vec4(scale(coord), scale(ivec2(10, ap.game.screenSize.y - 10)));

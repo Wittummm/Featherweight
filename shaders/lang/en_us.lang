@@ -1,4 +1,4 @@
-# Auto generated using `/build/generateLang.ts` (Featherweight); Tue, 01 Jul 2025 15:11:55 GMT 
+# Auto generated using `/build/generateLang.ts` (Featherweight); Fri, 04 Jul 2025 16:06:30 GMT 
 
 option.ShadowPixelization = Shadow Pixelization
 value.ShadowPixelization.-0.25 = 25 %
@@ -28,7 +28,6 @@ value.ShadowFilter.1 = Linear
 value.ShadowFilter.2 = Uniform Soft
 
 option.ShadowSamples = Shadow Samples
-value.ShadowSamples.-1 = Auto
 
 option.ShadowSoftness = Shadow Softness
 
@@ -43,6 +42,54 @@ value.ShadowCascadeCount.0 = Auto
 
 option.ShadowBias = Shadow Bias
 option.ShadowBias.comment = Increase to reduce shadow acne at the cost of increasing peter panning.
+
+option.Exposure = Exposure
+
+option.Tonemap = Tonemap
+option.Tonemap.comment = [NONE] is no tonemapping, not recommended.
+value.Tonemap.0 = NONE
+value.Tonemap.1 = Reinhard+
+value.Tonemap.2 = Unreal
+value.Tonemap.3 = Lottes
+value.Tonemap.4 = Heij
+
+option.CompareTonemaps = Compare Tonemaps
+
+option.Tonemap1 = Tonemap1
+option.Tonemap1.comment = [NONE] is no tonemapping, not recommended.
+value.Tonemap1.0 = NONE
+value.Tonemap1.1 = Reinhard+
+value.Tonemap1.2 = Unreal
+value.Tonemap1.3 = Lottes
+value.Tonemap1.4 = Heij
+
+option.Tonemap2 = Tonemap2
+option.Tonemap2.comment = [NONE] is no tonemapping, not recommended.
+value.Tonemap2.0 = NONE
+value.Tonemap2.1 = Reinhard+
+value.Tonemap2.2 = Unreal
+value.Tonemap2.3 = Lottes
+value.Tonemap2.4 = Heij
+
+option.Tonemap3 = Tonemap3
+option.Tonemap3.comment = [NONE] is no tonemapping, not recommended.
+value.Tonemap3.0 = NONE
+value.Tonemap3.1 = Reinhard+
+value.Tonemap3.2 = Unreal
+value.Tonemap3.3 = Lottes
+value.Tonemap3.4 = Heij
+
+option.Tonemap4 = Tonemap4
+option.Tonemap4.comment = [NONE] is no tonemapping, not recommended.
+value.Tonemap4.0 = NONE
+value.Tonemap4.1 = Reinhard+
+value.Tonemap4.2 = Unreal
+value.Tonemap4.3 = Lottes
+value.Tonemap4.4 = Heij
+
+option._DumpTags = Dump Tags
+
+option._DumpUniforms = Dump Uniforms
 
 option._DebugEnabled = §oEnable Debug§r
 

@@ -17,6 +17,9 @@ Object.prototype.desc = function() {
 
 // options.ts
 var shouldReload = true;
+function toneMapPicker(name, def) {
+  return asIntRange(name, def != null ? def : 1, 0, 4, 1, false).name().values("NONE", "Reinhard+", "Unreal", "Lottes", "Heij").desc("[NONE] is no tonemapping, not recommended.");
+}
 function texIsolate(name) {
   return asInt(name, -1, 0, 1, 2, 3, 4).values("Off", "Full", "Top Left", "Top Right", "Bottom Left", "Bottom Right").name(name.replace("_Show", "Show ")).needsReload(false).build(-1);
 }
@@ -44,7 +47,11 @@ function setupOptions() {
   ).add(asFloatRange("ShadowSoftness", 0.7, 0, 6, 0.05, false).name()).add(
     new Page("ShadowsExtra").name().add(shadowPixelization).add(asFloatRange("ShadowDistort", 2, 0, 5, 0.05, false).name().desc("Allocate more resolution closer to the player.\n When using Shadow Cascades, this value should generally be lowered.")).add(asIntRange("ShadowCascadeCount", 0, 0, 8, 1, true).name().values("Auto")).add(asFloatRange("ShadowBias", 0.5, 0, 1, 0.025, false).name().desc("Increase to reduce shadow acne at the cost of increasing peter panning.")).build()
   ).build();
-  const debug = new Page("Debug").add(asBool("_DumpUniforms", false, false).name()).add(asBool("_DebugEnabled", false, shouldReload).name()).add(asFloatRange("_ShadowLightBrightness", 1, 0, 5, 0.05, false).name()).add(asBool("_ShowShadows", false, false).name()).add(asBool("_ShowShadowCascades", false, false).name()).add(asIntRange("_ShadowCascadeIndex", 0, 0, 8, 1, false).name()).add(
+  const shading = new Page("Shading").add(asInt("Specular", 0, 1).needsReload(false).build(1)).add(asFloatRange("NormalStrength", 1, 0, 1, 0.05, false)).add(shadingPixelization).build();
+  const cameraAndColors = new Page("CameraAndColors").add(asFloatRange("Exposure", 1, -2, 5, 0.05, false).name()).add(
+    new Page("Tonemapping").add(toneMapPicker("Tonemap")).add(asBool("CompareTonemaps", false, false).name()).add(toneMapPicker("Tonemap1", 1)).add(toneMapPicker("Tonemap2", 2)).add(toneMapPicker("Tonemap3", 3)).add(toneMapPicker("Tonemap4", 4)).build()
+  ).build();
+  const debug = new Page("Debug").add(asBool("_DumpTags", false, false).name()).add(asBool("_DumpUniforms", false, false).name()).add(asBool("_DebugEnabled", false, shouldReload).name()).add(asFloatRange("_ShadowLightBrightness", 1, 0, 15, 0.05, false).name()).add(asBool("_ShowShadows", false, false).name()).add(asBool("_ShowShadowCascades", false, false).name()).add(asIntRange("_ShadowCascadeIndex", 0, 0, 8, 1, false).name()).add(
     new Page("ShowTextures").name().add(asBool("_SliceScreen", false, false).name()).add(...texIsolates(
       "_ShowShadowMap",
       "_ShowDepth",
@@ -59,8 +66,7 @@ function setupOptions() {
   ).add(
     new Page("DebugUI").name("Debug UI").add(asFloatRange("_DebugUIScale", 2, 0, 8, 0.1, false).name("Debug UI Scale")).add(asBool("_DebugStats", false, false).name("Debug Stats")).add(putTextLabel("_LabelDisplaySettings", "Display Settings")).add(asBool("_DisplayAtmospheric", false, false).name()).add(asBool("_DisplaySunlightColors", false, false).name()).build()
   ).build();
-  const shading = new Page("Shading").add(asInt("Specular", 0, 1).needsReload(false).build(1)).add(asFloatRange("NormalStrength", 1, 0, 1, 0.05, false)).add(shadingPixelization).build();
-  return new Page("Featherweight").add(general).add(shadow).add(shading).add(debug).build();
+  return new Page("Featherweight").add(general).add(shadow).add(shading).add(cameraAndColors).add(debug).build();
 }
 function asPixelizationOverride(name) {
   return asFloat(name, -0.25, -0.5, -1, 0, 8, 16, 32, 64, 128, 256).needsReload(false).build(-1).values("25 %", "50 %", "100 %");

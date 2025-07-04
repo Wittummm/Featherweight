@@ -9,11 +9,15 @@ uniform sampler2DArray shadowMap;
 #include "/includes/func/buffers/gbuffer.glsl"
 #include "/includes/lib/math_lighting.glsl"
 
+uniform sampler2D solidDepthTex;
+
 in vec2 texCoord;
 in vec3 vertColor;
 in mat3 tbn;
 in vec3 posView;
+flat in uint blockId;
 #ifdef FORWARD
+#include "/includes/func/shading/calcWater.glsl"
 in vec2 lightmapCoord;
 #endif
 
@@ -26,7 +30,7 @@ void iris_emitFragment() {
         if (iris_discardFragment(texColor)) discard;
     #endif
 
-    Color = vec4(srgbToLinear(vertColor)*srgbToLinear(texColor.rgb), texColor.a);
+    Color = vec4(vertColor.rgb*srgbToLinear(texColor.rgb), texColor.a);
     
     float lod = clamp(textureQueryLod(irisInt_SpecularMap, texCoord).y, 0, 1); // NOTE: PBR maps only have 1 mip level for some reason, this might be hacky
     vec4 gbuffer0 = mix(iris_sampleSpecularMapLod(texCoord, floor(lod)), iris_sampleSpecularMapLod(texCoord, ceil(lod)), fract(lod));
@@ -38,34 +42,20 @@ void iris_emitFragment() {
     #ifdef FORWARD
         Material material = Mat(Color.rgb, gbuffer0, gbuffer1);
         float shadow = 0;
-        bool shouldUpdate = shade(Color, material, lightmapCoord, posView, shadow); //TEMP TODONOW: this break translucent colors
+        bool shouldUpdate = shade(Color, material, lightmapCoord, posView, shadow);
         if (shouldUpdate) {
 			writeMaterial(material, gbuffer0, gbuffer1);
             GBuffer.rg = writeGBuffer(gbuffer0, gbuffer1).rg;
 		} 
-
-        // TODONOW:
+        
+        if (iris_getCustomId(blockId) == TYPE_WATER) {
+            vec2 fragCoord = gl_FragCoord.xy/ap.game.screenSize;
+            
+            float waterDepth = distance(depthToViewPos(fragCoord, texture(solidDepthTex, fragCoord).r), posView);
+            float LdotV = dot(normalize(ap.celestial.pos), calcViewDir(fragCoord));
+            Color.rgb = calcWater(Color.rgb, (1-shadow) * LightColor, waterDepth, LdotV);
+        }
     #endif  
 
     GBuffer = writeGBuffer(gbuffer0, gbuffer1);
-
-    /*
-        bool isWater = blockType.x == 1;
-        if (isWater && !isEyeUnderwater) {
-            #ifdef DISTANT_HORIZONS_SHADER
-                vec3 dhPos = depthToViewPos(fragCoord, texture(dhDepthTex1, fragCoord).r, dhProjectionInverse);
-                float waterDepth = distance(dhPos, vertPosition);
-            #elif defined DISTANT_HORIZONS
-                float terrainDepth = texture(depthtex1, fragCoord).r;
-                vec3 pos = terrainDepth < 1 ? depthToViewPos(fragCoord, terrainDepth) : depthToViewPos(fragCoord, texture(dhDepthTex1, fragCoord).r, dhProjectionInverse);
-                float waterDepth = distance(pos, vertPosition);
-            #else
-                float waterDepth = distance(depthToViewPos(fragCoord, texture(depthtex1, fragCoord).r), vertPosition);
-            #endif
-
-            float LdotV = dot(normalize(shadowLightPosition), calcViewDir(fragCoord));
-            Color.rgb = calcWater(Color.rgb, (1-shadow) * lightColor, waterDepth, LdotV);
-            // Color.rgb = vec3(waterDepth)*0.1; // TODONOW: fix the depth at the blending boundary being "wrong"
-        }
-    */
 }

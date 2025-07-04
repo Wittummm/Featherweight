@@ -1,13 +1,12 @@
 import { Vec4, Vec3, Vec2 } from './modules/Vector';
-import { FixedBuiltStreamingBuffer, FixedStreamingBuffer, setOutputSettingValues } from './modules/FixedBuiltStreamingBuffer';
+import { FixedBuiltStreamingBuffer, FixedStreamingBuffer, dumpSettings } from './modules/FixedBuiltStreamingBuffer';
 import { Settings } from './modules/Settings';
 import { KeyInput } from './modules/KeyInput';
 import { toggleBoolSetting } from './modules/HelperFuncs';
+import { dumpTags, Tagger, mc, sh, ap } from './modules/BlockTag';
+import { addType, getType } from './modules/BlockType';
 
 // Consts
-const mc = "minecraft";
-const fw = "featherweight";
-const ap = "aperture";
 const DEBUG_CONFIG = {
     debug: true,
     outputToChat: true,
@@ -17,12 +16,13 @@ const distancePerCascade = 96;
 let debugBuffer: FixedBuiltStreamingBuffer | null;
 let settingsBuffer: FixedBuiltStreamingBuffer;
 let shadowCascadeCount: number = -1;
-
 //// Helper Funcs ////
 function initSettings(state?: WorldState) { // Settings initialized once on shader setup
     worldSettings.ambientOcclusionLevel = 1.0;
     worldSettings.mergedHandDepth = true; 
     worldSettings.shadowMapDistance = getIntSetting("ShadowDistance");
+
+    dumpTags(getBoolSetting("_DumpTags"));
 }
 function setupSettings(state?: WorldState) {
     // CODE: sadi1n NOTE: TODOEVENTUALLY: TEMP: BELOW IS TEMPORARY, Aperture currently has strict reloading features
@@ -48,7 +48,7 @@ function setupSettings(state?: WorldState) {
     }
 
     // Non Aperture/Built in Settings
-    setOutputSettingValues(getBoolSetting("_DumpUniforms"));
+    dumpSettings(getBoolSetting("_DumpUniforms"));
 
     const shadowBias = getFloatSetting("ShadowBias") / worldSettings.shadowMapResolution;
 
@@ -97,6 +97,8 @@ function setupSettings(state?: WorldState) {
     }
     
     settingsBuffer
+    // Reserved(Computed on gpu)
+    .uint(0)
     // Atmospheric
     .vec3(1, 0, 0, "AmbientColor")
     .vec4(0, 1, 0, 1, "SunlightColor")
@@ -125,15 +127,29 @@ function setupSettings(state?: WorldState) {
     // Shading
     .int("Specular")
     .float("NormalStrength")
+
+    // Camera/Visuals
+    .float(Math.exp(getFloatSetting("Exposure")), "Exposure")
+    .int("Tonemap")
+    .bool("CompareTonemaps")
+    .ivec4(getIntSetting("Tonemap1"), getIntSetting("Tonemap2"), getIntSetting("Tonemap3"), getIntSetting("Tonemap4"))
     .end()
 }
 function setupTags() {
-    // addTag(0, createTag(new NamespacedId(mc, "water")));
+    // This needs to run before registering programs;
+    
+}
+
+function setupTypes() {
+    // defineGlobally("isType(blockId, tag)", "(iris_getCustomId(blockId) == tag)"); // This doesnt seem to work currently :(
+
+    addType("water", "minecraft:water", "minecraft:flowing_water");
 }
 
 function setup() {    
     //// Declarations
-    let sceneTexture = new Texture("sceneTex").imageName("sceneImg").format(Format.RGBA16F).build();
+    defineGlobally("SCENE_FORMAT", "r11f_g11f_b10f");
+    let sceneTexture = new Texture("sceneTex").imageName("sceneImg").format(Format.R11F_G11F_B10F).build();
     let gbufferTexture = new Texture("gbufferTex").imageName("gbufferImg").format(Format.RG32UI).build();
 
     /////// Helper Funcs ///////////
@@ -157,7 +173,7 @@ function setup() {
     /////// Actual Functions ////////
     function setupResources() {
         debugBuffer = getBoolSetting("_DebugEnabled") ? new FixedStreamingBuffer().bool().bool().bool().int().int().int().int().int().int().int().int().int().bool().bool().int().float().bool().bool().build() : null;
-        settingsBuffer = new FixedStreamingBuffer().vec3().vec4().float().float().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().int().int().int().float().float().float().int().int().int().float().build();
+        settingsBuffer = new FixedStreamingBuffer().uint().vec3().vec4().float().float().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().int().int().int().float().float().float().int().int().int().float().float().int().bool().ivec4().build();
     }
     function setupPrograms() {
         registerShader(Stage.PRE_RENDER, bindSettings(new Compute("init_settings"))
@@ -173,10 +189,10 @@ function setup() {
         registerShader(terrainProgram(Usage.TERRAIN_TRANSLUCENT, "geometry_main", "terrain_translucent")
             .define("FORWARD", "").build()
         );
-        // registerShader(Stage.PRE_TRANSLUCENT, bindSettings(new Compute("shade"))
-        //     .location("programs/post_opaque/shade.csh")
-        //     .workGroups(Math.ceil(screenWidth/16), Math.ceil(screenHeight/16), 1).build()
-        // ); 
+        registerShader(Stage.PRE_TRANSLUCENT, bindSettings(new Compute("shade"))
+            .location("programs/post_opaque/shade.csh")
+            .workGroups(Math.ceil(screenWidth/16), Math.ceil(screenHeight/16), 1).build()
+        ); 
 
         // / Shadows
         if (Settings.ShadowsEnabled) {
@@ -201,10 +217,13 @@ function setup() {
                 .ubo(0, debugBuffer.buffer).build()
             ); 
         }
+
+        setCombinationPass(bindSettings(new CombinationPass("programs/finalize/final.fsh")).build());
     }
 
+    initSettings();
     setupTags();
-    initSettings()
+    setupTypes();
     setupResources();
     setupPrograms();
     setupSettings();
@@ -222,17 +241,20 @@ export function onSettingsChanged(state: WorldState) {
 
 export function setupShader(dimension: NamespacedId) {
     setup()
-    setCombinationPass(new CombinationPass("programs/finalize/final.fsh").build());
     ///////////////////////////
 
     if (DEBUG_CONFIG.debug) {
         function dumpDebugInfo(chat: boolean = false) {
             let output = chat ? sendInChat : print;
-            // output("Hellow World");
         }
 
         dumpDebugInfo(DEBUG_CONFIG.outputToChat);
     }
+}
+
+export function getBlockId(block: BlockState): number {
+    // This runs in runtime when block changes, so it should be optimized
+    return getType(block);
 }
 
 export function setupFrame(state: WorldState) {
@@ -252,11 +274,6 @@ export function setupFrame(state: WorldState) {
         KeyInput.update(); // Must be last
     }
 }
-
-// export function getBlockId(block: BlockState) {
-//     // Idk what this does, but aperture has it
-// }
-
 
 ////Misc Helpers//////
 

@@ -1,10 +1,13 @@
 #version 460 core
 
+#include "/includes/func/color/srgb.glsl"
+
 out vec2 texCoord;
 out vec2 lightmapCoord;
 out vec3 vertColor;
 out mat3 tbn;
 out vec3 posView;
+flat out uint blockId;
 
 mat3 tbnNormalTangent(vec3 normal, vec4 tangent) {
     mat3 tbnMatrix;
@@ -26,6 +29,7 @@ void iris_sendParameters(VertexData data) {
 
 	texCoord = data.uv;
 	lightmapCoord = lightLevel;
-	vertColor = data.ao*light * data.color.rgb;
+	vertColor = srgbToLinear(data.ao*light * data.color.rgb);
 	tbn = tbnNormalTangent(data.normal, data.tangent);
+	blockId = data.blockId;
 }

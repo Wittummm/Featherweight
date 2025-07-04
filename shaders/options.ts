@@ -8,6 +8,11 @@ Syntax notes:
 - "_Display" prefix for displaying anything usu. non 2d
 - "X_" where `X` is the type ie `Page_Shadow` for page, option values/settings do not have this only things like pages etc 
 */
+function toneMapPicker(name: string, def?: number) {
+    return asIntRange(name, def ?? 1, 0, 4, 1, false).name()
+    .values("NONE", "Reinhard+", "Unreal", "Lottes", "Heij")
+    .desc("[NONE] is no tonemapping, not recommended.");
+}
 function texIsolate(name: string) {
     return asInt(name,-1,0,1,2,3,4)
     .values("Off","Full","Top Left","Top Right","Bottom Left","Bottom Right")
@@ -67,10 +72,30 @@ export function setupOptions() {
     )
     .build()
 
+    const shading = new Page("Shading")
+    .add(asInt("Specular", 0, 1).needsReload(false).build(1))
+    .add(asFloatRange("NormalStrength", 1.0, 0.0, 1.0, 0.05, false))
+    .add(shadingPixelization)
+    .build()
+
+    const cameraAndColors = new Page("CameraAndColors").name()
+    .add(asFloatRange("Exposure", 1, -2, 5, 0.05, false).name())
+    .add(new Page("Tonemapping")
+        .add(toneMapPicker("Tonemap"))
+        .add(asBool("CompareTonemaps", false, false).name())
+        .add(toneMapPicker("Tonemap1", 1))
+        .add(toneMapPicker("Tonemap2", 2))
+        .add(toneMapPicker("Tonemap3", 3))
+        .add(toneMapPicker("Tonemap4", 4))
+        .build()
+    )
+    .build()
+
     const debug = new Page("Debug")
+    .add(asBool("_DumpTags", false, false).name())
     .add(asBool("_DumpUniforms", false, false).name())
     .add(asBool("_DebugEnabled", false, shouldReload).name())
-    .add(asFloatRange("_ShadowLightBrightness", 1, 0, 5, 0.05, false).name())
+    .add(asFloatRange("_ShadowLightBrightness", 1, 0, 15, 0.05, false).name())
     .add(asBool("_ShowShadows", false, false).name())
     .add(asBool("_ShowShadowCascades", false, false).name())
     .add(asIntRange("_ShadowCascadeIndex", 0, 0, 8, 1, false).name())
@@ -100,16 +125,11 @@ export function setupOptions() {
     )
     .build()
 
-    const shading = new Page("Shading")
-    .add(asInt("Specular", 0, 1).needsReload(false).build(1))
-    .add(asFloatRange("NormalStrength", 1.0, 0.0, 1.0, 0.05, false))
-    .add(shadingPixelization)
-    .build()
-
     return new Page("Featherweight")
         .add(general)
         .add(shadow)
         .add(shading)
+        .add(cameraAndColors)
         .add(debug)
         .build();
 }
