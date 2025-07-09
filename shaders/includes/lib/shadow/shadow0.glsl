@@ -1,4 +1,5 @@
 // Required Uniforms: shadowMapFiltered/shadowMap
+#ifdef ShadowsEnabled
 #include "/includes/shared/settings.glsl"
 
 ivec2 shadowMapSize = textureSize(shadowMap, 0).xy;
@@ -10,5 +11,6 @@ float sampleShadowMap(vec3 coord, int cascade) {
     return texture(shadowMapFiltered, vec4(coord.xy, cascade, coord.z)).r;
 }
 
+#endif
 #include "/includes/lib/shadow/_shadow.glsl"
-float e = 1;
+// need one line to include

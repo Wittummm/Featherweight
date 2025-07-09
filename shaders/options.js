@@ -45,14 +45,21 @@ function setupOptions() {
   ).add(putTextLabel("LabelSoftShadows", "Soft Shadows")).add(
     asFloat("ShadowSamples", -2, -1.75, -1.5, -1.25, -1, -0.75, 2, 3, 5, 7, 9, 12, 15, 20, 25, 30, 35, 40, 48, 54, 60, 70, 80, 90, 100, 110, 120, 130).needsReload(false).build(-1).name()
   ).add(asFloatRange("ShadowSoftness", 0.7, 0, 6, 0.05, false).name()).add(
-    new Page("ShadowsExtra").name().add(shadowPixelization).add(asFloatRange("ShadowDistort", 2, 0, 5, 0.05, false).name().desc("Allocate more resolution closer to the player.\n When using Shadow Cascades, this value should generally be lowered.")).add(asIntRange("ShadowCascadeCount", 0, 0, 8, 1, true).name().values("Auto")).add(asFloatRange("ShadowBias", 0.5, 0, 1, 0.025, false).name().desc("Increase to reduce shadow acne at the cost of increasing peter panning.")).build()
+    new Page("ShadowsExtra").name().add(shadowPixelization).add(asFloatRange("ShadowDistort", 2, 0, 5, 0.05, false).name().desc("Allocate more resolution closer to the player.\n When using Shadow Cascades, this value should generally be lowered.")).add(asIntRange("ShadowCascadeCount", 0, 0, 8, 1, true).name().values("Auto")).add(asFloatRange("ShadowBias", 0.5, 0, 1, 0.025, false).name().desc("Increase to reduce shadow acne at the cost of increasing peter panning.")).add(asFloatRange("ShadowThreshold", 0, 0, 1, 0.05, false).name().desc('How shadowed the shadow needs to be to be considered shadowed, higher will "shrink" shadows.')).build()
   ).build();
   const shading = new Page("Shading").add(asInt("Specular", 0, 1).needsReload(false).build(1)).add(asFloatRange("NormalStrength", 1, 0, 1, 0.05, false)).add(shadingPixelization).build();
-  const cameraAndColors = new Page("CameraAndColors").add(asFloatRange("Exposure", 1, -2, 5, 0.05, false).name()).add(
+  const atmosphere = new Page("Atmosphere").add(asIntRange("Sky", 1, 0, 1, 1, false).name().values("Vanilla", "Shader's")).add(asIntRange("Stars", 2, 0, 2, 1, false).name().values("Vanilla", "Low", "Medium")).add(asFloatRange("StarAmount", 0.03, 0, 1, 0.01, false).name()).add(
+    new Page("AtmosphereExtra").add(asBool("DisableMoonHalo", false, false).name()).add(asBool("IsolateCelestials", false, false).name()).build()
+  ).build();
+  const cameraAndColors = new Page("CameraAndColors").name().add(
+    new Page("Exposure").add(asFloatRange("ExposureMult", 1, -2, 5, 0.05, false).name()).add(asFloatRange("ExposureSpeed", 5, 0, 20, 0.1, false).name()).add(asIntRange("AutoExposure", 1, 0, 1, 1, shouldReload).name().values("Off", "Low")).add(asIntRange("ExposureSamplesX", 12, 1, 32, 1, true).name()).build()
+  ).add(
     new Page("Tonemapping").add(toneMapPicker("Tonemap")).add(asBool("CompareTonemaps", false, false).name()).add(toneMapPicker("Tonemap1", 1)).add(toneMapPicker("Tonemap2", 2)).add(toneMapPicker("Tonemap3", 3)).add(toneMapPicker("Tonemap4", 4)).build()
   ).build();
-  const debug = new Page("Debug").add(asBool("_DumpTags", false, false).name()).add(asBool("_DumpUniforms", false, false).name()).add(asBool("_DebugEnabled", false, shouldReload).name()).add(asFloatRange("_ShadowLightBrightness", 1, 0, 15, 0.05, false).name()).add(asBool("_ShowShadows", false, false).name()).add(asBool("_ShowShadowCascades", false, false).name()).add(asIntRange("_ShadowCascadeIndex", 0, 0, 8, 1, false).name()).add(
-    new Page("ShowTextures").name().add(asBool("_SliceScreen", false, false).name()).add(...texIsolates(
+  const debug = new Page("_Debug").add(asBool("_DumpTags", false, false).name()).add(asBool("_DumpUniforms", false, false).name()).add(asBool("_DebugEnabled", false, shouldReload).name()).add(
+    new Page("_Shadows").name().add(asFloatRange("_ShadowLightBrightness", 1, 0, 15, 0.05, false).name()).add(asBool("_ShowShadows", false, false).name()).add(asBool("_ShowShadowCascades", false, false).name()).add(asIntRange("_ShadowCascadeIndex", 0, 0, 8, 1, false).name()).build()
+  ).add(
+    new Page("_ShowTextures").name().add(asBool("_SliceScreen", false, false).name()).add(...texIsolates(
       "_ShowShadowMap",
       "_ShowDepth",
       "_ShowRoughness",
@@ -64,9 +71,9 @@ function setupOptions() {
       "_ShowHeight"
     )).build()
   ).add(
-    new Page("DebugUI").name("Debug UI").add(asFloatRange("_DebugUIScale", 2, 0, 8, 0.1, false).name("Debug UI Scale")).add(asBool("_DebugStats", false, false).name("Debug Stats")).add(putTextLabel("_LabelDisplaySettings", "Display Settings")).add(asBool("_DisplayAtmospheric", false, false).name()).add(asBool("_DisplaySunlightColors", false, false).name()).build()
+    new Page("_DebugUI").name("Debug UI").add(asFloatRange("_DebugUIScale", 2, 0, 8, 0.1, false).name("Debug UI Scale")).add(asBool("_DebugStats", false, false).name("Debug Stats")).add(putTextLabel("_LabelDisplaySettings", "Display Settings")).add(asBool("_DisplayAtmospheric", false, false).name()).add(asBool("_DisplaySunlightColors", false, false).name()).add(asBool("_DisplayCameraData", false, false).name()).build()
   ).build();
-  return new Page("Featherweight").add(general).add(shadow).add(shading).add(cameraAndColors).add(debug).build();
+  return new Page("Featherweight").add(general).add(shadow).add(shading).add(atmosphere).add(cameraAndColors).add(debug).build();
 }
 function asPixelizationOverride(name) {
   return asFloat(name, -0.25, -0.5, -1, 0, 8, 16, 32, 64, 128, 256).needsReload(false).build(-1).values("25 %", "50 %", "100 %");

@@ -1,5 +1,7 @@
 // Source: https://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
 
+#include "/includes/func/buffers/scene.glsl"
+
 vec3 linearToSRGB(vec3 linear) {
     return max(1.055 * pow(linear, vec3(0.416666667)) - 0.055, 0);
 }

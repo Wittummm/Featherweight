@@ -4,8 +4,8 @@
 #include "/includes/func/shading/specular.glsl"
 #include "/includes/func/shading/diffuse.glsl"
 #include "/includes/func/shading/clearcoat.glsl"
-#include "/includes/func/random_ported/noiseSimplex.glsl"
-#include "/includes/func/random_ported/noise.glsl"
+#include "/includes/func/random/noiseSimplex.glsl"
+#include "/includes/func/random/noise.glsl"
 #include "/includes/func/depthToViewPos.glsl"
 #include "/includes/func/shading/calcSkyReflection.glsl"
 #include "/includes/lib/material.glsl"
@@ -67,7 +67,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     float visibility = min(diffuseFactor,1-shadow)*LightColor.a;
     vec3 diffuse = albedo*(1-metallic) *kD;
 
-    color.rgb = (diffuse + specular)*min(diffuseFactor,1-shadow)*LightColor.a*LightColor.rgb + 
+    color.rgb = (diffuse + specular)*visibility*LightColor.rgb + 
                 skylight*albedo*AmbientColor.rgb
                 + albedo*emission;
 

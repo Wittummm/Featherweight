@@ -63,3 +63,7 @@ Major.Minor.Revision.Patch.Tag, pre v1 versions are highly volatile.
       - CSM zbiasing is still borked though -> waiting for csm to get finalized/refined Aperture side
   - **Commit Notes**
     - Fixed "Shadow likes clip out, maybe its near plane?"
+- v0.9.1.0 Still porting to AP
+  - Shadows are working
+  - Added HDR, auto exposure, tonemapping
+    - Auto exposure isnt the best, probably should be improved in the future

@@ -58,6 +58,7 @@ Search for these keywords to see what extra features you can toggle, most are di
  - `FORWARD` forward rendered
  - `INCLUDE_NORMALS_WRITE` `encodeNormals.glsl`
  - ~~`EXCLUDE_STARS`~~ not ported yet
+ - `ShadowsEnabled` on shaders that uses any shadow functions(calcShadow)
 For (#include) flags use INCLUDE_ and EXCLUDE_ prefix 
 
 ### Organization of Files
@@ -77,3 +78,12 @@ For (#include) flags use INCLUDE_ and EXCLUDE_ prefix
     - `/` is used to go into deeper paths
     - `#` usually refers to page or header
     - `1.0` a float-like text usually refers to chapters, writing as integer alone is not recommended and there should always be a decimal even if it is zero.
+
+### Storage/Containers
+  - **Framebuffers**
+    - sceneTex, stores final rendered image
+    - gbufferTex, stores geometry data
+  - **UBOs**
+    - 0, settings buffer
+  - **SSBOs**
+    - 0, metadata buffer

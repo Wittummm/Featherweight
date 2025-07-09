@@ -1,28 +1,28 @@
 #version 460 core
 
+#include "/includes/shared/shared.glsl"
 #include "/includes/func/color/srgb.glsl"
-#include "/includes/shared/settings.glsl"
 #include "/includes/func/tonemaps/all_tonemaps.glsl"
 
 uniform sampler2D sceneTex;
-
 in vec2 uv;
 
 layout(location = 0) out vec4 Color;
 
-bool tonemap(inout vec3 color, int tonemapper) {
-    switch (tonemapper) {
-        case 1: color = reinhardModified(color); break;
-        case 2: color = unreal(color); return false; break;
-        case 3: color = lottes(color); break;
-        case 4: color = hejl(color); break;
-    }
-    return true;
+float calcExposure() {
+    // CREDIT: SOURCE: https://bruop.github.io/exposure/
+    const float sensorSensitivity = 100;
+    const float lightMeterCalibration = 12.5;
+    const float vignetteAttenuation = 0.65;
+    float ev100 = log2((sensorSensitivity/lightMeterCalibration)*AverageLuminance);
+    float maxLuminance = (78.0/(vignetteAttenuation*sensorSensitivity)) * exp2(ev100);
+
+    return 1.0/maxLuminance;
 }
 
 void main() {
-    Color = texture(sceneTex, uv);
-    Color.rgb *= Exposure;
+    Color = readScene(texture(sceneTex, uv));
+    Color.rgb *= ExposureMult*calcExposure();
 
     bool gammaCorrect = tonemap(Color.rgb, Tonemap);
 

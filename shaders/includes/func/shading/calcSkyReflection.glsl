@@ -12,7 +12,7 @@ vec3 calcSkyReflection(float sampleMult, vec3 viewDir, vec3 normals, float rough
     if (skylight*skylight > 0.0625) {
         for (int i = 0; i < int(sampleCount); i++) {
             vec3 currentNormals = normalize(normals + roughness*vec3(goldenDiskSample(i, sampleCount), 0).xzy );
-            ambientSpecular += calcSky(mix(reflect(viewDir, currentNormals), currentNormals, min(roughness+0.2, 0.1)))*skylight*skylight*(1-roughness);
+            ambientSpecular += calcSkyNoStars(mix(reflect(viewDir, currentNormals), currentNormals, min(roughness+0.2, 0.1)))*skylight*skylight*(1-roughness);
         }
         ambientSpecular /= sampleCount; 
     }

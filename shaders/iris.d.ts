@@ -143,6 +143,11 @@ declare function setBoolSetting(name: string, value: boolean)
 declare function setStringSetting(name: string, value: string)
 declare function setHidden(name: string, hidden: boolean)
 declare function setDisabled(name: string, disabled: boolean)
+
+declare class GenerateMips {
+  constructor(name: string, ...textures: BuiltTexture[])
+  constructor(...textures: BuiltTexture[])
+}
 //
 
 /**

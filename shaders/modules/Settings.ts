@@ -20,4 +20,10 @@ export class Settings {
 
         return t;
     }
+    static get ExposureSamples() {
+        let exposureSamplesX = getIntSetting("ExposureSamplesX");
+        let exposureSamplesY = Math.floor(exposureSamplesX * (screenHeight/screenWidth));
+        
+        return new Vec2(exposureSamplesX, exposureSamplesY);
+    }
 }

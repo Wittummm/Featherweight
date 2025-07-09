@@ -1,5 +1,8 @@
 // WARNING: This should not be included/used directly, instead it should use shadow0.glsl or shadow1.glsl
 
+#ifndef ShadowsEnabled
+#define calcShadow(posPlayer, normalsView) (0.0)
+#else
 #include "/includes/func/fade.glsl"
 #include "/includes/func/shadows/distortShadow.glsl"
 #include "/includes/func/goldenDiskSample.glsl"
@@ -40,9 +43,6 @@ float sampleShadow(vec3 shadowScreenPos, int cascade) {
 }
 
 float calcShadow(vec3 posPlayer, vec3 normalsView) {
-    #ifndef ShadowsEnabled
-        return 0;
-    #else
     float shadowStrength = 1;
     fadeShadows(posPlayer, shadowStrength);
     if (shadowStrength > 0) {
@@ -72,8 +72,10 @@ float calcShadow(vec3 posPlayer, vec3 normalsView) {
         vec3 shadowScreen = shadowNdc * 0.5 + 0.5;
 
         float shadow = sampleShadow(shadowScreen, cascade);
+        shadow *= step(ShadowThreshold, shadow);
+
         return shadow*shadowStrength;
     }
     return 0;
-    #endif
 }
+#endif

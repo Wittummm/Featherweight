@@ -1,8 +1,7 @@
 #version 460 core
 layout (local_size_x = 16, local_size_y = 16) in;
 
-uniform sampler2DArray shadowMap;
-uniform sampler2DArrayShadow shadowMapFiltered;
+#include "/includes/shared/shadowmap_uniforms.glsl"
 
 #include "/includes/func/buffers/gbuffer.glsl"
 #include "/includes/lib/material.glsl"
@@ -13,6 +12,7 @@ uniform sampler2DArrayShadow shadowMapFiltered;
 #include "/includes/func/shadows/distortShadow.glsl"
 #include "/includes/lib/text_renderer.glsl"
 #include "/includes/func/shadows/getCascade.glsl"
+#include "/includes/func/color/srgb.glsl"
 
 layout(binding = 0) uniform debugConfig {
 	bool _DebugEnabled;
@@ -35,6 +35,10 @@ layout(binding = 0) uniform debugConfig {
 	float _DebugUIScale;
 	bool _DisplayAtmospheric;
 	bool _DisplaySunlightColors;
+	bool _DisplayCameraData;
+};
+layout(std430, binding = 1) buffer _histogram {
+    uint histogram[];
 };
 
 uniform sampler2D sceneTex;
@@ -112,13 +116,13 @@ void main() {
 	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 squareCoord = ivec2(coord * vec2(ap.game.screenSize.x/ap.game.screenSize.y, 1)); // scale to square grid based on height
 
-	vec4 color = texelFetch(sceneTex, coord, 0);
+	vec4 color = readScene(texelFetch(sceneTex, coord, 0));
 	float depth = texelFetch(mainDepthTex, coord, 0).r;
 	vec3 posView = depthToViewPos(vec2(coord)/vec2(ap.game.screenSize), depth);
 	vec3 posPlayer = (ap.camera.viewInv * vec4(posView,1)).xyz;
 
 	if (!_DebugEnabled) {
-		imageStore(sceneImg, coord, color);
+		imageStore(sceneImg, coord, writeScene(color));
 		return;
 	}
 	ivec2 t;
@@ -205,6 +209,7 @@ void main() {
 		printFloat(ap.camera.far);
 		printString((_clsqr)); 
 		endText(color.rgb);
+
 	}
 	if (_DisplayAtmospheric) {
 		// Light Color
@@ -218,6 +223,12 @@ void main() {
 
 		newStat(uiCoord, line);
 		printString((_R,_a,_i,_n,_colon,_space)); printFloat(ap.world.rain);
+		endText(color.rgb);
+	}
+	if (_DisplayCameraData) {
+		newStat(uiCoord, line);
+		printString((_A,_v,_g,_space,_L,_u,_m,_space,_1,_0,_0,_x,_colon)); 
+		printFloat(AverageLuminance*100.0);
 		endText(color.rgb);
 	}
 	if (_DisplaySunlightColors) {
@@ -247,5 +258,5 @@ void main() {
 		uiCoord /= 1.75; line = int(ceil(line/1.75));
 	}
 
-	if (color.a > 0) imageStore(sceneImg, coord, color);
+	if (color.a > 0) imageStore(sceneImg, coord, writeScene(color));
 }

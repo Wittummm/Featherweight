@@ -1,4 +1,4 @@
-# Auto generated using `/build/generateLang.ts` (Featherweight); Fri, 04 Jul 2025 16:06:30 GMT 
+# Auto generated using `/build/generateLang.ts` (Featherweight); Wed, 09 Jul 2025 16:10:49 GMT 
 
 option.ShadowPixelization = Shadow Pixelization
 value.ShadowPixelization.-0.25 = 25 %
@@ -43,7 +43,35 @@ value.ShadowCascadeCount.0 = Auto
 option.ShadowBias = Shadow Bias
 option.ShadowBias.comment = Increase to reduce shadow acne at the cost of increasing peter panning.
 
-option.Exposure = Exposure
+option.ShadowThreshold = Shadow Threshold
+option.ShadowThreshold.comment = How shadowed the shadow needs to be to be considered shadowed, higher will "shrink" shadows.
+
+option.Sky = Sky
+value.Sky.0 = Vanilla
+value.Sky.1 = Shader's
+
+option.Stars = Stars
+value.Stars.0 = Vanilla
+value.Stars.1 = Low
+value.Stars.2 = Medium
+
+option.StarAmount = Star Amount
+
+option.DisableMoonHalo = Disable Moon Halo
+
+option.IsolateCelestials = Custom Sky
+
+screen.CameraAndColors = Camera And Colors
+
+option.ExposureMult = Exposure Mult
+
+option.ExposureSpeed = Exposure Speed
+
+option.AutoExposure = §oAuto Exposure§r
+value.AutoExposure.0 = Off
+value.AutoExposure.1 = Low
+
+option.ExposureSamplesX = §oExposure Samples X§r
 
 option.Tonemap = Tonemap
 option.Tonemap.comment = [NONE] is no tonemapping, not recommended.
@@ -93,6 +121,8 @@ option._DumpUniforms = Dump Uniforms
 
 option._DebugEnabled = §oEnable Debug§r
 
+screen._Shadows = Shadows
+
 option._ShadowLightBrightness = Shadow Light Brightness
 
 option._ShowShadows = Show Shadows
@@ -101,7 +131,7 @@ option._ShowShadowCascades = Show Shadow Cascades
 
 option._ShadowCascadeIndex = Shadow Cascade Index
 
-screen.ShowTextures = Show Textures
+screen._ShowTextures = Show Textures
 
 option._SliceScreen = Slice Screen
 
@@ -177,7 +207,7 @@ value._ShowHeight.2 = Top Right
 value._ShowHeight.3 = Bottom Left
 value._ShowHeight.4 = Bottom Right
 
-screen.DebugUI = Debug UI
+screen._DebugUI = Debug UI
 
 option._DebugUIScale = Debug UI Scale
 
@@ -186,4 +216,6 @@ option._DebugStats = Debug Stats
 option._DisplayAtmospheric = Atmospheric
 
 option._DisplaySunlightColors = Sunlight Colors
+
+option._DisplayCameraData = Camera Data
 

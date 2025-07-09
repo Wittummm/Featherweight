@@ -28,7 +28,7 @@ registerShader(stage, compositeShader)
 setCombinationPass(finalShader)
 
 isKeyDown(keyId: int) // Keys.someKey enum?
-getCompositeInfo(program: ProgramStage) // idk what this does
+getCompositeInfo(program: ProgramStage) // get shader order
 sendInChat(text: string)
 registerBarrier(?)
 

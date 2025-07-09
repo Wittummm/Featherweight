@@ -1,7 +1,7 @@
 #version 460 core
 layout (local_size_x = 1) in;
 
-#include "/includes/shared/settings.glsl"
+#include "/includes/shared/shared.glsl"
 
 #define SUNRISE0 0
 #define SUNRISE1 1
@@ -16,7 +16,7 @@ layout (local_size_x = 1) in;
 #define mappedLerp(minimum, maximum) ((ap.celestial.angle - minimum) / (maximum - minimum))
 
 void main() {
-
+    if (AutoExposure == 0) AverageLuminance = 0.2;
     AmbientColor = vec3(0.13, 0.13, 0.18);
 
     // TODOEVENTUALLY: NOTE: As currently WorldState on JS side does not have time, we must this on the gpu. -> If it is possible to do on cpu, then do so.

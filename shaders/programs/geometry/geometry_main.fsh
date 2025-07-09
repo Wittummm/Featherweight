@@ -1,9 +1,6 @@
 #version 460 core
 
-uniform sampler2DArrayShadow shadowMapFiltered;
-uniform sampler2DArray shadowMap;
-
-#include "/includes/shared/settings.glsl"
+#include "/includes/shared/shared.glsl"
 #include "/includes/func/color/srgb.glsl"
 #include "/includes/func/packing/encodeNormals.glsl"
 #include "/includes/func/buffers/gbuffer.glsl"
@@ -48,7 +45,7 @@ void iris_emitFragment() {
             GBuffer.rg = writeGBuffer(gbuffer0, gbuffer1).rg;
 		} 
         
-        if (iris_getCustomId(blockId) == TYPE_WATER) {
+        if (iris_getCustomId(blockId) == TYPE_WATER && ap.camera.fluid != 1) {
             vec2 fragCoord = gl_FragCoord.xy/ap.game.screenSize;
             
             float waterDepth = distance(depthToViewPos(fragCoord, texture(solidDepthTex, fragCoord).r), posView);
@@ -58,4 +55,5 @@ void iris_emitFragment() {
     #endif  
 
     GBuffer = writeGBuffer(gbuffer0, gbuffer1);
+    Color = writeScene(Color);
 }

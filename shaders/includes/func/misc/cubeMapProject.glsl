@@ -1,3 +1,6 @@
+#ifndef cubeMapProject_glsl
+#define cubeMapProject_glsl
+
 // Returns [-1, 1]
 vec2 cubeMapProject(vec3 dir, out int face) {
     vec3 absDir = abs(dir);
@@ -31,3 +34,4 @@ vec2 cubeMapProject(vec3 dir, out int face) {
         }
     }
 }
+#endif
