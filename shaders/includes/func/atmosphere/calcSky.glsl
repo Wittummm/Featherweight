@@ -13,11 +13,11 @@ vec3 calcSkyNoStars(vec3 dir) {
     return skyCustomNoStars(mat3(ap.camera.viewInv) * dir); 
 }
 
-vec3 calcSky(vec3 dir) {
+vec3 calcSky(vec3 dir, vec3 originalSkyColor) {
     if (Stars == 0) { // Vanilla stars, so no shader stars
         return calcSkyNoStars(dir);
     } else {
-        return skyCustom(mat3(ap.camera.viewInv) * dir); 
+        return skyCustom(mat3(ap.camera.viewInv) * dir, originalSkyColor); 
     }
 }
 

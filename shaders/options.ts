@@ -9,8 +9,8 @@ Syntax notes:
 - "X_" where `X` is the type ie `Page_Shadow` for page, option values/settings do not have this only things like pages etc 
 */
 function toneMapPicker(name: string, def?: number) {
-    return asIntRange(name, def ?? 1, 0, 4, 1, false).name()
-    .values("NONE", "Reinhard+", "Unreal", "Lottes", "Heij")
+    return asIntRange(name, def ?? 2, 0, 5, 1, false).name()
+    .values("NONE", "Reinhard+", "AgX", "Heij", "Unreal", "Lottes")
     .desc("[NONE] is no tonemapping, not recommended.");
 }
 function texIsolate(name: string) {
@@ -31,8 +31,8 @@ export function setupOptions() {
     const shadowPixelization = asPixelizationOverride("ShadowPixelization").name();
     const shadingPixelization = asPixelizationOverride("ShadingPixelization").name();
 
-    const general = new Page("General")
-    .add(asIntRange("SunPathRotation", 0, -90, 90, 5, false).name())
+    const general = new Page("Page_General").name()
+    .add(asIntRange("SunPathRotation", 0, -120, 120, 1, false).name())
     .add(new Page("Page_Pixelization").name()
         .add(asInt("Pixelization", 0, 8, 16, 32, 64, 128, 256)
             .needsReload(false).build(16)
@@ -44,7 +44,7 @@ export function setupOptions() {
     )
     .build();
 
-    const shadow = new Page("Shadows")
+    const shadow = new Page("Page_Shadows").name()
     .add(asBool("ShadowsEnabled", true, true).name())
     .add(asInt("ShadowResolution", 128, 256, 512, 768, 1024, 1536, 2048, 2560, 3072, 4096, 6144, 8192, 12288, 16384)
         .needsReload(true).build(768)
@@ -63,23 +63,25 @@ export function setupOptions() {
         .name()
     )
     .add(asFloatRange("ShadowSoftness", 0.7, 0, 6, 0.05, false).name())
-    .add(new Page("ShadowsExtra").name()
+    .add(new Page("Page_ShadowsExtra").name()
         .add(shadowPixelization)
-        .add(asFloatRange("ShadowDistort", 2, 0, 5, 0.05, false).name().desc("Allocate more resolution closer to the player.\n When using Shadow Cascades, this value should generally be lowered."))
+        .add(asFloatRange("ShadowDistort", 3, 0, 6, 0.05, false).name().desc("Allocate more resolution closer to the player.\n When using Shadow Cascades, this value should generally be lowered."))
         .add(asIntRange("ShadowCascadeCount", 0, 0, 8, 1, true).name().values("Auto"))
-        .add(asFloatRange("ShadowBias", 0.5, 0, 1, 0.025, false).name().desc("Increase to reduce shadow acne at the cost of increasing peter panning."))
+        .add(asFloatRange("ShadowBias", 0.4, 0, 1, 0.025, false).name().desc("Increase to reduce shadow acne at the cost of increasing peter panning."))
         .add(asFloatRange("ShadowThreshold", 0, 0, 1, 0.05, false).name().desc("How shadowed the shadow needs to be to be considered shadowed, higher will \"shrink\" shadows."))
         .build()
     )
     .build()
 
-    const shading = new Page("Shading")
+    const shading = new Page("Page_Shading").name()
+    .add(asBool("PBR", true, shouldReload).name())
+    .add(asIntRange("PBRMode", 0, 0, 1, 1, true).name().values("Reduced PBR", "Full PBR"))
     .add(asInt("Specular", 0, 1).needsReload(false).build(1))
     .add(asFloatRange("NormalStrength", 1.0, 0.0, 1.0, 0.05, false))
     .add(shadingPixelization)
     .build()
 
-    const atmosphere = new Page("Atmosphere")
+    const atmosphere = new Page("Page_Atmosphere").name()
     .add(asIntRange("Sky", 1, 0, 1, 1, false).name().values("Vanilla", "Shader's"))
     .add(asIntRange("Stars", 2, 0, 2, 1, false).name().values("Vanilla", "Low", "Medium")) 
     .add(asFloatRange("StarAmount", 0.03, 0, 1, 0.01, false).name()) 
@@ -90,7 +92,7 @@ export function setupOptions() {
     )
     .build()
 
-    const cameraAndColors = new Page("CameraAndColors").name()
+    const cameraAndColors = new Page("Page_CameraAndColors").name()
     .add(new Page("Exposure")
         .add(asFloatRange("ExposureMult", 1, -2, 5, 0.05, false).name())
         .add(asFloatRange("ExposureSpeed", 5, 0, 20, 0.1, false).name())
@@ -100,7 +102,7 @@ export function setupOptions() {
         .add(asIntRange("ExposureSamplesX", 12, 1, 32, 1, true).name())
         .build()
     )
-    .add(new Page("Tonemapping")
+    .add(new Page("Page_Tonemapping").name()
         .add(toneMapPicker("Tonemap"))
         .add(asBool("CompareTonemaps", false, false).name())
         .add(toneMapPicker("Tonemap1", 1))
@@ -111,7 +113,7 @@ export function setupOptions() {
     )
     .build()
 
-    const debug = new Page("_Debug")
+    const debug = new Page("_Debug").name()
     .add(asBool("_DumpTags", false, false).name())
     .add(asBool("_DumpUniforms", false, false).name())
     .add(asBool("_DebugEnabled", false, shouldReload).name())
@@ -134,6 +136,8 @@ export function setupOptions() {
             "_ShowNormals",
             "_ShowAmbientOcclusion",
             "_ShowHeight",
+            "_ShowGeometryNormals",
+            "_ShowLightLevel",
         ))
         .build()
     )

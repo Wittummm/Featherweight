@@ -1,12 +1,12 @@
 #version 460 core
 layout (local_size_x = 16, local_size_y = 16) in;
 
-#include "/includes/shared/shadowmap_uniforms.glsl"
+#include "/includes/shared/shared.glsl"
 
 #include "/includes/func/buffers/gbuffer.glsl"
+#include "/includes/func/buffers/data0.glsl"
 #include "/includes/lib/material.glsl"
 #include "/includes/func/misc/linearizeDepth.glsl"
-#include "/includes/shared/settings.glsl"
 #include "/includes/lib/shadow/shadow0.glsl"
 #include "/includes/func/depthToViewPos.glsl"
 #include "/includes/func/shadows/distortShadow.glsl"
@@ -27,6 +27,8 @@ layout(binding = 0) uniform debugConfig {
 	int _ShowAmbientOcclusion;
 	int _ShowHeight;
 	int _ShowShadowMap;
+	int _ShowGeometryNormals;
+	int _ShowLightLevel;
 	
 	bool _ShowShadows;
 	bool _ShowShadowCascades;
@@ -44,6 +46,7 @@ layout(std430, binding = 1) buffer _histogram {
 uniform sampler2D sceneTex;
 uniform usampler2D gbufferTex;
 uniform sampler2D mainDepthTex;
+uniform usampler2D dataTex0;
 
 layout(SCENE_FORMAT) uniform image2D sceneImg;
 
@@ -116,12 +119,13 @@ void main() {
 	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 squareCoord = ivec2(coord * vec2(ap.game.screenSize.x/ap.game.screenSize.y, 1)); // scale to square grid based on height
 
-	vec4 color = readScene(texelFetch(sceneTex, coord, 0));
+	vec4 color = vec4(-1);
 	float depth = texelFetch(mainDepthTex, coord, 0).r;
 	vec3 posView = depthToViewPos(vec2(coord)/vec2(ap.game.screenSize), depth);
 	vec3 posPlayer = (ap.camera.viewInv * vec4(posView,1)).xyz;
 
 	if (!_DebugEnabled) {
+		color = readScene(texelFetch(sceneTex, coord, 0));
 		imageStore(sceneImg, coord, writeScene(color));
 		return;
 	}
@@ -148,37 +152,52 @@ void main() {
 	if (_ShowShadowCascades) { 
 		int currentCascade = getCascade(shadowView);
 		if (currentCascade != -1) {
-			float display = float(currentCascade)/ShadowCascadesCount;
+			float display = float(currentCascade)/ShadowCascadeCount;
 
 			color.rgb = mix(color.rgb, vec3(1-display), 0.1);
 		}
 	}
 
-
+	vec3 baseNorm = vec3(0,1,0);
 	t = moveTo(_ShowDepth, coord);
     if (clip(t, _ShowDepth)) { color.rgb = linearizeDepthFull(texelFetch(mainDepthTex, t, 0).r, 0.0005, ap.camera.far).rrr; }
 
     t = moveTo(_ShowRoughness, coord);
-    if (clip(t, _ShowRoughness)) { color.rgb = vec3(Mat(color.rgb, texelFetch(gbufferTex, t, 0).rg).roughness); }
+    if (clip(t, _ShowRoughness)) { color.rgb = vec3(Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).roughness); }
 
 	t = moveTo(_ShowReflectance, coord);
-    if (clip(t, _ShowReflectance)) { color.rgb = Mat(color.rgb, texelFetch(gbufferTex, t, 0).rg).f0; }
+    if (clip(t, _ShowReflectance)) { color.rgb = Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).f0; color.a = 1; }
 
 	t = moveTo(_ShowPorosity, coord);
-    if (clip(t, _ShowPorosity)) { color.rgb = vec3(Mat(color.rgb, texelFetch(gbufferTex, t, 0).rg).porosity); }
+    if (clip(t, _ShowPorosity)) { color.rgb = vec3(Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).porosity); }
 
 	t = moveTo(_ShowEmission, coord);
-    if (clip(t, _ShowEmission)) { color.rgb = vec3(Mat(color.rgb, texelFetch(gbufferTex, t, 0).rg).emission); }
+    if (clip(t, _ShowEmission)) { color.rgb = vec3(Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).emission); }
 
 	t = moveTo(_ShowNormals, coord);
-    if (clip(t, _ShowNormals)) { color.rgb = Mat(color.rgb, texelFetch(gbufferTex, t, 0).rg).normals; }
+    if (clip(t, _ShowNormals)) { color.rgb = Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).normals; }
 
 	t = moveTo(_ShowAmbientOcclusion, coord);
-    if (clip(t, _ShowAmbientOcclusion)) { color.rgb = vec3(Mat(color.rgb, texelFetch(gbufferTex, t, 0).rg).ao); }
+    if (clip(t, _ShowAmbientOcclusion)) { color.rgb = vec3(Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).ao); }
 
 	t = moveTo(_ShowHeight, coord);
-    if (clip(t, _ShowHeight)) { color.rgb = vec3(Mat(color.rgb, texelFetch(gbufferTex, t, 0).rg).height); }
+    if (clip(t, _ShowHeight)) { color.rgb = vec3(Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).height); }
 
+	t = moveTo(_ShowGeometryNormals, coord);
+    if (clip(t, _ShowGeometryNormals)) { 
+		vec3 normals; vec2 lightLevel;
+		readData0(texelFetch(dataTex0, t, 0), normals, lightLevel);
+		color.rgb = vec3(normals); 
+	}
+
+	t = moveTo(_ShowLightLevel, coord);
+    if (clip(t, _ShowLightLevel)) { 
+		vec3 normals; vec2 lightLevel;
+		readData0(texelFetch(dataTex0, t, 0), normals, lightLevel);
+		color.rgb = vec3(lightLevel, 0); 
+	}
+
+	#ifdef ShadowsEnabled
 	t = moveTo(_ShowShadowMap, coord);
 	ivec2 shadowmapRes = textureSize(shadowMap, 0).xy;
     if (clip(t, _ShowShadowMap) && all(lessThan(t, shadowmapRes))) { 
@@ -189,8 +208,7 @@ void main() {
 		float shadowDepth = texture(shadowMap, pos).r;
 		color.rgb = shadowDepth.rrr * (shadowDepth < 1 ? 1 : 0.5); 
 	}
-
-	t = moveTo(_ShowHeight, coord);
+	#endif
 
 	// Visualize Settings //
 	vec4 uiCoord = vec4(scale(coord), scale(ivec2(10, ap.game.screenSize.y - 10)));
@@ -210,6 +228,18 @@ void main() {
 		printString((_clsqr)); 
 		endText(color.rgb);
 
+		#ifdef ShadowsEnabled
+		newStat(uiCoord, line);
+		printString((_S,_h,_a,_d,_o,_w,_space,_r,_e,_s,_colon,_opsqr));
+		printIvec2(textureSize(shadowMap, 0).xy);
+		printString((_clsqr,_x));
+		printInt(ShadowCascadeCount);
+		endText(color.rgb);
+		#else
+		newStat(uiCoord, line);
+		printString((_S,_h,_a,_d,_o,_w,_s,_colon,_O,_f,_f));
+		endText(color.rgb);
+		#endif
 	}
 	if (_DisplayAtmospheric) {
 		// Light Color
@@ -227,8 +257,8 @@ void main() {
 	}
 	if (_DisplayCameraData) {
 		newStat(uiCoord, line);
-		printString((_A,_v,_g,_space,_L,_u,_m,_space,_1,_0,_0,_x,_colon)); 
-		printFloat(AverageLuminance*100.0);
+		printString((_A,_v,_g,_space,_L,_u,_m,_space,_colon)); 
+		printFloat(AverageLuminance);
 		endText(color.rgb);
 	}
 	if (_DisplaySunlightColors) {
@@ -256,6 +286,13 @@ void main() {
 		endColorStat(LightRain, color);
 		
 		uiCoord /= 1.75; line = int(ceil(line/1.75));
+	}
+
+	if (all(lessThanEqual(color, vec4(-1)))) {
+		color = readScene(texelFetch(sceneTex, coord, 0));
+	} else {
+		color *= 25000;
+		color.a = 1;
 	}
 
 	if (color.a > 0) imageStore(sceneImg, coord, writeScene(color));

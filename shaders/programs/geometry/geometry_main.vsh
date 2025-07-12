@@ -29,7 +29,8 @@ void iris_sendParameters(VertexData data) {
 
 	texCoord = data.uv;
 	lightmapCoord = lightLevel;
-	vertColor = srgbToLinear(data.ao*light * data.color.rgb);
+	// vertColor = srgbToLinear(data.ao*light * data.color.rgb);
+	vertColor = srgbToLinear(data.ao * data.color.rgb);
 	tbn = tbnNormalTangent(data.normal, data.tangent);
 	blockId = data.blockId;
 }

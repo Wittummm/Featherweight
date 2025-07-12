@@ -13,7 +13,7 @@ float roughnessWrite(float roughness) {
 
 /// Emission
 float emissionRead(float emission) {
-    return emission < 1 ? emission : 0;
+    return fract(emission);
 }
 
 bool isPorosity(float porosity) {

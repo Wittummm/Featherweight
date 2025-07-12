@@ -1,0 +1,40 @@
+ivec2 threadGroupTiling(uint maxTileWidth) {
+    uint numCTAsInPerfectTile = maxTileWidth * gl_NumWorkGroups .y;
+    uint numPerfectTiles = gl_NumWorkGroups.x / maxTileWidth;
+    uint totalCTAsInPerfectTiles = numPerfectTiles * maxTileWidth * gl_NumWorkGroups.y;
+
+    uint vThreadGroupIDFlattened = gl_NumWorkGroups.x * gl_WorkGroupID.y + gl_WorkGroupID.x;
+
+    uint tileId = vThreadGroupIDFlattened / numCTAsInPerfectTile;
+    uint localCTAInTile = vThreadGroupIDFlattened % numCTAsInPerfectTile;
+
+    uint localCTA_X_in_tile;
+    uint localCTA_Y_in_tile;
+
+    if (vThreadGroupIDFlattened >= totalCTAsInPerfectTiles) {
+        // Handle imperfect final tile (uneven width)
+        uint lastTileWidth = gl_NumWorkGroups.x % maxTileWidth;
+        lastTileWidth = max(1u, lastTileWidth);  // match DXC_STATIC_DISPATCH_GRID_DIM fallback
+        localCTA_Y_in_tile = localCTAInTile / lastTileWidth;
+        localCTA_X_in_tile = localCTAInTile % lastTileWidth;
+    } else {
+        // Normal perfect tiles
+        localCTA_Y_in_tile = localCTAInTile / maxTileWidth;
+        localCTA_X_in_tile = localCTAInTile % maxTileWidth;
+    }
+
+    uint swizzledFlattened =
+        tileId * maxTileWidth +
+        localCTA_Y_in_tile * gl_NumWorkGroups.x +
+        localCTA_X_in_tile;
+
+    uvec2 swizzledGroupID;
+    swizzledGroupID.y = swizzledFlattened / gl_NumWorkGroups.x;
+    swizzledGroupID.x = swizzledFlattened % gl_NumWorkGroups.x;
+
+    uvec2 swizzledGlobalID;
+    swizzledGlobalID.x = swizzledGroupID.x * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
+    swizzledGlobalID.y = swizzledGroupID.y * ctgl_WorkGroupSizeaDim.y + gl_LocalInvocationID.y;
+
+    return ivec2(swizzledGlobalID);
+}

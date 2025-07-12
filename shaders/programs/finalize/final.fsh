@@ -24,8 +24,7 @@ void main() {
     Color = readScene(texture(sceneTex, uv));
     Color.rgb *= ExposureMult*calcExposure();
 
-    bool gammaCorrect = tonemap(Color.rgb, Tonemap);
-
+    bool gammaCorrect;
     if (CompareTonemaps) {
         const float slope = 17;
         vec2 maskCoord = uv;
@@ -46,6 +45,8 @@ void main() {
         } else if (mask3 >= 1) {
             gammaCorrect = tonemap(Color.rgb, TonemapIndices.w);
         }
+    } else {
+        gammaCorrect = tonemap(Color.rgb, Tonemap);
     }
 
     if (gammaCorrect) Color = linearToSRGB(Color);

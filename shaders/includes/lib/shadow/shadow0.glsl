@@ -8,7 +8,8 @@ float sampleShadowMapNearest(vec3 coord, int cascade) {
     return texture(shadowMap, vec3(coord.xy, cascade)).r;
 }
 float sampleShadowMap(vec3 coord, int cascade) {
-    return texture(shadowMapFiltered, vec4(coord.xy, cascade, coord.z)).r;
+    float t = texture(shadowMapFiltered, vec4(coord.xy, cascade, coord.z)).r;
+    return t*t; // t*t looks better than t
 }
 
 #endif

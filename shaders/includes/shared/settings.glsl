@@ -20,7 +20,17 @@ layout(std140, binding = 0) uniform settings {
     vec4 LightNightEnd;
     vec4 LightRain;
 
-    int ShadowCascadesCount;
+    vec4 AmbientSunrise;
+    vec4 AmbientMorning;
+    vec4 AmbientNoon;
+    vec4 AmbientAfternoon;
+    vec4 AmbientSunset;
+    vec4 AmbientNightStart;
+    vec4 AmbientMidnight;
+    vec4 AmbientNightEnd;
+    vec4 AmbientRain;
+
+    int ShadowCascadeCount;
     int ShadowSamples;
     int ShadowFilter;
     float ShadowDistort;
@@ -31,6 +41,7 @@ layout(std140, binding = 0) uniform settings {
     int ShadingPixelization;
     int ShadowPixelization;
 
+    int PBR;
     int Specular;
     float NormalStrength;
 
@@ -51,12 +62,19 @@ layout(std140, binding = 0) uniform settings {
 };
 
 #define STAR_INTENSITY_MIN 0.08
-#define STAR_INTENSITY_MAX 0.98
+#define STAR_INTENSITY_MAX 1
 const vec3 starColor = vec3(0.9412, 0.9333, 0.898);
 const uint cellSize = 10; 
 const float starRadius = 1;
 const float padding = 0.5;
-#define STAR_EXPOSURE_THING 50 // CONFIGTODO: extra settings
+#define STAR_EXPOSURE_THING 50 
+
+#define BASE_LUX 7000
+#define EMISSION_LUX 15000
+const vec3 localLightColor = vec3(0.96, 0.85, 0.6)*EMISSION_LUX;
+
+const vec4 gbuffer0Default = vec4(0.2, 0.03, 0.7, 0); // spec
+const vec4 gbuffer1Default = vec4(-1, -1, 1, 0.25); // norm
 
 #endif
 

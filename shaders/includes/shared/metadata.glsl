@@ -8,7 +8,7 @@ layout(std430, binding = 0) buffer metadata {
     uint CameraBlockId;
     float AverageLuminance;
 
-    vec3 AmbientColor;
+    vec4 AmbientColor;
     vec4 LightColor;
 };
 #endif

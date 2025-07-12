@@ -4,21 +4,18 @@ layout (local_size_x = ExposureSamplesX, local_size_y = ExposureSamplesY) in;
 
 #include "/includes/shared/shared.glsl"
 #include "/includes/func/color/srgb.glsl"
+#include "/includes/func/color/luminance.glsl"
 
 uniform sampler2D sceneTex;
 
-float luminance(vec3 color) {
-    return dot(color, vec3(0.2126, 0.7152, 0.0722));
-}
-
 shared int data[2]; 
 
-const int s = 10000;
+const int s = 10;
 const int sampleCount = ExposureSamplesX*ExposureSamplesY;
 vec2 tileSize = vec2(1.0/ExposureSamplesX, 1.0/ExposureSamplesY);
 
-const float minLogLum      = -0.3;
-const float maxLogLum      = 0.9;
+const float minLogLum      = 13;
+const float maxLogLum      = 64;
 const float logLumRange    = maxLogLum - minLogLum;
 const float rcpLogLumRange = 1.0 / logLumRange;
 

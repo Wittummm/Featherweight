@@ -40,7 +40,9 @@ Search for these keywords to see what extra features you can toggle, most are di
     - `PIN` likely will come back to, usually to edit/add features
     - `CODE: xxx` a random code(literally button mash) 
     - `REMOVE` to remove for some reason
-  - - `CONFIGTODO` to add this config to user accessible settings.
+    - `CONFIGTODO` to add this config to user accessible settings.
+    - `AP_ISSUE` an issue/bug with aperture
+    - `TEMP` temporary
   - **Notes**
     - Put "#define DISTANT_HORIZONS_SHADER" in the top of DH shader stages
     - Pixelization Overrides syntax:

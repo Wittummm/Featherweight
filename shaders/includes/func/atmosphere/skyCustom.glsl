@@ -21,11 +21,6 @@ const float g2 = g*g;
 const vec3 betaR = vec3(1.95e-2, 1.1e-1, 2.94e-1);
 const vec3 betaM = vec3(4.2e-2, 4e-2, 4e-2);
 
-vec3 ACES(vec3 v) {
-    v *= 0.6;
-    return (v*(2.51*v+0.03))/(v*(2.43*v+0.59)+0.14);
-}
-
 #define brightness(color) (0.299*color.r + 0.587*color.g + 0.114*color.b)
 
 // DUPLICATE CODE: sadnin1
@@ -66,11 +61,11 @@ vec3 _skyCustom(vec3 viewDir, vec3 lightDir, vec2 intensity, vec2 attenuation) {
     float miePhase = mie*intensity.y * pow(1. + g2 + 2. * g * cosine, -1.5) * (1. - g2) / (2. + g2);
     vec3 inScatter = (1 + fcos2) * vec3(rayleigh*intensity.x + betaM / betaR * miePhase*(1-extinction));
 
-    vec3 sunHaze = ACES(inScatter*(1-extinction));
+    vec3 sunHaze = inScatter*(1-extinction);
 
     ///////////////////
 
-    return vec3( clamp(sunHaze, 0, 1) );
+    return sunHaze;
 }
 
 vec3 _skyCustomNoStars(inout vec3 viewDir, vec2 intensity, vec2 attenuation) {
@@ -80,13 +75,15 @@ vec3 _skyCustomNoStars(inout vec3 viewDir, vec2 intensity, vec2 attenuation) {
     float moonness = max(moonDir.y, 0);
 
     float altitudeBias = altitude*0.0001; // Fake Space
-    viewDir.y += altitudeBias;
-    viewDir = normalize(viewDir);
+    viewDir.y += altitudeBias; viewDir = normalize(viewDir);
+    sunDir.y += altitudeBias; sunDir = normalize(sunDir);
+    moonDir.y += altitudeBias; moonDir = normalize(moonDir);
+
     if (altitudeBias > 1) { 
         return vec3(0); // We in SPACE!
     }
 
-    float _moonIntensity = mix(0, 0.01, moonness);
+    float _moonIntensity = mix(0, 0.005, moonness);
     vec2 moonIntensity = DisableMoonHalo ? vec2(_moonIntensity, 0) : vec2(_moonIntensity);
     vec2 sunIntensity = vec2(mix(0.05, 1, sunness));
     if (IsolateCelestials) { 
@@ -96,7 +93,7 @@ vec3 _skyCustomNoStars(inout vec3 viewDir, vec2 intensity, vec2 attenuation) {
 
     return 
     _skyCustom(viewDir, sunDir, sunIntensity*intensity, vec2(1)*attenuation )*min(sunness+0.5, 1) + 
-    _skyCustom(viewDir, moonDir, moonIntensity*intensity, vec2(mix(4, 10, moonness))*attenuation )*min(moonness+0.5, 1);
+    _skyCustom(viewDir, moonDir, moonIntensity*intensity, vec2(mix(4, 15, moonness))*attenuation )*min(moonness+0.5, 1);
 }
 
 vec3 skyCustomNoStars(in vec3 viewDir, vec2 intensity, vec2 attenuation) {
@@ -107,7 +104,7 @@ vec3 skyCustomNoStars(in vec3 viewDir) {
     return skyCustomNoStars(viewDir, vec2(1), vec2(1));
 }
 
-vec3 skyCustom(vec3 viewDir, vec2 intensity, vec2 attenuation) {
+vec3 skyCustom(vec3 viewDir, vec2 intensity, vec2 attenuation, vec3 originalSkyColor) {
     vec3 sky = _skyCustomNoStars(viewDir, intensity, attenuation);
 
     if (Stars == 0 || StarAmount == 0) {
@@ -123,10 +120,13 @@ vec3 skyCustom(vec3 viewDir, vec2 intensity, vec2 attenuation) {
         } else if (Stars == 2) {
             stars = viewDir.y >= 0 ? calcStarsMedium(rotatedViewDir) : vec3(0);
         }
-        return sky + stars*max(1-brightness(sky)*STAR_EXPOSURE_THING, 0);
+
+        vec3 displayedSky = Sky == 0 ? originalSkyColor : sky;
+
+        return sky + stars*max(1-brightness(displayedSky)*STAR_EXPOSURE_THING, 0);
     }
 }
 
-vec3 skyCustom(vec3 viewDir) {
-    return skyCustom(viewDir, vec2(1), vec2(1));
+vec3 skyCustom(vec3 viewDir, vec3 originalSkyColor) {
+    return skyCustom(viewDir, vec2(1), vec2(1), originalSkyColor);
 }

@@ -3,6 +3,6 @@ vec3 reinhard(vec3 color) {
 }
 
 vec3 reinhardModified(vec3 x) {
-    const vec3 L_white = vec3(2);
+    const vec3 L_white = vec3(3);
     return (x * (1.0 + x / (L_white * L_white))) / (1.0 + x);
 }

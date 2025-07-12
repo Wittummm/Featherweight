@@ -1,5 +1,7 @@
 // Source: https://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
 
+#ifndef srgb_glsl
+#define srgb_glsl
 #include "/includes/func/buffers/scene.glsl"
 
 vec3 linearToSRGB(vec3 linear) {
@@ -15,3 +17,4 @@ vec4 linearToSRGB(vec4 linear) {
 vec4 srgbToLinear(vec4 srgb) {
     return vec4(srgbToLinear(srgb.rgb), srgb.a);
 }
+#endif

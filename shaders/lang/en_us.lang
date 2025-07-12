@@ -1,4 +1,4 @@
-# Auto generated using `/build/generateLang.ts` (Featherweight); Wed, 09 Jul 2025 16:10:49 GMT 
+# Auto generated using `/build/generateLang.ts` (Featherweight); Sat, 12 Jul 2025 09:55:05 GMT 
 
 option.ShadowPixelization = Shadow Pixelization
 value.ShadowPixelization.-0.25 = 25 %
@@ -10,11 +10,15 @@ value.ShadingPixelization.-0.25 = 25 %
 value.ShadingPixelization.-0.5 = 50 %
 value.ShadingPixelization.-1 = 100 %
 
+screen.Page_General = General
+
 option.SunPathRotation = Sun Path Rotation
 
 screen.Page_Pixelization = Pixelization
 
 value.Pixelization.0 = Off
+
+screen.Page_Shadows = Shadows
 
 option.ShadowsEnabled = §oEnable Shadows§r
 
@@ -31,7 +35,7 @@ option.ShadowSamples = Shadow Samples
 
 option.ShadowSoftness = Shadow Softness
 
-screen.ShadowsExtra = Shadows Extra
+screen.Page_ShadowsExtra = Shadows Extra
 
 option.ShadowDistort = Shadow Distort
 option.ShadowDistort.comment = Allocate more resolution closer to the player.
@@ -46,6 +50,16 @@ option.ShadowBias.comment = Increase to reduce shadow acne at the cost of increa
 option.ShadowThreshold = Shadow Threshold
 option.ShadowThreshold.comment = How shadowed the shadow needs to be to be considered shadowed, higher will "shrink" shadows.
 
+screen.Page_Shading = Shading
+
+option.PBR = §oPBR§r
+
+option.PBRMode = §oPBRMode§r
+value.PBRMode.0 = Reduced PBR
+value.PBRMode.1 = Full PBR
+
+screen.Page_Atmosphere = Atmosphere
+
 option.Sky = Sky
 value.Sky.0 = Vanilla
 value.Sky.1 = Shader's
@@ -59,9 +73,9 @@ option.StarAmount = Star Amount
 
 option.DisableMoonHalo = Disable Moon Halo
 
-option.IsolateCelestials = Custom Sky
+option.IsolateCelestials = Isolate Celestials
 
-screen.CameraAndColors = Camera And Colors
+screen.Page_CameraAndColors = Camera And Colors
 
 option.ExposureMult = Exposure Mult
 
@@ -73,13 +87,16 @@ value.AutoExposure.1 = Low
 
 option.ExposureSamplesX = §oExposure Samples X§r
 
+screen.Page_Tonemapping = Tonemapping
+
 option.Tonemap = Tonemap
 option.Tonemap.comment = [NONE] is no tonemapping, not recommended.
 value.Tonemap.0 = NONE
 value.Tonemap.1 = Reinhard+
-value.Tonemap.2 = Unreal
-value.Tonemap.3 = Lottes
-value.Tonemap.4 = Heij
+value.Tonemap.2 = AgX
+value.Tonemap.3 = Heij
+value.Tonemap.4 = Unreal
+value.Tonemap.5 = Lottes
 
 option.CompareTonemaps = Compare Tonemaps
 
@@ -87,33 +104,39 @@ option.Tonemap1 = Tonemap1
 option.Tonemap1.comment = [NONE] is no tonemapping, not recommended.
 value.Tonemap1.0 = NONE
 value.Tonemap1.1 = Reinhard+
-value.Tonemap1.2 = Unreal
-value.Tonemap1.3 = Lottes
-value.Tonemap1.4 = Heij
+value.Tonemap1.2 = AgX
+value.Tonemap1.3 = Heij
+value.Tonemap1.4 = Unreal
+value.Tonemap1.5 = Lottes
 
 option.Tonemap2 = Tonemap2
 option.Tonemap2.comment = [NONE] is no tonemapping, not recommended.
 value.Tonemap2.0 = NONE
 value.Tonemap2.1 = Reinhard+
-value.Tonemap2.2 = Unreal
-value.Tonemap2.3 = Lottes
-value.Tonemap2.4 = Heij
+value.Tonemap2.2 = AgX
+value.Tonemap2.3 = Heij
+value.Tonemap2.4 = Unreal
+value.Tonemap2.5 = Lottes
 
 option.Tonemap3 = Tonemap3
 option.Tonemap3.comment = [NONE] is no tonemapping, not recommended.
 value.Tonemap3.0 = NONE
 value.Tonemap3.1 = Reinhard+
-value.Tonemap3.2 = Unreal
-value.Tonemap3.3 = Lottes
-value.Tonemap3.4 = Heij
+value.Tonemap3.2 = AgX
+value.Tonemap3.3 = Heij
+value.Tonemap3.4 = Unreal
+value.Tonemap3.5 = Lottes
 
 option.Tonemap4 = Tonemap4
 option.Tonemap4.comment = [NONE] is no tonemapping, not recommended.
 value.Tonemap4.0 = NONE
 value.Tonemap4.1 = Reinhard+
-value.Tonemap4.2 = Unreal
-value.Tonemap4.3 = Lottes
-value.Tonemap4.4 = Heij
+value.Tonemap4.2 = AgX
+value.Tonemap4.3 = Heij
+value.Tonemap4.4 = Unreal
+value.Tonemap4.5 = Lottes
+
+screen._Debug = Debug
 
 option._DumpTags = Dump Tags
 
@@ -206,6 +229,22 @@ value._ShowHeight.1 = Top Left
 value._ShowHeight.2 = Top Right
 value._ShowHeight.3 = Bottom Left
 value._ShowHeight.4 = Bottom Right
+
+option._ShowGeometryNormals = Show GeometryNormals
+value._ShowGeometryNormals.-1 = Off
+value._ShowGeometryNormals.0 = Full
+value._ShowGeometryNormals.1 = Top Left
+value._ShowGeometryNormals.2 = Top Right
+value._ShowGeometryNormals.3 = Bottom Left
+value._ShowGeometryNormals.4 = Bottom Right
+
+option._ShowLightLevel = Show LightLevel
+value._ShowLightLevel.-1 = Off
+value._ShowLightLevel.0 = Full
+value._ShowLightLevel.1 = Top Left
+value._ShowLightLevel.2 = Top Right
+value._ShowLightLevel.3 = Bottom Left
+value._ShowLightLevel.4 = Bottom Right
 
 screen._DebugUI = Debug UI
 

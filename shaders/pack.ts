@@ -1,6 +1,6 @@
 import { Vec4, Vec3, Vec2 } from './modules/Vector';
 import { FixedBuiltStreamingBuffer, FixedStreamingBuffer, dumpSettings } from './modules/FixedStreamingBuffer';
-import { Settings } from './modules/Settings';
+import { distancePerShadowCascade, Settings } from './modules/Settings';
 import { KeyInput } from './modules/KeyInput';
 import { toggleBoolSetting } from './modules/HelperFuncs';
 import { dumpTags, Tagger, mc, sh, ap } from './modules/BlockTag';
@@ -11,18 +11,18 @@ const DEBUG_CONFIG = {
     debug: true,
     outputToChat: true,
 }
-const distancePerShadowCascade = 96;
+const defaultComposite = "programs/template/composite.vsh"
 // Variables
 let debugBuffer: FixedBuiltStreamingBuffer | null;
 let settingsBuffer: FixedBuiltStreamingBuffer;
 let metadataBuffer: BuiltGPUBuffer;
-let shadowCascadeCount: number = -1;
 //// Helper Funcs ////
 function initSettings(state?: WorldState) { // Settings initialized once on shader setup
     worldSettings.ambientOcclusionLevel = 1.0;
     worldSettings.mergedHandDepth = true; 
-    worldSettings.shadowMapDistance = getIntSetting("ShadowDistance");
-    worldSettings.renderStars = true;
+    worldSettings.shadow.distance = getIntSetting("ShadowDistance");
+    worldSettings.render.stars = true;
+    worldSettings.render.horizon = false;
 
     dumpTags(getBoolSetting("_DumpTags"));
 }
@@ -30,40 +30,43 @@ function setupSettings(state?: WorldState) {
     // CODE: sadi1n NOTE: TODOEVENTUALLY: TEMP: BELOW IS TEMPORARY, Aperture currently has strict reloading features
     function requestReload(msg) { sendInChat(`Request Reload: ${msg}`); }
     
-    if (getIntSetting("ShadowCascadeCount") == 0 && worldSettings.shadowMapDistance != getIntSetting("ShadowDistance")) {
-        if (Math.ceil(worldSettings.shadowMapDistance/distancePerShadowCascade) != Math.ceil(getIntSetting("ShadowDistance")/distancePerShadowCascade)) {
+    if (getIntSetting("ShadowCascadeCount") == 0 && worldSettings.shadow.distance != getIntSetting("ShadowDistance")) {
+        if (Math.ceil(worldSettings.shadow.distance/distancePerShadowCascade) != Math.ceil(getIntSetting("ShadowDistance")/distancePerShadowCascade)) {
             requestReload("When changing Shadow Distance and Shadow Cascade is Auto.")
         }
     }
     ///////////
 
-
+    worldSettings.render.stars = getIntSetting("Stars") == 0;
     worldSettings.sunPathRotation = Settings.SunPathRotation;
-    worldSettings.shadowMapDistance = getIntSetting("ShadowDistance"); // TODOEVENTUALLY IMPROVE: should clamp to render distance
-    if (shadowCascadeCount == 1) { // NOTE: AP_BUG: TODOEVENTUALLY: This is presumbly a bug in Aperture as Arc 2 also does this workaround
-        worldSettings.shadowNearPlane = 1.5*-worldSettings.shadowMapDistance; 
-        worldSettings.shadowFarPlane = 1.5*worldSettings.shadowMapDistance; 
-
-        // Closer to Aperture's default while not being broken, but has worse shadow acne
-        // worldSettings.shadowNearPlane = -worldSettings.shadowMapDistance; 
-        // worldSettings.shadowFarPlane = 256-worldSettings.shadowMapDistance; 
-    }
+    worldSettings.shadow.distance = getIntSetting("ShadowDistance"); // TODOEVENTUALLY IMPROVE: should clamp to render distance
 
     // Non Aperture/Built in Settings
     dumpSettings(getBoolSetting("_DumpUniforms"));
 
-    const shadowBias = getFloatSetting("ShadowBias") / worldSettings.shadowMapResolution;
-
+    const shadowBias = getFloatSetting("ShadowBias") / worldSettings.shadow.resolution;
+    
     // TODOEVENTUALLY: is static for now but can/should be user customizable when Aperture supports vec4/vec3 sliders
-    let LightSunrise =      new Vec4(0.984, 0.702, 0.275, 0.9);
-    let LightMorning =      new Vec4(0.941, 0.855, 0.7, 1);
-    let LightNoon =         new Vec4(0.92, 0.898, 0.8, 1.15); // temp
-    let LightAfternoon =    new Vec4(0.9625, 0.807, 0.7, 1);
-    let LightSunset =       new Vec4(0.984, 0.6235, 0.2627, 0.9);
-    let LightNightStart =   new Vec4(0.1451, 0.14513, 0.23137, 0.8);
-    let LightMidnight =     new Vec4(0.0588, 0.04706, 0.1412, 0.75);
-    let LightNightEnd =     new Vec4(0, 0, 0.035, 0.8);
-    let LightRain =         new Vec4(0.306, 0.408, 0.506, 0.8);
+    // alpha is brightness: table from "Moving Frostbite to Physically Based Rendering 3.0"
+    let LightSunrise =      new Vec4(0.984 , 0.702  , 0.275 , 15000);
+    let LightMorning =      new Vec4(0.941 , 0.855  , 0.7   , 60000);
+    let LightNoon =         new Vec4(0.92  , 0.898  , 0.8   , 88000);
+    let LightAfternoon =    new Vec4(0.9625, 0.807  , 0.7   , 80000);
+    let LightSunset =       new Vec4(0.984 , 0.6235 , 0.2627, 30000);
+    let LightNightStart =   new Vec4(0.1451, 0.14513, 0.2314, 10000);
+    let LightMidnight =     new Vec4(0.0588, 0.04706, 0.1412, 5000 );
+    let LightNightEnd =     new Vec4(0     , 0      , 0.035 , 10000);
+    let LightRain =         new Vec4(0.306 , 0.408  , 0.506 , 25000);
+
+    let AmbientSunrise =    new Vec4(0.45, 0.3, 0.2, 29500);
+    let AmbientMorning =    new Vec4(0.6, 0.6, 0.5, 26000);
+    let AmbientNoon =       new Vec4(0.8, 0.8, 0.75, 20000);
+    let AmbientAfternoon =  new Vec4(0.7, 0.65, 0.55, 26000);
+    let AmbientSunset =     new Vec4(0.47, 0.3, 0.25, 29000);
+    let AmbientNightStart = new Vec4(0.15, 0.15, 0.25, 14000);
+    let AmbientMidnight =   new Vec4(0.05, 0.05, 0.18, 8000);
+    let AmbientNightEnd =   new Vec4(0.1, 0.1, 0.14, 14000);
+    let AmbientRain =       new Vec4(0.3, 0.35, 0.4, 15000);
 
     if (debugBuffer) {
         LightSunrise.w *= getFloatSetting("_ShadowLightBrightness")
@@ -89,6 +92,8 @@ function setupSettings(state?: WorldState) {
         .int("_ShowAmbientOcclusion")
         .int("_ShowHeight")
         .int("_ShowShadowMap")
+        .int("_ShowGeometryNormals")
+        .int("_ShowLightLevel")
         .bool("_ShowShadows")
         .bool("_ShowShadowCascades")
         .int("_ShadowCascadeIndex")
@@ -100,10 +105,11 @@ function setupSettings(state?: WorldState) {
     }
     
     settingsBuffer
+    // Non direct settings
     .float(0, "Rain") // rain but changes based on biome
     .float(0, "Wetness") // "Slow" rain
 
-    // Computed on cpu
+    // Settings
     .vec4(...LightSunrise.xyzw(), "LightSunrise")
     .vec4(...LightMorning.xyzw(), "LightMorning")
     .vec4(...LightNoon.xyzw(), "LightNoon")
@@ -113,8 +119,18 @@ function setupSettings(state?: WorldState) {
     .vec4(...LightMidnight.xyzw(), "LightMidnight")
     .vec4(...LightNightEnd.xyzw(), "LightNightEnd")
     .vec4(...LightRain.xyzw(), "LightRain")
+
+    .vec4(...AmbientSunrise.xyzw(), "AmbientSunrise")
+    .vec4(...AmbientMorning.xyzw(), "AmbientMorning")
+    .vec4(...AmbientNoon.xyzw(), "AmbientNoon")
+    .vec4(...AmbientAfternoon.xyzw(), "AmbientAfternoon")
+    .vec4(...AmbientSunset.xyzw(), "AmbientSunset")
+    .vec4(...AmbientNightStart.xyzw(), "AmbientNightStart")
+    .vec4(...AmbientMidnight.xyzw(), "AmbientMidnight")
+    .vec4(...AmbientNightEnd.xyzw(), "AmbientNightEnd")
+    .vec4(...AmbientRain.xyzw(), "AmbientRain")
     // Shadows
-    .int(shadowCascadeCount, "ShadowCascadeCount") 
+    .int(worldSettings.shadow.cascades, "ShadowCascadeCount") 
     .int(Settings.ShadowSamples, "ShadowSamples")
     .int("ShadowFilter")
     .float("ShadowDistort")
@@ -125,6 +141,7 @@ function setupSettings(state?: WorldState) {
     .int(getPixelizationOverride("ShadingPixelization"), "ShadingPixelization")
     .int(getPixelizationOverride("ShadowPixelization"), "ShadowPixelization")
     // Shading
+    .int(Settings.PBR)
     .int("Specular")
     .float("NormalStrength")
 
@@ -158,30 +175,42 @@ function setup() {
     //// Declarations
     defineGlobally("SCENE_FORMAT", "r11f_g11f_b10f");
     let sceneTexture = new Texture("sceneTex").imageName("sceneImg").format(Format.R11F_G11F_B10F).mipmap(true).build();
-    let gbufferTexture = new Texture("gbufferTex").imageName("gbufferImg").format(Format.RG32UI).build();
+    defineGlobally("GBUFFER_FORMAT", "rg32ui");
+    let gbufferTexture: BuiltTexture|null = Settings.PBREnabled ? new Texture("gbufferTex").imageName("gbufferImg").format(Format.RG32UI).build() : null;
+    defineGlobally("DATA0_FORMAT", "r32ui");
+    let dataTexture0 = new Texture("dataTex0").imageName("dataImg0").format(Format.R32UI).build();
 
     /////// Helper Funcs ///////////
-    function define<T>(shader: T, name: string) {
+    function define<T>(shader: Shader<T>, name: string, defineName?: string): T {
         if (getBoolSetting(name)) {
-            shader.define(name, "");
+            shader.define(defineName ?? name, "");
         }
-        return shader;
+        return shader as T;
+    }
+    function lightingDefines<T>(shader: Shader<T>): T {
+        define(shader, "ShadowsEnabled");
+        define(shader, "PBR", "PBREnabled"); // PBR cannot be enabled without shading
+
+        return shader as T;
     }
     function terrainProgram(usage: ProgramUsage, name: string, programName?: string): ObjectShader {
         let program = new ObjectShader(programName || name, usage);
-        define(program, "ShadowsEnabled");
+        lightingDefines(program);
         
-        return bindSettings(program)
+        bindSettings(program)
         .vertex(`programs/geometry/${name}.vsh`)
         .fragment(`programs/geometry/${name}.fsh`)
         .target(0, sceneTexture)
-        .target(1, gbufferTexture).blendOff(1)
+        .target(2, dataTexture0)
+        if (gbufferTexture) {program.target(1, gbufferTexture).blendOff(1);}
+
+        return program;
     }
-    function bindSettings<T>(program: T): T {
+    function bindSettings<T>(program: Shader<T>): T {
         program.define("INCLUDE_SETTINGS", "");
-        return bindMetadata(program).ubo(0, settingsBuffer.buffer);
+        return (bindMetadata(program) as Shader<T>).ubo(0, settingsBuffer.buffer);
     }
-    function bindMetadata<T>(program: T): T {
+    function bindMetadata<T>(program: Shader<T>): T {
         program.define("INCLUDE_METADATA", "");
         return program.ssbo(0, metadataBuffer);
     }
@@ -191,13 +220,21 @@ function setup() {
     /////// Actual Functions ////////
     function setupResources() { 
         // Only use for forward declared/global scope resources
-        debugBuffer = getBoolSetting("_DebugEnabled") ? new FixedStreamingBuffer().bool().bool().bool().int().int().int().int().int().int().int().int().int().bool().bool().int().float().bool().bool().bool().build() : null;
-        settingsBuffer = new FixedStreamingBuffer().float().float().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().int().int().int().float().float().float().float().int().int().int().int().float().float().float().int().bool().ivec4().int().int().float().bool().bool().build();
+        debugBuffer = getBoolSetting("_DebugEnabled") ? new FixedStreamingBuffer().bool().bool().bool().int().int().int().int().int().int().int().int().int().int().int().bool().bool().int().float().bool().bool().bool().build() : null;
+        settingsBuffer = new FixedStreamingBuffer().float().float() .vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4() .int().int().int().float().float().float().float() .int().int() .int().int().float() .int().float().float().int().bool().ivec4() .int().int().float().bool().bool().build();
         metadataBuffer = new GPUBuffer(72).build();
     }
     function setupPrograms() {
         registerShader(Stage.PRE_RENDER, bindSettings(new Compute("init_settings"))
-            .location("programs/init/settings.csh").workGroups(1,1,1).build()); 
+            .location("programs/pre_render/settings.csh").workGroups(1,1,1).build()
+        ); 
+
+        registerShader(Stage.PRE_RENDER, bindSettings(new Composite("clear_textures"))
+            .vertex(defaultComposite)
+            .fragment("programs/pre_render/clear_textures.fsh")
+            .target(0, sceneTexture)
+            .build()
+        ); 
 
         // Terraain
         registerShader(terrainProgram(Usage.TERRAIN_SOLID, "geometry_main", "terrain_solid")
@@ -212,7 +249,7 @@ function setup() {
         );
 
         // Sky
-        registerShader(new ObjectShader("sky_textured", Usage.SKY_TEXTURES)
+        registerShader(bindMetadata(new ObjectShader("sky_textured", Usage.SKY_TEXTURES))
             .vertex("programs/geometry/sky_textured.vsh")
             .fragment("programs/geometry/sky_textured.fsh")
             .target(0, sceneTexture)
@@ -224,24 +261,33 @@ function setup() {
             .vertex("programs/geometry/sky_basic.vsh")
             .fragment("programs/geometry/sky_basic.fsh")
             .target(0, sceneTexture)
+            // .blendFunc(0, Func.ONE, Func.ONE, Func.ONE, Func.ONE)
             .build()
         );
 
         // Deferred
-        registerShader(Stage.PRE_TRANSLUCENT, bindSettings(define(new Compute("shade"), "ShadowsEnabled"))
+        registerShader(Stage.PRE_TRANSLUCENT, bindSettings(lightingDefines(new Compute("shade")))
             .location("programs/post_opaque/shade.csh")
             .workGroups(Math.ceil(screenWidth/16), Math.ceil(screenHeight/16), 1).build()
         ); 
 
         // / Shadows
         if (Settings.ShadowsEnabled) {
-            shadowCascadeCount = getIntSetting("ShadowCascadeCount");
-            if (shadowCascadeCount <= 0) {
-                shadowCascadeCount = Math.ceil(worldSettings.shadowMapDistance/distancePerShadowCascade); 
-            }
-        
-            enableShadows(Math.floor(getIntSetting("ShadowResolution")/shadowCascadeCount), shadowCascadeCount)
+            worldSettings.shadow.resolution = getIntSetting("ShadowResolution")/Settings.ShadowCascadeCount;
+            worldSettings.shadow.cascades = Settings.ShadowCascadeCount;
+            worldSettings.shadow.enable();
             registerShader(bindSettings(new ObjectShader("shadow", Usage.SHADOW)) // TODOEVENTUALLY: separate for cutout to early z check
+                .vertex(`programs/geometry/shadow.vsh`)
+                .fragment(`programs/geometry/shadow.fsh`)
+                .build()
+            )
+            registerShader(bindSettings(new ObjectShader("shadow", Usage.SHADOW_TERRAIN_CUTOUT)) // TODOEVENTUALLY: separate for cutout to early z check
+                .vertex(`programs/geometry/shadow.vsh`)
+                .fragment(`programs/geometry/shadow.fsh`)
+                .define("CUTOUT", "")
+                .build()
+            )
+            registerShader(bindSettings(new ObjectShader("shadow", Usage.SHADOW_ENTITY_CUTOUT)) // TODOEVENTUALLY: separate for cutout to early z check
                 .vertex(`programs/geometry/shadow.vsh`)
                 .fragment(`programs/geometry/shadow.fsh`)
                 .define("CUTOUT", "")
@@ -262,7 +308,7 @@ function setup() {
         }
 
         if (debugBuffer) {
-            registerShader(Stage.POST_RENDER, define(bindSettings(new Compute("debug")), "ShadowsEnabled")
+            registerShader(Stage.POST_RENDER, lightingDefines(bindSettings(new Compute("debug")))
                 .location("programs/post_render/debug.csh")
                 .workGroups(Math.ceil(screenWidth/16), Math.ceil(screenHeight/16), 1)
                 .ubo(0, debugBuffer.buffer).build()

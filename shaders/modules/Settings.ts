@@ -1,5 +1,7 @@
 import { Vec4, Vec3, Vec2 } from './Vector';
 
+export const distancePerShadowCascade = 95.5;
+
 export class Settings {
     private constructor() {}
     static get SunPathRotation() {
@@ -25,5 +27,21 @@ export class Settings {
         let exposureSamplesY = Math.floor(exposureSamplesX * (screenHeight/screenWidth));
         
         return new Vec2(exposureSamplesX, exposureSamplesY);
+    }
+    static get ShadowCascadeCount() {
+        let shadowCascadeCount = getIntSetting("ShadowCascadeCount");
+        if (shadowCascadeCount <= 0) {
+            shadowCascadeCount = Math.ceil(worldSettings.shadow.distance/distancePerShadowCascade); 
+        }
+        return shadowCascadeCount;
+    }
+    static get PBREnabled() {
+        return getBoolSetting("PBR");
+    }
+    static get PBR() {
+        return Settings.PBREnabled ? getIntSetting("PBRMode") + 1 : 0;
+    }
+    static get ShadingEnabled() {
+        return getBoolSetting("Shading");
     }
 }

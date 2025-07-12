@@ -1,0 +1,1 @@
+- Sometimes PBR mipmaps can break(check using "Debug Show Textures"), if the texture suddenly turns a solid color then it is most likely broken, to fix this reload the resource pack
