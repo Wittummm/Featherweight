@@ -3,7 +3,12 @@ import { Vec4, Vec3, Vec2 } from './Vector';
 export const distancePerShadowCascade = 95.5;
 
 export class Settings {
-    private constructor() {}
+    private static renderConfig: RendererConfig;
+
+    static setRendererConfig(renderConfig: RendererConfig) {
+        Settings.renderConfig = renderConfig;
+    }
+
     static get SunPathRotation() {
         return getIntSetting("SunPathRotation");
     }
@@ -31,7 +36,7 @@ export class Settings {
     static get ShadowCascadeCount() {
         let shadowCascadeCount = getIntSetting("ShadowCascadeCount");
         if (shadowCascadeCount <= 0) {
-            shadowCascadeCount = Math.ceil(worldSettings.shadow.distance/distancePerShadowCascade); 
+            shadowCascadeCount = Math.ceil(Settings.renderConfig.shadow.distance/distancePerShadowCascade); 
         }
         return shadowCascadeCount;
     }
@@ -43,5 +48,8 @@ export class Settings {
     }
     static get ShadingEnabled() {
         return getBoolSetting("Shading");
+    }
+    static get AutoExposureEnabled() {
+        return getIntSetting("AutoExposure") > 0;
     }
 }

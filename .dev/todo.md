@@ -21,9 +21,9 @@
 - CSM Zbiasing is broken, it biases too much -> Wait for Aperture to finalize CSMs to fix/improve it
   - Actually non CSM(1 cascade) is presumbly broken(you have to manually set near/far planes) and this shader is currently developed for 1 cascade thus causing CSM to not match
   - Maybe distort shadow in View Space instead of Clip Space as the latter is not consistent across cascades(?)
-- AmbientColor and LightColor and presumably all ssbos that are set on GPU and initialized values on CPU, will "flash" and worsens with higher framerates.
 - Auto Exposure will get brighter as fps gets higher, it should be constant no matter the fps.
-- Vanilla sky does not work perfectly as there is a weird mesh that is like a plane for some reason in Iris. In aperture this is rendered, but in iris it is seemingly not rendered(rendered but not to screen).
+- MEDIUM: TRIVIAL: Vanilla sky has visual issues, like a line on the horizon
 
 ## Codes
 - CODE: sadi1n, Requires more flexible reloading features from Aperturegg
+- CODE: 1dsad, Aperture currently does not pass the `RendererConfig` to `OnSettingsChanged` thus you need to globally define the `RendererConfig` which is what Aperture is designed to avoid.

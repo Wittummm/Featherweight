@@ -1,4 +1,4 @@
-#include "/includes/shared/metadata.glsl"
+
 #include "/includes/shared/settings.glsl"
-#include "/includes/shared/shadowmap_uniforms.glsl"
+#include "/includes/shared/metadata.glsl"
 // Need one line to include

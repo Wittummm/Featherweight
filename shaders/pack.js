@@ -522,16 +522,19 @@ var FixedStreamingBuffer = class {
     return new FixedBuiltStreamingBuffer(this.offset);
   }
 };
-var FixedBuiltStreamingBuffer = class {
+var _FixedBuiltStreamingBuffer = class _FixedBuiltStreamingBuffer {
   constructor(byteSize) {
     __publicField(this, "size");
     __publicField(this, "b");
     __publicField(this, "offset", 0);
-    this.b = new StreamingBuffer(byteSize).build();
+    this.b = _FixedBuiltStreamingBuffer.pipeline.createStreamingBuffer(byteSize);
     this.size = byteSize;
   }
   get buffer() {
     return this.b;
+  }
+  static setPipeline(pipeline) {
+    _FixedBuiltStreamingBuffer.pipeline = pipeline;
   }
   get byteOffset() {
     return this.offset;
@@ -612,11 +615,14 @@ var FixedBuiltStreamingBuffer = class {
     return this;
   }
 };
+__publicField(_FixedBuiltStreamingBuffer, "pipeline");
+var FixedBuiltStreamingBuffer = _FixedBuiltStreamingBuffer;
 
 // modules/Settings.ts
 var distancePerShadowCascade = 95.5;
-var Settings = class {
-  constructor() {
+var _Settings = class _Settings {
+  static setRendererConfig(renderConfig) {
+    _Settings.renderConfig = renderConfig;
   }
   static get SunPathRotation() {
     return getIntSetting("SunPathRotation");
@@ -642,17 +648,25 @@ var Settings = class {
   static get ShadowCascadeCount() {
     let shadowCascadeCount = getIntSetting("ShadowCascadeCount");
     if (shadowCascadeCount <= 0) {
-      shadowCascadeCount = Math.ceil(worldSettings.shadow.distance / distancePerShadowCascade);
+      shadowCascadeCount = Math.ceil(_Settings.renderConfig.shadow.distance / distancePerShadowCascade);
     }
     return shadowCascadeCount;
   }
   static get PBREnabled() {
     return getBoolSetting("PBR");
   }
+  static get PBR() {
+    return _Settings.PBREnabled ? getIntSetting("PBRMode") + 1 : 0;
+  }
   static get ShadingEnabled() {
     return getBoolSetting("Shading");
   }
+  static get AutoExposureEnabled() {
+    return getIntSetting("AutoExposure") > 0;
+  }
 };
+__publicField(_Settings, "renderConfig");
+var Settings = _Settings;
 
 // modules/KeyInput.ts
 var lastKeyDowns = [];
@@ -803,6 +817,9 @@ function dumpTags(bool) {
   outputTags = bool;
 }
 var _Tagger = class _Tagger {
+  static setPipeline(pipeline) {
+    _Tagger.pipeline = pipeline;
+  }
   static tagNamespace(namespace, name) {
     if (this.index >= 32) {
       throw new RangeError(`Tag index is more than 32: ${this.index}`);
@@ -831,6 +848,7 @@ var _Tagger = class _Tagger {
     this.tagNamespace(createTag(new NamespacedId(namespace), ...namespaces), name);
   }
 };
+__publicField(_Tagger, "pipeline");
 __publicField(_Tagger, "index", 0);
 __publicField(_Tagger, "nameIndexMap", []);
 var Tagger = _Tagger;
@@ -886,28 +904,29 @@ var defaultComposite = "programs/template/composite.vsh";
 var debugBuffer;
 var settingsBuffer;
 var metadataBuffer;
-function initSettings(state) {
-  worldSettings.ambientOcclusionLevel = 1;
-  worldSettings.mergedHandDepth = true;
-  worldSettings.shadow.distance = getIntSetting("ShadowDistance");
-  worldSettings.render.stars = true;
-  worldSettings.render.horizon = false;
+var autoExposureState;
+function initSettings(renderConfig) {
+  renderConfig.ambientOcclusionLevel = 1;
+  renderConfig.mergedHandDepth = true;
+  renderConfig.shadow.distance = getIntSetting("ShadowDistance");
+  renderConfig.render.stars = true;
+  renderConfig.render.horizon = false;
   dumpTags(getBoolSetting("_DumpTags"));
 }
-function setupSettings(state) {
+function setupSettings(renderConfig) {
   function requestReload(msg) {
     sendInChat(`Request Reload: ${msg}`);
   }
-  if (getIntSetting("ShadowCascadeCount") == 0 && worldSettings.shadow.distance != getIntSetting("ShadowDistance")) {
-    if (Math.ceil(worldSettings.shadow.distance / distancePerShadowCascade) != Math.ceil(getIntSetting("ShadowDistance") / distancePerShadowCascade)) {
+  if (getIntSetting("ShadowCascadeCount") == 0 && renderConfig.shadow.distance != getIntSetting("ShadowDistance")) {
+    if (Math.ceil(renderConfig.shadow.distance / distancePerShadowCascade) != Math.ceil(getIntSetting("ShadowDistance") / distancePerShadowCascade)) {
       requestReload("When changing Shadow Distance and Shadow Cascade is Auto.");
     }
   }
-  worldSettings.render.stars = getIntSetting("Stars") == 0;
-  worldSettings.sunPathRotation = Settings.SunPathRotation;
-  worldSettings.shadow.distance = getIntSetting("ShadowDistance");
+  renderConfig.render.stars = getIntSetting("Stars") == 0;
+  renderConfig.sunPathRotation = Settings.SunPathRotation;
+  renderConfig.shadow.distance = getIntSetting("ShadowDistance");
   dumpSettings(getBoolSetting("_DumpUniforms"));
-  const shadowBias = getFloatSetting("ShadowBias") / worldSettings.shadow.resolution;
+  const shadowBias = getFloatSetting("ShadowBias") / renderConfig.shadow.resolution;
   let LightSunrise = new Vec4(0.984, 0.702, 0.275, 15e3);
   let LightMorning = new Vec4(0.941, 0.855, 0.7, 6e4);
   let LightNoon = new Vec4(0.92, 0.898, 0.8, 88e3);
@@ -938,20 +957,35 @@ function setupSettings(state) {
     LightRain.w *= getFloatSetting("_ShadowLightBrightness");
     debugBuffer.bool("_DebugEnabled").bool("_DebugStats").bool("_SliceScreen").int("_ShowDepth").int("_ShowRoughness").int("_ShowReflectance").int("_ShowPorosity").int("_ShowEmission").int("_ShowNormals").int("_ShowAmbientOcclusion").int("_ShowHeight").int("_ShowShadowMap").int("_ShowGeometryNormals").int("_ShowLightLevel").bool("_ShowShadows").bool("_ShowShadowCascades").int("_ShadowCascadeIndex").float("_DebugUIScale").bool("_DisplayAtmospheric").bool("_DisplaySunlightColors").bool("_DisplayCameraData").end();
   }
-  settingsBuffer.float(0, "Rain").float(0, "Wetness").vec4(...LightSunrise.xyzw(), "LightSunrise").vec4(...LightMorning.xyzw(), "LightMorning").vec4(...LightNoon.xyzw(), "LightNoon").vec4(...LightAfternoon.xyzw(), "LightAfternoon").vec4(...LightSunset.xyzw(), "LightSunset").vec4(...LightNightStart.xyzw(), "LightNightStart").vec4(...LightMidnight.xyzw(), "LightMidnight").vec4(...LightNightEnd.xyzw(), "LightNightEnd").vec4(...LightRain.xyzw(), "LightRain").vec4(...AmbientSunrise.xyzw(), "AmbientSunrise").vec4(...AmbientMorning.xyzw(), "AmbientMorning").vec4(...AmbientNoon.xyzw(), "AmbientNoon").vec4(...AmbientAfternoon.xyzw(), "AmbientAfternoon").vec4(...AmbientSunset.xyzw(), "AmbientSunset").vec4(...AmbientNightStart.xyzw(), "AmbientNightStart").vec4(...AmbientMidnight.xyzw(), "AmbientMidnight").vec4(...AmbientNightEnd.xyzw(), "AmbientNightEnd").vec4(...AmbientRain.xyzw(), "AmbientRain").int(worldSettings.shadow.cascades, "ShadowCascadeCount").int(Settings.ShadowSamples, "ShadowSamples").int("ShadowFilter").float("ShadowDistort").float("ShadowSoftness").float(shadowBias, "Initial ShadowBias").float("ShadowThreshold").int(getPixelizationOverride("ShadingPixelization"), "ShadingPixelization").int(getPixelizationOverride("ShadowPixelization"), "ShadowPixelization").int(Settings.PBREnabled ? 1 : 0).int("Specular").float("NormalStrength").int("AutoExposure").float(Math.exp(getFloatSetting("ExposureMult")), "ExposureMult").float("ExposureSpeed").int("Tonemap").bool("CompareTonemaps").ivec4(getIntSetting("Tonemap1"), getIntSetting("Tonemap2"), getIntSetting("Tonemap3"), getIntSetting("Tonemap4")).int("Sky").int("Stars").float("StarAmount").bool("DisableMoonHalo").bool("IsolateCelestials").end();
+  settingsBuffer.float(0, "Rain").float(0, "Wetness").vec4(...LightSunrise.xyzw(), "LightSunrise").vec4(...LightMorning.xyzw(), "LightMorning").vec4(...LightNoon.xyzw(), "LightNoon").vec4(...LightAfternoon.xyzw(), "LightAfternoon").vec4(...LightSunset.xyzw(), "LightSunset").vec4(...LightNightStart.xyzw(), "LightNightStart").vec4(...LightMidnight.xyzw(), "LightMidnight").vec4(...LightNightEnd.xyzw(), "LightNightEnd").vec4(...LightRain.xyzw(), "LightRain").vec4(...AmbientSunrise.xyzw(), "AmbientSunrise").vec4(...AmbientMorning.xyzw(), "AmbientMorning").vec4(...AmbientNoon.xyzw(), "AmbientNoon").vec4(...AmbientAfternoon.xyzw(), "AmbientAfternoon").vec4(...AmbientSunset.xyzw(), "AmbientSunset").vec4(...AmbientNightStart.xyzw(), "AmbientNightStart").vec4(...AmbientMidnight.xyzw(), "AmbientMidnight").vec4(...AmbientNightEnd.xyzw(), "AmbientNightEnd").vec4(...AmbientRain.xyzw(), "AmbientRain").int(renderConfig.shadow.cascades, "ShadowCascadeCount").int(Settings.ShadowSamples, "ShadowSamples").int("ShadowFilter").float("ShadowDistort").float("ShadowSoftness").float(shadowBias, "Initial ShadowBias").float("ShadowThreshold").int(getPixelizationOverride("ShadingPixelization"), "ShadingPixelization").int(getPixelizationOverride("ShadowPixelization"), "ShadowPixelization").int(Settings.PBR, "PBR").int("Specular").float("NormalStrength").int("AutoExposure").float(Math.exp(getFloatSetting("ExposureMult")), "ExposureMult").float("ExposureSpeed").int("Tonemap").bool("CompareTonemaps").ivec4(getIntSetting("Tonemap1"), getIntSetting("Tonemap2"), getIntSetting("Tonemap3"), getIntSetting("Tonemap4")).int("Sky").int("Stars").float("StarAmount").bool("DisableMoonHalo").bool("IsolateCelestials").end();
 }
 function setupTags() {
 }
 function setupTypes() {
   addType("water", "minecraft:water", "minecraft:flowing_water");
 }
-function setup() {
+function setup(pipeline) {
+  let renderConfig = pipeline.getRendererConfig();
+  Settings.setRendererConfig(renderConfig);
+  Tagger.setPipeline(pipeline);
+  FixedBuiltStreamingBuffer.setPipeline(pipeline);
   defineGlobally("SCENE_FORMAT", "r11f_g11f_b10f");
-  let sceneTexture = new Texture("sceneTex").imageName("sceneImg").format(Format.R11F_G11F_B10F).mipmap(true).build();
-  defineGlobally("GBUFFER_FORMAT", "rg32ui");
-  let gbufferTexture = Settings.PBREnabled ? new Texture("gbufferTex").imageName("gbufferImg").format(Format.RG32UI).build() : null;
+  let sceneTexture = pipeline.createImageTexture("sceneTex", "sceneImg").format(Format.R11F_G11F_B10F).mipmap(true).build();
   defineGlobally("DATA0_FORMAT", "r32ui");
-  let dataTexture0 = new Texture("dataTex0").imageName("dataImg0").format(Format.R32UI).build();
+  let dataTexture0 = pipeline.createImageTexture("dataTex0", "dataImg0").format(Format.R32UI).build();
+  let gbufferTexture;
+  if (Settings.PBREnabled) {
+    let _gbufferTexture = pipeline.createImageTexture("gbufferTex", "gbufferImg");
+    if (Settings.PBR == 1) {
+      defineGlobally("GBUFFER_FORMAT", "r32ui");
+      _gbufferTexture.format(Format.R32UI);
+    } else if (Settings.PBR == 2) {
+      defineGlobally("GBUFFER_FORMAT", "rg32ui");
+      _gbufferTexture.format(Format.RG32UI);
+    }
+    gbufferTexture = _gbufferTexture.build();
+  }
+  autoExposureState = new StateReference();
   function define(shader, name, defineName) {
     if (getBoolSetting(name)) {
       shader.define(defineName != null ? defineName : name, "");
@@ -964,7 +998,7 @@ function setup() {
     return shader;
   }
   function terrainProgram(usage, name, programName) {
-    let program = new ObjectShader(programName || name, usage);
+    let program = pipeline.createObjectShader(programName || name, usage);
     lightingDefines(program);
     bindSettings(program).vertex(`programs/geometry/${name}.vsh`).fragment(`programs/geometry/${name}.fsh`).target(0, sceneTexture).target(2, dataTexture0);
     if (gbufferTexture) {
@@ -972,96 +1006,93 @@ function setup() {
     }
     return program;
   }
-  function bindSettings(program) {
-    program.define("INCLUDE_SETTINGS", "");
-    return bindMetadata(program).ubo(0, settingsBuffer.buffer);
-  }
   function bindMetadata(program) {
-    program.define("INCLUDE_METADATA", "");
-    return program.ssbo(0, metadataBuffer);
+    return program.define("INCLUDE_METADATA", "").ssbo(0, metadataBuffer);
   }
-  function generateMipmap(stage, ...textures) {
-    registerShader(stage, new GenerateMips(...textures));
+  function bindSettings(program) {
+    return bindMetadata(program).define("INCLUDE_SETTINGS", "").ubo(0, settingsBuffer.buffer);
   }
   function setupResources() {
     debugBuffer = getBoolSetting("_DebugEnabled") ? new FixedStreamingBuffer().bool().bool().bool().int().int().int().int().int().int().int().int().int().int().int().bool().bool().int().float().bool().bool().bool().build() : null;
     settingsBuffer = new FixedStreamingBuffer().float().float().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().int().int().int().float().float().float().float().int().int().int().int().float().int().float().float().int().bool().ivec4().int().int().float().bool().bool().build();
-    metadataBuffer = new GPUBuffer(72).build();
+    metadataBuffer = pipeline.createBuffer(72, false);
   }
   function setupPrograms() {
-    registerShader(
-      Stage.PRE_RENDER,
-      bindSettings(new Compute("init_settings")).location("programs/pre_render/settings.csh").workGroups(1, 1, 1).build()
-    );
-    registerShader(
-      Stage.PRE_RENDER,
-      bindSettings(new Composite("clear_textures")).vertex(defaultComposite).fragment("programs/pre_render/clear_textures.fsh").target(0, sceneTexture).build()
-    );
-    registerShader(
-      terrainProgram(Usage.TERRAIN_SOLID, "geometry_main", "terrain_solid").blendOff(0).build()
-    );
-    registerShader(
-      terrainProgram(Usage.TERRAIN_CUTOUT, "geometry_main", "terrain_cutout").blendOff(0).define("CUTOUT", "").build()
-    );
-    registerShader(
-      terrainProgram(Usage.TERRAIN_TRANSLUCENT, "geometry_main", "terrain_translucent").define("FORWARD", "").build()
-    );
-    registerShader(
-      bindMetadata(new ObjectShader("sky_textured", Usage.SKY_TEXTURES)).vertex("programs/geometry/sky_textured.vsh").fragment("programs/geometry/sky_textured.fsh").target(0, sceneTexture).blendFunc(0, Func.ONE, Func.ONE, Func.ONE, Func.ONE).build()
-    );
-    registerShader(
-      bindSettings(new ObjectShader("sky_basic", Usage.SKYBOX)).vertex("programs/geometry/sky_basic.vsh").fragment("programs/geometry/sky_basic.fsh").target(0, sceneTexture).build()
-    );
-    registerShader(
-      Stage.PRE_TRANSLUCENT,
-      bindSettings(lightingDefines(new Compute("shade"))).location("programs/post_opaque/shade.csh").workGroups(Math.ceil(screenWidth / 16), Math.ceil(screenHeight / 16), 1).build()
-    );
+    const init = pipeline.forStage(Stage.PRE_RENDER);
+    bindMetadata(bindSettings(
+      init.createCompute("init_settings").location("programs/pre_render/settings.csh").workGroups(1, 1, 1)
+    )).compile();
+    init.barrier(SSBO_BIT);
+    bindSettings(
+      init.createComposite("clear_textures").vertex(defaultComposite).fragment("programs/pre_render/clear_textures.fsh").target(0, sceneTexture)
+    ).compile();
+    init.end();
+    terrainProgram(Usage.TERRAIN_SOLID, "geometry_main", "terrain_solid").blendOff(0).compile();
+    terrainProgram(Usage.TERRAIN_CUTOUT, "geometry_main", "terrain_cutout").blendOff(0).define("CUTOUT", "").compile();
+    terrainProgram(Usage.TERRAIN_TRANSLUCENT, "geometry_main", "terrain_translucent").define("FORWARD", "").compile();
+    bindSettings(
+      pipeline.createObjectShader("sky_textured", Usage.SKY_TEXTURES).vertex("programs/geometry/sky_textured.vsh").fragment("programs/geometry/sky_textured.fsh").target(0, sceneTexture).blendFunc(0, Func.ONE, Func.ONE, Func.ONE, Func.ONE)
+    ).compile();
+    bindSettings(
+      pipeline.createObjectShader("sky_basic", Usage.SKYBOX).vertex("programs/geometry/sky_basic.vsh").fragment("programs/geometry/sky_basic.fsh").target(0, sceneTexture)
+    ).compile();
+    const preTranslucent = pipeline.forStage(Stage.PRE_TRANSLUCENT);
+    lightingDefines(bindSettings(
+      preTranslucent.createCompute("shade").location("programs/post_opaque/shade.csh").workGroups(Math.ceil(screenWidth / 32), Math.ceil(screenHeight / 8), 1)
+    )).compile();
+    preTranslucent.end();
     if (Settings.ShadowsEnabled) {
-      worldSettings.shadow.resolution = getIntSetting("ShadowResolution") / Settings.ShadowCascadeCount;
-      worldSettings.shadow.cascades = Settings.ShadowCascadeCount;
-      worldSettings.shadow.enable();
-      registerShader(
-        bindSettings(new ObjectShader("shadow", Usage.SHADOW)).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`).build()
-      );
-      registerShader(
-        bindSettings(new ObjectShader("shadow", Usage.SHADOW_TERRAIN_CUTOUT)).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`).define("CUTOUT", "").build()
-      );
-      registerShader(
-        bindSettings(new ObjectShader("shadow", Usage.SHADOW_ENTITY_CUTOUT)).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`).define("CUTOUT", "").build()
-      );
+      bindSettings(
+        pipeline.createObjectShader("shadow", Usage.SHADOW).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`)
+      ).compile();
+      bindSettings(
+        pipeline.createObjectShader("shadow", Usage.SHADOW_TERRAIN_CUTOUT).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`).define("CUTOUT", "")
+      ).compile();
+      bindSettings(
+        pipeline.createObjectShader("shadow", Usage.SHADOW_ENTITY_CUTOUT).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`).define("CUTOUT", "")
+      ).compile();
     }
-    if (getIntSetting("AutoExposure") > 0) {
-      generateMipmap(Stage.POST_RENDER, sceneTexture);
-      registerShader(
-        Stage.POST_RENDER,
-        bindSettings(new Compute("auto_exposure")).location("programs/post_render/auto_exposure.csh").workGroups(1, 1, 1).define("ExposureSamplesX", Settings.ExposureSamples.x.toString()).define("ExposureSamplesY", Settings.ExposureSamples.y.toString()).build()
-      );
+    const postRender = pipeline.forStage(Stage.POST_RENDER);
+    if (Settings.AutoExposureEnabled) {
+      postRender.generateMips(sceneTexture);
+      bindMetadata(bindSettings(
+        postRender.createCompute("auto_exposure").state(autoExposureState).location("programs/post_render/auto_exposure.csh").workGroups(1, 1, 1).define("ExposureSamplesX", Settings.ExposureSamples.x.toString()).define("ExposureSamplesY", Settings.ExposureSamples.y.toString())
+      )).compile();
     }
     if (debugBuffer) {
-      registerShader(
-        Stage.POST_RENDER,
-        lightingDefines(bindSettings(new Compute("debug"))).location("programs/post_render/debug.csh").workGroups(Math.ceil(screenWidth / 16), Math.ceil(screenHeight / 16), 1).ubo(0, debugBuffer.buffer).build()
-      );
+      bindMetadata(lightingDefines(bindSettings(
+        postRender.createCompute("debug").location("programs/post_render/debug.csh").workGroups(Math.ceil(screenWidth / 16), Math.ceil(screenHeight / 16), 1).ubo(1, debugBuffer.buffer)
+      ))).compile();
     }
-    setCombinationPass(bindSettings(new CombinationPass("programs/finalize/final.fsh")).build());
+    postRender.end();
+    bindMetadata(bindSettings(pipeline.createCombinationPass("programs/finalize/final.fsh"))).compile();
   }
-  initSettings();
   setupTags();
   setupTypes();
   setupResources();
   setupPrograms();
-  setupSettings();
+  setupSettings(renderConfig);
+}
+function configureRenderer(renderConfig) {
+  Settings.setRendererConfig(renderConfig);
+  initSettings(renderConfig);
+  if (Settings.ShadowsEnabled) {
+    renderConfig.shadow.resolution = getIntSetting("ShadowResolution") / Settings.ShadowCascadeCount;
+    renderConfig.shadow.cascades = Settings.ShadowCascadeCount;
+    renderConfig.shadow.enabled = true;
+  }
+}
+function configurePipeline(pipeline) {
+  setup(pipeline);
 }
 function onSettingsChanged(state) {
-  setupSettings(state);
-}
-function setupShader(dimension) {
-  setup();
+  setupSettings(state.rendererConfig());
 }
 function getBlockId(block) {
   return getType(block);
 }
-function setupFrame(state) {
+function beginFrame(state) {
+  autoExposureState.setEnabled(Settings.AutoExposureEnabled);
   settingsBuffer.uploadData();
   if (debugBuffer) {
     debugBuffer.uploadData();
@@ -1069,6 +1100,14 @@ function setupFrame(state) {
       toggleBoolSetting("_DebugEnabled");
       if (getBoolSetting("_DebugEnabled")) {
         sendInChat("Debug mode enabled, may need reload to work");
+      }
+    }
+    if (KeyInput.onKeyDown(Keys.F)) {
+      setIntSetting("PBRMode", getIntSetting("PBRMode") == 0 ? 1 : 0);
+      if (getIntSetting("PBRMode") == 0) {
+        sendInChat("Reduced PBR");
+      } else if (getIntSetting("PBRMode") == 1) {
+        sendInChat("Full PBR");
       }
     }
     if (KeyInput.onKeyDown(Keys.LEFT)) {
@@ -1086,9 +1125,10 @@ function getPixelizationOverride(name) {
   return Math.floor(pixelization < 0 ? -pixelization * basePixelization : pixelization);
 }
 export {
+  beginFrame,
+  configurePipeline,
+  configureRenderer,
   getBlockId,
-  onSettingsChanged,
-  setupFrame,
-  setupShader
+  onSettingsChanged
 };
 //# sourceMappingURL=pack.js.map

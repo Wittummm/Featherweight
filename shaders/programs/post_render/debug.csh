@@ -2,7 +2,10 @@
 layout (local_size_x = 16, local_size_y = 16) in;
 
 #include "/includes/shared/shared.glsl"
+#include "/includes/shared/shadowmap_uniforms.glsl"
 
+uniform usampler2D gbufferTex;
+#define INCLUDE_READ_GBUFFER
 #include "/includes/func/buffers/gbuffer.glsl"
 #include "/includes/func/buffers/data0.glsl"
 #include "/includes/lib/material.glsl"
@@ -14,7 +17,7 @@ layout (local_size_x = 16, local_size_y = 16) in;
 #include "/includes/func/shadows/getCascade.glsl"
 #include "/includes/func/color/srgb.glsl"
 
-layout(binding = 0) uniform debugConfig {
+layout(binding = 1) uniform debugConfig {
 	bool _DebugEnabled;
 	bool _DebugStats;
 	bool _SliceScreen;
@@ -44,7 +47,6 @@ layout(std430, binding = 1) buffer _histogram {
 };
 
 uniform sampler2D sceneTex;
-uniform usampler2D gbufferTex;
 uniform sampler2D mainDepthTex;
 uniform usampler2D dataTex0;
 
@@ -162,6 +164,7 @@ void main() {
 	t = moveTo(_ShowDepth, coord);
     if (clip(t, _ShowDepth)) { color.rgb = linearizeDepthFull(texelFetch(mainDepthTex, t, 0).r, 0.0005, ap.camera.far).rrr; }
 
+	#ifdef PBREnabled
     t = moveTo(_ShowRoughness, coord);
     if (clip(t, _ShowRoughness)) { color.rgb = vec3(Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).roughness); }
 
@@ -169,7 +172,7 @@ void main() {
     if (clip(t, _ShowReflectance)) { color.rgb = Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).f0; color.a = 1; }
 
 	t = moveTo(_ShowPorosity, coord);
-    if (clip(t, _ShowPorosity)) { color.rgb = vec3(Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).porosity); }
+    if (clip(t, _ShowPorosity)) { color.rgb = vec3(Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).porosity);  color.a = 1;}
 
 	t = moveTo(_ShowEmission, coord);
     if (clip(t, _ShowEmission)) { color.rgb = vec3(Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).emission); }
@@ -182,7 +185,8 @@ void main() {
 
 	t = moveTo(_ShowHeight, coord);
     if (clip(t, _ShowHeight)) { color.rgb = vec3(Mat(color.rgb, baseNorm, texelFetch(gbufferTex, t, 0)).height); }
-
+	#endif
+	
 	t = moveTo(_ShowGeometryNormals, coord);
     if (clip(t, _ShowGeometryNormals)) { 
 		vec3 normals; vec2 lightLevel;

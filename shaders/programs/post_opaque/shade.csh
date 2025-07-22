@@ -1,14 +1,19 @@
 #version 460 core
-layout (local_size_x = 16, local_size_y = 16) in;
+layout (local_size_x = 32, local_size_y = 8) in;
 
 #include "/includes/shared/shared.glsl"
+#include "/includes/shared/shadowmap_uniforms.glsl"
 
+uniform usampler2D gbufferTex;
+#define INCLUDE_READ_GBUFFER
 #include "/includes/func/buffers/gbuffer.glsl"
+
 #include "/includes/func/buffers/data0.glsl"
 #include "/includes/func/depthToViewPos.glsl"
 #include "/includes/lib/math_lighting.glsl"
 #include "/includes/func/color/srgb.glsl"
 #include "/includes/func/atmosphere/calcSky.glsl"
+
 
 uniform sampler2D solidDepthTex;
 uniform usampler2D dataTex0;
@@ -35,7 +40,7 @@ void main() {
 
 		vec4 gbuffer0 = gbuffer0Default; vec4 gbuffer1 = gbuffer1Default; 
 		#ifdef PBREnabled
-		if (PBR != 0) readGBuffer(imageLoad(gbufferImg, pixelPos), gbuffer0, gbuffer1);
+		if (PBR != 0) readGBuffer(texelFetch(gbufferTex, pixelPos, 0), gbuffer0, gbuffer1);
 		#endif
 		Material material = Mat(Color.rgb, normals, gbuffer0, gbuffer1);
 
@@ -46,7 +51,6 @@ void main() {
 			writeMaterial(material, gbuffer0, gbuffer1);
 			imageStore(gbufferImg, pixelPos, writeGBuffer(gbuffer0, gbuffer1).rgrg);
 		} 
-		
 		#endif
 	} else {
 		/* POINTs:
@@ -60,6 +64,5 @@ void main() {
 		Color.rgb += calcSky(normalize(viewPos), Color.rgb*0.5); // 0.5 looks better for vanilla sky
 		Color.rgb *= AmbientColor.a;
 	}
-
     imageStore(sceneImg, pixelPos, writeScene(Color));
 }

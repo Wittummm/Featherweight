@@ -1,7 +1,7 @@
 #version 460 core
 
 #include "/includes/func/color/srgb.glsl"
-#include "/includes/shared/metadata.glsl"
+#include "/includes/shared/shared.glsl"
 
 in vec2 texCoord;
 

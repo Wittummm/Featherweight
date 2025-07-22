@@ -48,13 +48,18 @@ export class FixedStreamingBuffer {
 
 export class FixedBuiltStreamingBuffer {
     constructor(byteSize: number) {
-        this.b = new StreamingBuffer(byteSize).build();
+        this.b = FixedBuiltStreamingBuffer.pipeline.createStreamingBuffer(byteSize);
         this.size = byteSize;
     }
+    static pipeline: PipelineConfig;
     private size: number
     private b: BuiltStreamingBuffer;
     private offset: number = 0;
     get buffer() {return this.b;}
+
+    static setPipeline(pipeline: PipelineConfig) {
+        FixedBuiltStreamingBuffer.pipeline = pipeline;
+    }
 
     get byteOffset(): number {
         return this.offset;

@@ -1,9 +1,9 @@
+This document is meant to document this shader but expect it to be heavily developer oriented.
 
-
-## Include flags
+## Includes
 Flags whether to include a snippet of something when using "#include"
 - `EXCLUDE_NORMALS_WRITE` on `encodeNormals.glsl`
-This document is meant to document this shader but expect it to be heavily developer oriented.
+- Use `shared.glsl` over `settings.glsl` and `metadata.glsl` or anything covered by `shared.glsl` in program stages(does not include #includes like funcs or libs). shared is managed via ts side so that we dont have to manage both glsl and ts side
 
 ### Feature Flags
 Search for these keywords to see what extra features you can toggle, most are disabled to reduce compile time.
@@ -62,6 +62,11 @@ Search for these keywords to see what extra features you can toggle, most are di
  - ~~`EXCLUDE_STARS`~~ not ported yet
  - `ShadowsEnabled` on shaders that uses any shadow functions(calcShadow)
 For (#include) flags use INCLUDE_ and EXCLUDE_ prefix 
+#### Internal define flags(not handled by the user, even the shader dev only interacts with it, and the system manages it)
+- `INCLUDE_SETTINGS`
+- `INCLUDE_METADATA`
+- `SETTINGS_AS_SSBO`
+
 
 ### Organization of Files
  - "program" folder stores the shader files that directly points to final shaders, usually for sharing between multiple final shaders.
@@ -83,8 +88,19 @@ For (#include) flags use INCLUDE_ and EXCLUDE_ prefix
 
 ### Storage/Containers
   - **Framebuffers**
-    - sceneTex, stores final rendered image
-    - gbufferTex, stores geometry data
+    - 0 sceneTex, stores final rendered image
+    - 1 gbufferTex, stores geometry data
+      - R 32
+        - pow2 Smoothness
+        - pow2 Reflectence
+        - Height
+        - Emission
+      - G 32
+        - Normals X
+        - Normals Y
+        - pow2 Porosity
+        - Ao
+    - 2 data0, arbitrary data
   - **UBOs**
     - 0, settings buffer
   - **SSBOs**

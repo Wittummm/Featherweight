@@ -26,8 +26,10 @@ Material Mat(vec3 albedo, vec3 baseNormals, vec4 gbuffer0, vec4 gbuffer1) {
 }
 
 #ifdef PBREnabled
+#ifdef INCLUDE_READ_GBUFFER
 Material Mat(vec3 albedo, vec3 baseNormals, uvec4 gbuffer) {
     vec4 gbuffer0; vec4 gbuffer1; readGBuffer(gbuffer, gbuffer0, gbuffer1);
     return Mat(albedo, baseNormals, gbuffer0, gbuffer1);
 }
+#endif
 #endif

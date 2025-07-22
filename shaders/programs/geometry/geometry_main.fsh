@@ -1,21 +1,27 @@
 #version 460 core
 
 #include "/includes/shared/shared.glsl"
+#include "/includes/shared/shadowmap_uniforms.glsl"
 #include "/includes/func/color/srgb.glsl"
 #include "/includes/func/packing/encodeNormals.glsl"
 #include "/includes/func/buffers/gbuffer.glsl"
 #include "/includes/func/buffers/data0.glsl"
 #include "/includes/lib/math_lighting.glsl"
 
-uniform sampler2D solidDepthTex;
 
 in vec2 texCoord;
 in vec3 vertColor;
+in vec2 lightmapCoord;
+#ifdef PBREnabled
 in mat3 tbn;
+#else
+in vec3 vertNormal;
+#endif
+
+#ifdef FORWARD
+uniform sampler2D solidDepthTex;
 in vec3 posView;
 flat in uint blockId;
-in vec2 lightmapCoord;
-#ifdef FORWARD
 #include "/includes/func/shading/calcWater.glsl"
 #endif
 
@@ -35,28 +41,32 @@ void iris_emitFragment() {
     
     vec4 gbuffer0 = gbuffer0Default; vec4 gbuffer1 = gbuffer1Default;
     #ifdef PBREnabled
-    if (PBR != 0) {
-        gbuffer0 = iris_sampleSpecularMap(texCoord);
-        gbuffer1 = iris_sampleNormalMap(texCoord);
+        vec3 normalsPlayer = tbn[2];
+        
+        if (PBR != 0) {
+            gbuffer0 = iris_sampleSpecularMap(texCoord);
+            gbuffer1 = iris_sampleNormalMap(texCoord);
 
-        /*immut*/ vec2 normal = (gbuffer1.rg * 2.0) - 1.0;
-        gbuffer1.rg = normalsWrite(tbn * reconstructZ(normal*NormalStrength));
-    }
+            /*immut*/ vec2 normal = (gbuffer1.rg * 2.0) - 1.0;
+            gbuffer1.rg = normalsWrite(tbn * reconstructZ(normal*NormalStrength));
+        }
+    #else
+        vec3 normalsPlayer = vertNormal;
     #endif
 
     #ifdef FORWARD
-        Material material = Mat(Color.rgb, tbn[2], gbuffer0, gbuffer1);
+        Material material = Mat(Color.rgb, normalsPlayer, gbuffer0, gbuffer1);
         float shadow = 0;
         bool shouldUpdate = shade(Color, material, lightmapCoord, posView, shadow);
         #ifdef PBREnabled
         if (shouldUpdate) {writeMaterial(material, gbuffer0, gbuffer1);} 
         #endif
         
-        if (iris_getCustomId(blockId) == TYPE_WATER && ap.camera.fluid != 1) {
+        if (ap.camera.fluid != 1 && iris_getCustomId(blockId) == TYPE_WATER) {
             vec2 fragCoord = gl_FragCoord.xy/ap.game.screenSize;
             
             float waterDepth = distance(depthToViewPos(fragCoord, texture(solidDepthTex, fragCoord).r), posView);
-            float LdotV = dot(normalize(ap.celestial.pos), calcViewDir(fragCoord));
+            float LdotV = dot(normalize(ap.celestial.pos), normalize(posView));
             Color.rgb = calcWater(Color.rgb, (1-shadow) * LightColor, waterDepth, LdotV);
         }
     #endif  
@@ -66,5 +76,5 @@ void iris_emitFragment() {
     GBuffer = writeGBuffer(gbuffer0, gbuffer1);
     #endif
     
-    Data0 = writeData0(tbn[2], lightmapCoord);
+    Data0 = writeData0(normalsPlayer, lightmapCoord);
 }

@@ -1,0 +1,94 @@
+declare class Texture {
+  constructor(name: string);
+
+  format(internalFormat: InternalTextureFormat): Texture;
+  clearColor(r: number, g: number, b: number, a: number): Texture;
+  clear(clear: boolean): Texture;
+  imageName(name: string): Texture;
+  mipmap(mipmap: boolean): Texture;
+  width(width: number): Texture;
+  height(height: number): Texture;
+  depth(depth: number): Texture;
+  readBack(read: boolean): Texture;
+
+  build(): BuiltTexture;
+}
+
+
+export class FlippableTexture {
+    #name: string
+    #imageName: string
+    #format: InternalTextureFormat
+    #clearColorR: number
+    #clearColorG: number
+    #clearColorB: number
+    #clearColorA: number
+    #clear: boolean
+    #mipmap: boolean
+    #width: number
+    #height: number
+    #depth: number
+    #readBack: boolean
+
+    constructor(name: string) {
+        this.#name = name;
+    }
+
+    format(internalFormat: InternalTextureFormat): FlippableTexture { this.#format = internalFormat;return this; }
+    clearColor(r: number, g: number, b: number, a: number): FlippableTexture {
+        this.#clearColorR = r;
+        this.#clearColorG = g;
+        this.#clearColorB = b;
+        this.#clearColorA = a;
+        return this;
+    };
+    clear(clear: boolean): FlippableTexture { this.#clear = clear; return this; };
+    imageName(name: string): FlippableTexture { this.#imageName = name; return this; };
+    mipmap(mipmap: boolean): FlippableTexture { this.#mipmap = mipmap; return this; };
+    width(width: number): FlippableTexture { this.#width = width; return this; };
+    height(height: number): FlippableTexture { this.#height = height; return this; };
+    depth(depth: number): FlippableTexture { this.#depth = depth; return this; };
+    readBack(read: boolean): FlippableTexture { this.#readBack = read; return this; };
+
+    build(): BuiltFlippableTexture {
+        return new BuiltFlippableTexture(this.#name, this.#imageName, this.#format, this.#clearColorR, this.#clearColorG, this.#clearColorB, this.#clearColorA, this.#clear, this.#mipmap, this.#width, this.#height, this.#depth, this.#readBack);
+    };
+}
+
+export class BuiltFlippableTexture {
+    private name: string;
+    private imageName: string;
+    private textureA: BuiltTexture;
+    private textureB: BuiltTexture;
+    private flip: boolean = false;
+
+    constructor(name: string, imageName: string, format: InternalTextureFormat, clearColorR: number, clearColorG: number, clearColorB: number, clearColorA: number, clear: boolean, mipmap: boolean, width: number, height: number, depth: number, readBack: boolean) {
+        this.name = name;
+        this.imageName = imageName;
+        
+        this.textureA = new Texture(name+"_a").imageName(imageName+"_a").format(format)
+        .clearColor(clearColorR, clearColorG, clearColorB, clearColorA).clear(clear)
+        .mipmap(mipmap).width(width).height(height).depth(depth).readBack(readBack)
+        .build();
+        this.textureB = new Texture(name+"_b").imageName(imageName+"_b").format(format)
+        .clearColor(clearColorR, clearColorG, clearColorB, clearColorA).clear(clear)
+        .mipmap(mipmap).width(width).height(height).depth(depth).readBack(readBack)
+        .build();
+    }
+
+    bindTo(program: ObjectShader | Composite, index: number): ObjectShader | Composite
+    bindTo(program: Compute): Compute
+    bindTo(program: ObjectShader | Composite | Compute, index?: number) {
+        if (program instanceof Compute) {
+            // Image
+            program.define(this.imageName+"_read", this.flip ? this.imageName+"_b" : this.imageName+"_a");
+            program.define(this.imageName+"_write", this.flip ? this.imageName+"_a" : this.imageName+"_b");
+        } else {
+            program.define(this.name, this.flip ? this.name+"_b" : this.name+"_a"); // Read Texture
+            program.target(index, this.flip? this.textureA : this.textureB); // Write Texture
+        }
+
+        this.flip = !this.flip;
+        return program;
+    }
+}

@@ -1,15 +1,16 @@
 // PascalCase
+
 #ifdef INCLUDE_SETTINGS
 
 #ifndef settings_glsl
 #define settings_glsl
-#include "/includes/shared/metadata.glsl"
+#include "/includes/shared/shared.glsl"
 
 layout(std140, binding = 0) uniform settings {
     float Rain;
     float Wetness;
 
-    // uniforms
+    /// Intermediate Uniforms, not used in actual code only calculation for other uniforms ///
     vec4 LightSunrise;
     vec4 LightMorning;
     vec4 LightNoon;
@@ -29,6 +30,7 @@ layout(std140, binding = 0) uniform settings {
     vec4 AmbientMidnight;
     vec4 AmbientNightEnd;
     vec4 AmbientRain;
+    ////////////////////////
 
     int ShadowCascadeCount;
     int ShadowSamples;

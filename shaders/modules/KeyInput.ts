@@ -1,6 +1,6 @@
 const lastKeyDowns: boolean[] = [];
 
-export class KeyInput {
+export default class KeyInput {
     static update() { // Required to be called every frame
         lastKeyDowns[Keys.UNKNOWN] = isKeyDown(Keys.UNKNOWN);
         lastKeyDowns[Keys.SPACE] = isKeyDown(Keys.SPACE);

@@ -1,4 +1,5 @@
-const shouldReload = true; // Works without needing to reload, but reloading is idle (default: true)
+const canReload = true; // Works without needing to reload, reloading is better than not, but is not significant (default: false)
+const shouldReload = true; // Works without needing to reload, but reloading is ideal (default: true)
 
 /*
 Syntax notes:
@@ -56,13 +57,6 @@ export function setupOptions() {
         .name()
         .values("Nearest", "Linear", "Uniform Soft")
     )
-    // Soft shadows
-    .add(putTextLabel("LabelSoftShadows","Soft Shadows"))
-    .add(asFloat("ShadowSamples", -2, -1.75, -1.5, -1.25, -1, -0.75, 2,3,5,7,9,12,15,20,25,30,35,40,48,54,60,70,80,90,100,110,120,130)
-        .needsReload(false).build(-1)
-        .name()
-    )
-    .add(asFloatRange("ShadowSoftness", 0.7, 0, 6, 0.05, false).name())
     .add(new Page("Page_ShadowsExtra").name()
         .add(shadowPixelization)
         .add(asFloatRange("ShadowDistort", 3, 0, 6, 0.05, false).name().desc("Allocate more resolution closer to the player.\n When using Shadow Cascades, this value should generally be lowered."))
@@ -71,6 +65,13 @@ export function setupOptions() {
         .add(asFloatRange("ShadowThreshold", 0, 0, 1, 0.05, false).name().desc("How shadowed the shadow needs to be to be considered shadowed, higher will \"shrink\" shadows."))
         .build()
     )
+    // Soft shadows
+    .add(putTextLabel("LabelSoftShadows","Soft Shadows"))
+    .add(asFloat("ShadowSamples", -2, -1.75, -1.5, -1.25, -1, -0.75, 2,3,5,7,9,12,15,20,25,30,35,40,48,54,60,70,80,90,100,110,120,130)
+        .needsReload(false).build(-1)
+        .name()
+    )
+    .add(asFloatRange("ShadowSoftness", 0.7, 0, 6, 0.05, false).name())
     .build()
 
     const shading = new Page("Page_Shading").name()
@@ -95,10 +96,10 @@ export function setupOptions() {
     const cameraAndColors = new Page("Page_CameraAndColors").name()
     .add(new Page("Exposure")
         .add(asFloatRange("ExposureMult", 1, -2, 5, 0.05, false).name())
-        .add(asFloatRange("ExposureSpeed", 5, 0, 20, 0.1, false).name())
         
         // Auto exposure
-        .add(asIntRange("AutoExposure", 1, 0, 1, 1, shouldReload).name().values("Off", "Low"))
+        .add(asIntRange("AutoExposure", 1, 0, 1, 1, canReload).name().values("Off", "Low"))
+        .add(asFloatRange("ExposureSpeed", 5, 0, 20, 0.1, false).name())
         .add(asIntRange("ExposureSamplesX", 12, 1, 32, 1, true).name())
         .build()
     )
@@ -161,6 +162,25 @@ export function setupOptions() {
         .add(cameraAndColors)
         .add(debug)
         .build();
+}
+
+export function onSettingsChanged() {
+    // Crashes for some reason idk
+    setHidden("_ShowShadowMap", getBool("ShadowsEnabled"));
+    setHidden("LabelSoftShadows", getInt("ShadowFilter") != 2);
+    setHidden("ShadowSoftness", getInt("ShadowFilter") != 2);
+    setHidden("ShadowSamples", getInt("ShadowFilter") != 2);
+
+    setHidden("Tonemap1", !getBool("CompareTonemaps"));
+    setHidden("Tonemap2", !getBool("CompareTonemaps"));
+    setHidden("Tonemap3", !getBool("CompareTonemaps"));
+    setHidden("Tonemap4", !getBool("CompareTonemaps"));
+
+    setHidden("StarAmount", getInt("Stars") == 0);
+    setHidden("AtmosphereExtra", getInt("Sky") == 0);
+
+    setHidden("ExposureSpeed", getInt("AutoExposure") == 0);
+    setHidden("ExposureSamplesX", getInt("AutoExposure") == 0);
 }
 
 /// Preset settings

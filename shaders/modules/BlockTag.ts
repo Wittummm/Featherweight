@@ -9,8 +9,13 @@ export function dumpTags(bool: boolean) {
 }
 
 export class Tagger {
+    private static pipeline: PipelineConfig;
     private static index: number = 0;
     private static nameIndexMap: [string?: number] = [];
+
+    static setPipeline(pipeline: PipelineConfig) {
+        Tagger.pipeline = pipeline;
+    }
 
     static tagNamespace(namespace: NamespacedId, name?: string) {
         if (this.index >= 32) {throw new RangeError(`Tag index is more than 32: ${this.index}`)}
