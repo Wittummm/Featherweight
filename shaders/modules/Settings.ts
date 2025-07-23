@@ -1,6 +1,6 @@
 import { Vec4, Vec3, Vec2 } from './Vector';
 
-export const distancePerShadowCascade = 95.5;
+export const distPerShadowCascade = 95.5;
 
 export class Settings {
     private static renderConfig: RendererConfig;
@@ -36,7 +36,7 @@ export class Settings {
     static get ShadowCascadeCount() {
         let shadowCascadeCount = getIntSetting("ShadowCascadeCount");
         if (shadowCascadeCount <= 0) {
-            shadowCascadeCount = Math.ceil(Settings.renderConfig.shadow.distance/distancePerShadowCascade); 
+            shadowCascadeCount = Math.ceil(Settings.renderConfig.shadow.distance/distPerShadowCascade); 
         }
         return shadowCascadeCount;
     }

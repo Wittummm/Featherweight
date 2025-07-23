@@ -23,7 +23,7 @@ export class Tagger {
         if (Tagger.nameIndexMap[name]) {throw new Error(`Duplicate tag: ${name}`)}
         if (outputTags) {sendInChat(`${this.index} ${name}`);}
 
-        addTag(this.index, namespace);
+        Tagger.pipeline.addTag(this.index, namespace);
         defineGlobally(name, this.index);
         this.index++;
     }
@@ -39,7 +39,7 @@ export class Tagger {
             namespaces.push(new NamespacedId(value));
         }
 
-        this.tagNamespace(createTag(new NamespacedId(namespace), ...namespaces), name);
+        this.tagNamespace(Tagger.pipeline.createTag(new NamespacedId(namespace), ...namespaces), name);
     }
 }
 

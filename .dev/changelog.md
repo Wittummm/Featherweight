@@ -63,7 +63,11 @@ Major.Minor.Revision.Patch.Tag, pre v1 versions are highly volatile.
       - CSM zbiasing is still borked though -> waiting for csm to get finalized/refined Aperture side
   - **Commit Notes**
     - Fixed "Shadow likes clip out, maybe its near plane?"
-- v0.9.1.0 Still porting to AP
+- v0.9.1.0 Still porting to AP #1
   - Shadows are working
   - Added HDR, auto exposure, tonemapping
     - Auto exposure isnt the best, probably should be improved in the future
+- v0.9.2.0 Porting to Aperture #2
+  - Edited to use new aperture command lists
+  - Added Reduced Pbr mode(32 bit instead of 64)
+  - Changed to better pack.ts organization inspired by @sixthsurge, thanks!

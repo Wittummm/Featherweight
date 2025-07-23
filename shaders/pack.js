@@ -8,6 +8,93 @@ var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
 
+// modules/BlockType.ts
+var index = 1;
+var namespacedIdData = [];
+function addType(type, ...paths) {
+  defineGlobally("TYPE_" + type.toUpperCase(), index);
+  for (let path of paths) {
+    let splits = path.split(":");
+    let namespacedId = splits[0] + ":" + splits[1];
+    let properties = [];
+    for (let part of splits) {
+      if (part.includes("=")) {
+        let sepIndex = part.indexOf("=");
+        let property = part.substring(0, sepIndex);
+        let values = part.substring(sepIndex + 1);
+        properties[property] = values.split(",");
+      }
+    }
+    namespacedIdData[namespacedId] = { id: index, properties };
+  }
+  index++;
+}
+function getType(blockState) {
+  let data = namespacedIdData[blockState.getNamespace() + ":" + blockState.getName()];
+  if (data !== void 0) {
+    let doesNotMatch = false;
+    for (let [property, values] of data.properties.entries()) {
+      if (blockState.hasState(property)) {
+        for (let value in values) {
+          doesNotMatch = blockState.getState(property) != value;
+        }
+      }
+    }
+    if (!doesNotMatch) {
+      return data.id < 4096 ? data.id : 0;
+    }
+  }
+  return 0;
+}
+
+// modules/BlockTag.ts
+function autoName(name, internalName) {
+  return name ? name : "TAG_" + internalName.toUpperCase();
+}
+var outputTags = false;
+function dumpTags(bool) {
+  outputTags = bool;
+}
+var _Tagger = class _Tagger {
+  static setPipeline(pipeline) {
+    _Tagger.pipeline = pipeline;
+  }
+  static tagNamespace(namespace, name) {
+    if (this.index >= 32) {
+      throw new RangeError(`Tag index is more than 32: ${this.index}`);
+    }
+    name = autoName(name, namespace.getNamespace());
+    if (_Tagger.nameIndexMap[name]) {
+      throw new Error(`Duplicate tag: ${name}`);
+    }
+    if (outputTags) {
+      sendInChat(`${this.index} ${name}`);
+    }
+    _Tagger.pipeline.addTag(this.index, namespace);
+    defineGlobally(name, this.index);
+    this.index++;
+  }
+  static tag(namespace, value, name) {
+    name = autoName(name, value ? value : namespace);
+    this.tagNamespace(value ? new NamespacedId(namespace, value) : new NamespacedId(namespace), name);
+  }
+  static tags(name, namespace, ...values) {
+    name = autoName(name, namespace);
+    let namespaces = [];
+    for (let value of values) {
+      namespaces.push(new NamespacedId(value));
+    }
+    this.tagNamespace(_Tagger.pipeline.createTag(new NamespacedId(namespace), ...namespaces), name);
+  }
+};
+__publicField(_Tagger, "pipeline");
+__publicField(_Tagger, "index", 0);
+__publicField(_Tagger, "nameIndexMap", []);
+var Tagger = _Tagger;
+var mc = "minecraft";
+var sh = "shader";
+var ap = "aperture";
+
 // modules/vector/Vec4.ts
 var _Vec4_instances, add_fn, sub_fn, mul_fn, div_fn;
 var _Vec4 = class _Vec4 {
@@ -444,6 +531,72 @@ __publicField(_Vec2, "zero", new _Vec2(0));
 __publicField(_Vec2, "one", new _Vec2(1));
 var Vec2 = _Vec2;
 
+// modules/Settings.ts
+var distPerShadowCascade = 95.5;
+var _Settings = class _Settings {
+  static setRendererConfig(renderConfig) {
+    _Settings.renderConfig = renderConfig;
+  }
+  static get SunPathRotation() {
+    return getIntSetting("SunPathRotation");
+  }
+  static get ShadowsEnabled() {
+    return getBoolSetting("ShadowsEnabled");
+  }
+  static get ShadowSamples() {
+    let t = getFloatSetting("ShadowSamples");
+    if (t < 0) {
+      let softness = getFloatSetting("ShadowSoftness");
+      t = -t;
+      t = t * Math.floor(8 * Math.pow(softness, 0.87));
+      t = Math.max(t, 1);
+    }
+    return t;
+  }
+  static get ExposureSamples() {
+    let exposureSamplesX = getIntSetting("ExposureSamplesX");
+    let exposureSamplesY = Math.floor(exposureSamplesX * (screenHeight / screenWidth));
+    return new Vec2(exposureSamplesX, exposureSamplesY);
+  }
+  static get ShadowCascadeCount() {
+    let shadowCascadeCount = getIntSetting("ShadowCascadeCount");
+    if (shadowCascadeCount <= 0) {
+      shadowCascadeCount = Math.ceil(_Settings.renderConfig.shadow.distance / distPerShadowCascade);
+    }
+    return shadowCascadeCount;
+  }
+  static get PBREnabled() {
+    return getBoolSetting("PBR");
+  }
+  static get PBR() {
+    return _Settings.PBREnabled ? getIntSetting("PBRMode") + 1 : 0;
+  }
+  static get ShadingEnabled() {
+    return getBoolSetting("Shading");
+  }
+  static get AutoExposureEnabled() {
+    return getIntSetting("AutoExposure") > 0;
+  }
+};
+__publicField(_Settings, "renderConfig");
+var Settings = _Settings;
+
+// modules/pipeline/configRenderer.ts
+function configRenderer(renderConfig) {
+  Settings.setRendererConfig(renderConfig);
+  renderConfig.ambientOcclusionLevel = 1;
+  renderConfig.mergedHandDepth = true;
+  renderConfig.shadow.distance = getIntSetting("ShadowDistance");
+  renderConfig.render.stars = true;
+  renderConfig.render.horizon = false;
+  if (Settings.ShadowsEnabled) {
+    renderConfig.shadow.resolution = getIntSetting("ShadowResolution") / Settings.ShadowCascadeCount;
+    renderConfig.shadow.cascades = Settings.ShadowCascadeCount;
+    renderConfig.shadow.enabled = true;
+  }
+  dumpTags(getBoolSetting("_DumpTags"));
+}
+
 // modules/FixedStreamingBuffer.ts
 var outputSettingValues = true;
 function dumpSettings(bool) {
@@ -618,55 +771,217 @@ var _FixedBuiltStreamingBuffer = class _FixedBuiltStreamingBuffer {
 __publicField(_FixedBuiltStreamingBuffer, "pipeline");
 var FixedBuiltStreamingBuffer = _FixedBuiltStreamingBuffer;
 
-// modules/Settings.ts
-var distancePerShadowCascade = 95.5;
-var _Settings = class _Settings {
-  static setRendererConfig(renderConfig) {
-    _Settings.renderConfig = renderConfig;
+// modules/pipeline/programs.ts
+var defaultComposite = "programs/template/composite.vsh";
+function define(shader, name, defineName) {
+  if (getBoolSetting(name)) {
+    shader.define(defineName != null ? defineName : name, "");
   }
-  static get SunPathRotation() {
-    return getIntSetting("SunPathRotation");
+  return shader;
+}
+function lightingDefines(shader) {
+  define(shader, "ShadowsEnabled");
+  define(shader, "PBR", "PBREnabled");
+  return shader;
+}
+function createPrograms(pipeline, textures2, buffers2, states2) {
+  const init = pipeline.forStage(Stage.PRE_RENDER);
+  bindMetadata(bindSettings(
+    init.createCompute("init_settings").location("programs/pre_render/settings.csh").workGroups(1, 1, 1)
+  )).compile();
+  init.barrier(SSBO_BIT);
+  bindSettings(
+    init.createComposite("clear_textures").vertex(defaultComposite).fragment("programs/pre_render/clear_textures.fsh").target(0, textures2.scene)
+  ).compile();
+  init.end();
+  terrainProgram(Usage.TERRAIN_SOLID, "geometry_main", "terrain_solid").blendOff(0).compile();
+  terrainProgram(Usage.TERRAIN_CUTOUT, "geometry_main", "terrain_cutout").blendOff(0).define("CUTOUT", "").compile();
+  terrainProgram(Usage.TERRAIN_TRANSLUCENT, "geometry_main", "terrain_translucent").define("FORWARD", "").compile();
+  bindSettings(
+    pipeline.createObjectShader("sky_textured", Usage.SKY_TEXTURES).vertex("programs/geometry/sky_textured.vsh").fragment("programs/geometry/sky_textured.fsh").target(0, textures2.scene).blendFunc(0, Func.ONE, Func.ONE, Func.ONE, Func.ONE)
+  ).compile();
+  bindSettings(
+    pipeline.createObjectShader("sky_basic", Usage.SKYBOX).vertex("programs/geometry/sky_basic.vsh").fragment("programs/geometry/sky_basic.fsh").target(0, textures2.scene)
+  ).compile();
+  const preTranslucent = pipeline.forStage(Stage.PRE_TRANSLUCENT);
+  lightingDefines(bindSettings(
+    preTranslucent.createCompute("shade").location("programs/post_opaque/shade.csh").workGroups(Math.ceil(screenWidth / 32), Math.ceil(screenHeight / 8), 1)
+  )).compile();
+  preTranslucent.end();
+  if (Settings.ShadowsEnabled) {
+    bindSettings(
+      pipeline.createObjectShader("shadow", Usage.SHADOW).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`)
+    ).compile();
+    bindSettings(
+      pipeline.createObjectShader("shadow", Usage.SHADOW_TERRAIN_CUTOUT).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`).define("CUTOUT", "")
+    ).compile();
+    bindSettings(
+      pipeline.createObjectShader("shadow", Usage.SHADOW_ENTITY_CUTOUT).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`).define("CUTOUT", "")
+    ).compile();
   }
-  static get ShadowsEnabled() {
-    return getBoolSetting("ShadowsEnabled");
+  const postRender = pipeline.forStage(Stage.POST_RENDER);
+  if (Settings.AutoExposureEnabled) {
+    postRender.generateMips(textures2.scene);
+    bindMetadata(bindSettings(
+      postRender.createCompute("auto_exposure").state(states2.autoExposure).location("programs/post_render/auto_exposure.csh").workGroups(1, 1, 1).define("ExposureSamplesX", Settings.ExposureSamples.x.toString()).define("ExposureSamplesY", Settings.ExposureSamples.y.toString())
+    )).compile();
   }
-  static get ShadowSamples() {
-    let t = getFloatSetting("ShadowSamples");
-    if (t < 0) {
-      let softness = getFloatSetting("ShadowSoftness");
-      t = -t;
-      t = t * Math.floor(8 * Math.pow(softness, 0.87));
-      t = Math.max(t, 1);
+  if (buffers2.debug) {
+    bindMetadata(lightingDefines(bindSettings(
+      postRender.createCompute("debug").location("programs/post_render/debug.csh").workGroups(Math.ceil(screenWidth / 16), Math.ceil(screenHeight / 16), 1).ubo(1, buffers2.debug.buffer)
+    ))).compile();
+  }
+  postRender.end();
+  bindMetadata(bindSettings(pipeline.createCombinationPass("programs/finalize/final.fsh"))).compile();
+  function terrainProgram(usage, name, programName) {
+    let program = pipeline.createObjectShader(programName || name, usage);
+    lightingDefines(program);
+    bindSettings(program).vertex(`programs/geometry/${name}.vsh`).fragment(`programs/geometry/${name}.fsh`).target(0, textures2.scene).target(2, textures2.data0);
+    if (textures2.gbuffer) {
+      program.target(1, textures2.gbuffer).blendOff(1);
     }
-    return t;
+    return program;
   }
-  static get ExposureSamples() {
-    let exposureSamplesX = getIntSetting("ExposureSamplesX");
-    let exposureSamplesY = Math.floor(exposureSamplesX * (screenHeight / screenWidth));
-    return new Vec2(exposureSamplesX, exposureSamplesY);
+  function bindMetadata(program) {
+    return program.define("INCLUDE_METADATA", "").ssbo(0, buffers2.metadata);
   }
-  static get ShadowCascadeCount() {
-    let shadowCascadeCount = getIntSetting("ShadowCascadeCount");
-    if (shadowCascadeCount <= 0) {
-      shadowCascadeCount = Math.ceil(_Settings.renderConfig.shadow.distance / distancePerShadowCascade);
+  function bindSettings(program) {
+    return bindMetadata(program).define("INCLUDE_SETTINGS", "").ubo(0, buffers2.settings.buffer);
+  }
+}
+
+// modules/pipeline/resources/buffers.ts
+function createBuffers(pipeline) {
+  let debugBuffer = getBoolSetting("_DebugEnabled") ? new FixedStreamingBuffer().bool().bool().bool().int().int().int().int().int().int().int().int().int().int().int().bool().bool().int().float().bool().bool().bool().build() : null;
+  let settingsBuffer = new FixedStreamingBuffer().float().float().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().int().int().int().float().float().float().float().int().int().int().int().float().int().float().float().int().bool().ivec4().int().int().float().bool().bool().build();
+  let metadataBuffer = pipeline.createBuffer(72, false);
+  return {
+    ["debug"]: debugBuffer,
+    ["settings"]: settingsBuffer,
+    ["metadata"]: metadataBuffer
+  };
+}
+
+// modules/pipeline/resources/textures.ts
+function createTextures(pipeline) {
+  defineGlobally("SCENE_FORMAT", "r11f_g11f_b10f");
+  let sceneTexture = pipeline.createImageTexture("sceneTex", "sceneImg").format(Format.R11F_G11F_B10F).mipmap(true).build();
+  defineGlobally("DATA0_FORMAT", "r32ui");
+  let dataTexture0 = pipeline.createImageTexture("dataTex0", "dataImg0").format(Format.R32UI).build();
+  let gbufferTexture;
+  if (Settings.PBREnabled) {
+    let _gbufferTexture = pipeline.createImageTexture("gbufferTex", "gbufferImg");
+    if (Settings.PBR == 1) {
+      defineGlobally("GBUFFER_FORMAT", "r32ui");
+      _gbufferTexture.format(Format.R32UI);
+    } else if (Settings.PBR == 2) {
+      defineGlobally("GBUFFER_FORMAT", "rg32ui");
+      _gbufferTexture.format(Format.RG32UI);
     }
-    return shadowCascadeCount;
+    gbufferTexture = _gbufferTexture.build();
   }
-  static get PBREnabled() {
-    return getBoolSetting("PBR");
+  return {
+    ["scene"]: sceneTexture,
+    ["data0"]: dataTexture0,
+    ["gbuffer"]: gbufferTexture
+  };
+}
+
+// modules/pipeline/resources/objects.ts
+function createStates(pipeline) {
+  return {
+    ["autoExposure"]: new StateReference()
+  };
+}
+function createObjects(pipeline) {
+  return {
+    ["states"]: createStates(pipeline),
+    ["buffers"]: createBuffers(pipeline),
+    ["textures"]: createTextures(pipeline)
+  };
+}
+
+// modules/pipeline/configSettings.ts
+function getPixelizationOverride(name) {
+  const basePixelization = getIntSetting("Pixelization");
+  const pixelization = getFloatSetting(name);
+  return Math.floor(pixelization < 0 ? -pixelization * basePixelization : pixelization);
+}
+function configSettings(renderConfig, textures2, buffers2, states2) {
+  function requestReload(msg) {
+    sendInChat(`Request Reload: ${msg}`);
   }
-  static get PBR() {
-    return _Settings.PBREnabled ? getIntSetting("PBRMode") + 1 : 0;
+  if (getIntSetting("ShadowCascadeCount") == 0 && renderConfig.shadow.distance != getIntSetting("ShadowDistance")) {
+    if (Math.ceil(renderConfig.shadow.distance / distPerShadowCascade) != Math.ceil(getIntSetting("ShadowDistance") / distPerShadowCascade)) {
+      requestReload("When changing Shadow Distance and Shadow Cascade is Auto.");
+    }
   }
-  static get ShadingEnabled() {
-    return getBoolSetting("Shading");
+  renderConfig.render.stars = getIntSetting("Stars") == 0;
+  renderConfig.sunPathRotation = Settings.SunPathRotation;
+  renderConfig.shadow.distance = getIntSetting("ShadowDistance");
+  dumpSettings(getBoolSetting("_DumpUniforms"));
+  const shadowBias = getFloatSetting("ShadowBias") / renderConfig.shadow.resolution;
+  let LightSunrise = new Vec4(0.984, 0.702, 0.275, 15e3);
+  let LightMorning = new Vec4(0.941, 0.855, 0.7, 6e4);
+  let LightNoon = new Vec4(0.92, 0.898, 0.8, 88e3);
+  let LightAfternoon = new Vec4(0.9625, 0.807, 0.7, 8e4);
+  let LightSunset = new Vec4(0.984, 0.6235, 0.2627, 3e4);
+  let LightNightStart = new Vec4(0.1451, 0.14513, 0.2314, 1e4);
+  let LightMidnight = new Vec4(0.0588, 0.04706, 0.1412, 5e3);
+  let LightNightEnd = new Vec4(0, 0, 0.035, 1e4);
+  let LightRain = new Vec4(0.306, 0.408, 0.506, 25e3);
+  let AmbientSunrise = new Vec4(0.45, 0.3, 0.2, 29500);
+  let AmbientMorning = new Vec4(0.6, 0.6, 0.5, 26e3);
+  let AmbientNoon = new Vec4(0.8, 0.8, 0.75, 2e4);
+  let AmbientAfternoon = new Vec4(0.7, 0.65, 0.55, 26e3);
+  let AmbientSunset = new Vec4(0.47, 0.3, 0.25, 29e3);
+  let AmbientNightStart = new Vec4(0.15, 0.15, 0.25, 14e3);
+  let AmbientMidnight = new Vec4(0.05, 0.05, 0.18, 8e3);
+  let AmbientNightEnd = new Vec4(0.1, 0.1, 0.14, 14e3);
+  let AmbientRain = new Vec4(0.3, 0.35, 0.4, 15e3);
+  if (buffers2.debug) {
+    LightSunrise.w *= getFloatSetting("_ShadowLightBrightness");
+    LightMorning.w *= getFloatSetting("_ShadowLightBrightness");
+    LightNoon.w *= getFloatSetting("_ShadowLightBrightness");
+    LightAfternoon.w *= getFloatSetting("_ShadowLightBrightness");
+    LightSunset.w *= getFloatSetting("_ShadowLightBrightness");
+    LightNightStart.w *= getFloatSetting("_ShadowLightBrightness");
+    LightMidnight.w *= getFloatSetting("_ShadowLightBrightness");
+    LightNightEnd.w *= getFloatSetting("_ShadowLightBrightness");
+    LightRain.w *= getFloatSetting("_ShadowLightBrightness");
+    buffers2.debug.bool("_DebugEnabled").bool("_DebugStats").bool("_SliceScreen").int("_ShowDepth").int("_ShowRoughness").int("_ShowReflectance").int("_ShowPorosity").int("_ShowEmission").int("_ShowNormals").int("_ShowAmbientOcclusion").int("_ShowHeight").int("_ShowShadowMap").int("_ShowGeometryNormals").int("_ShowLightLevel").bool("_ShowShadows").bool("_ShowShadowCascades").int("_ShadowCascadeIndex").float("_DebugUIScale").bool("_DisplayAtmospheric").bool("_DisplaySunlightColors").bool("_DisplayCameraData").end();
   }
-  static get AutoExposureEnabled() {
-    return getIntSetting("AutoExposure") > 0;
-  }
-};
-__publicField(_Settings, "renderConfig");
-var Settings = _Settings;
+  buffers2.settings.float(0, "Rain").float(0, "Wetness").vec4(...LightSunrise.xyzw(), "LightSunrise").vec4(...LightMorning.xyzw(), "LightMorning").vec4(...LightNoon.xyzw(), "LightNoon").vec4(...LightAfternoon.xyzw(), "LightAfternoon").vec4(...LightSunset.xyzw(), "LightSunset").vec4(...LightNightStart.xyzw(), "LightNightStart").vec4(...LightMidnight.xyzw(), "LightMidnight").vec4(...LightNightEnd.xyzw(), "LightNightEnd").vec4(...LightRain.xyzw(), "LightRain").vec4(...AmbientSunrise.xyzw(), "AmbientSunrise").vec4(...AmbientMorning.xyzw(), "AmbientMorning").vec4(...AmbientNoon.xyzw(), "AmbientNoon").vec4(...AmbientAfternoon.xyzw(), "AmbientAfternoon").vec4(...AmbientSunset.xyzw(), "AmbientSunset").vec4(...AmbientNightStart.xyzw(), "AmbientNightStart").vec4(...AmbientMidnight.xyzw(), "AmbientMidnight").vec4(...AmbientNightEnd.xyzw(), "AmbientNightEnd").vec4(...AmbientRain.xyzw(), "AmbientRain").int(renderConfig.shadow.cascades, "ShadowCascadeCount").int(Settings.ShadowSamples, "ShadowSamples").int("ShadowFilter").float("ShadowDistort").float("ShadowSoftness").float(shadowBias, "Initial ShadowBias").float("ShadowThreshold").int(getPixelizationOverride("ShadingPixelization"), "ShadingPixelization").int(getPixelizationOverride("ShadowPixelization"), "ShadowPixelization").int(Settings.PBR, "PBR").int("Specular").float("NormalStrength").int("AutoExposure").float(Math.exp(getFloatSetting("ExposureMult")), "ExposureMult").float("ExposureSpeed").int("Tonemap").bool("CompareTonemaps").ivec4(getIntSetting("Tonemap1"), getIntSetting("Tonemap2"), getIntSetting("Tonemap3"), getIntSetting("Tonemap4")).int("Sky").int("Stars").float("StarAmount").bool("DisableMoonHalo").bool("IsolateCelestials").end();
+}
+
+// modules/pipeline/tags.ts
+function createTags(pipeline) {
+}
+
+// modules/pipeline/types.ts
+function createTypes() {
+  addType("water", "minecraft:water", "minecraft:flowing_water");
+}
+
+// modules/pipeline/configPipeline.ts
+function configPipeline(pipeline) {
+  let renderConfig = pipeline.getRendererConfig();
+  Settings.setRendererConfig(renderConfig);
+  Tagger.setPipeline(pipeline);
+  FixedBuiltStreamingBuffer.setPipeline(pipeline);
+  createTags(pipeline);
+  createTypes();
+  const objects = createObjects(pipeline);
+  const { textures: textures2, buffers: buffers2, states: states2 } = objects;
+  createPrograms(pipeline, textures2, buffers2, states2);
+  configSettings(renderConfig, textures2, buffers2, states2);
+  return objects;
+}
+
+// modules/HelperFuncs.ts
+function toggleBoolSetting(name) {
+  setBoolSetting(name, !getBoolSetting(name));
+}
 
 // modules/KeyInput.ts
 var lastKeyDowns = [];
@@ -803,299 +1118,12 @@ var KeyInput = class {
   }
 };
 
-// modules/HelperFuncs.ts
-function toggleBoolSetting(name) {
-  setBoolSetting(name, !getBoolSetting(name));
-}
-
-// modules/BlockTag.ts
-function autoName(name, internalName) {
-  return name ? name : "TAG_" + internalName.toUpperCase();
-}
-var outputTags = false;
-function dumpTags(bool) {
-  outputTags = bool;
-}
-var _Tagger = class _Tagger {
-  static setPipeline(pipeline) {
-    _Tagger.pipeline = pipeline;
-  }
-  static tagNamespace(namespace, name) {
-    if (this.index >= 32) {
-      throw new RangeError(`Tag index is more than 32: ${this.index}`);
-    }
-    name = autoName(name, namespace.getNamespace());
-    if (_Tagger.nameIndexMap[name]) {
-      throw new Error(`Duplicate tag: ${name}`);
-    }
-    if (outputTags) {
-      sendInChat(`${this.index} ${name}`);
-    }
-    addTag(this.index, namespace);
-    defineGlobally(name, this.index);
-    this.index++;
-  }
-  static tag(namespace, value, name) {
-    name = autoName(name, value ? value : namespace);
-    this.tagNamespace(value ? new NamespacedId(namespace, value) : new NamespacedId(namespace), name);
-  }
-  static tags(name, namespace, ...values) {
-    name = autoName(name, namespace);
-    let namespaces = [];
-    for (let value of values) {
-      namespaces.push(new NamespacedId(value));
-    }
-    this.tagNamespace(createTag(new NamespacedId(namespace), ...namespaces), name);
-  }
-};
-__publicField(_Tagger, "pipeline");
-__publicField(_Tagger, "index", 0);
-__publicField(_Tagger, "nameIndexMap", []);
-var Tagger = _Tagger;
-var mc = "minecraft";
-var sh = "shader";
-var ap = "aperture";
-
-// modules/BlockType.ts
-var index = 1;
-var namespacedIdData = [];
-function addType(type, ...paths) {
-  defineGlobally("TYPE_" + type.toUpperCase(), index);
-  for (let path of paths) {
-    let splits = path.split(":");
-    let namespacedId = splits[0] + ":" + splits[1];
-    let properties = [];
-    for (let part of splits) {
-      if (part.includes("=")) {
-        let sepIndex = part.indexOf("=");
-        let property = part.substring(0, sepIndex);
-        let values = part.substring(sepIndex + 1);
-        properties[property] = values.split(",");
-      }
-    }
-    namespacedIdData[namespacedId] = { id: index, properties };
-  }
-  index++;
-}
-function getType(blockState) {
-  let data = namespacedIdData[blockState.getNamespace() + ":" + blockState.getName()];
-  if (data !== void 0) {
-    let doesNotMatch = false;
-    for (let [property, values] of data.properties.entries()) {
-      if (blockState.hasState(property)) {
-        for (let value in values) {
-          doesNotMatch = blockState.getState(property) != value;
-        }
-      }
-    }
-    if (!doesNotMatch) {
-      return data.id < 4096 ? data.id : 0;
-    }
-  }
-  return 0;
-}
-
-// pack.ts
-var DEBUG_CONFIG = {
-  debug: true,
-  outputToChat: true
-};
-var defaultComposite = "programs/template/composite.vsh";
-var debugBuffer;
-var settingsBuffer;
-var metadataBuffer;
-var autoExposureState;
-function initSettings(renderConfig) {
-  renderConfig.ambientOcclusionLevel = 1;
-  renderConfig.mergedHandDepth = true;
-  renderConfig.shadow.distance = getIntSetting("ShadowDistance");
-  renderConfig.render.stars = true;
-  renderConfig.render.horizon = false;
-  dumpTags(getBoolSetting("_DumpTags"));
-}
-function setupSettings(renderConfig) {
-  function requestReload(msg) {
-    sendInChat(`Request Reload: ${msg}`);
-  }
-  if (getIntSetting("ShadowCascadeCount") == 0 && renderConfig.shadow.distance != getIntSetting("ShadowDistance")) {
-    if (Math.ceil(renderConfig.shadow.distance / distancePerShadowCascade) != Math.ceil(getIntSetting("ShadowDistance") / distancePerShadowCascade)) {
-      requestReload("When changing Shadow Distance and Shadow Cascade is Auto.");
-    }
-  }
-  renderConfig.render.stars = getIntSetting("Stars") == 0;
-  renderConfig.sunPathRotation = Settings.SunPathRotation;
-  renderConfig.shadow.distance = getIntSetting("ShadowDistance");
-  dumpSettings(getBoolSetting("_DumpUniforms"));
-  const shadowBias = getFloatSetting("ShadowBias") / renderConfig.shadow.resolution;
-  let LightSunrise = new Vec4(0.984, 0.702, 0.275, 15e3);
-  let LightMorning = new Vec4(0.941, 0.855, 0.7, 6e4);
-  let LightNoon = new Vec4(0.92, 0.898, 0.8, 88e3);
-  let LightAfternoon = new Vec4(0.9625, 0.807, 0.7, 8e4);
-  let LightSunset = new Vec4(0.984, 0.6235, 0.2627, 3e4);
-  let LightNightStart = new Vec4(0.1451, 0.14513, 0.2314, 1e4);
-  let LightMidnight = new Vec4(0.0588, 0.04706, 0.1412, 5e3);
-  let LightNightEnd = new Vec4(0, 0, 0.035, 1e4);
-  let LightRain = new Vec4(0.306, 0.408, 0.506, 25e3);
-  let AmbientSunrise = new Vec4(0.45, 0.3, 0.2, 29500);
-  let AmbientMorning = new Vec4(0.6, 0.6, 0.5, 26e3);
-  let AmbientNoon = new Vec4(0.8, 0.8, 0.75, 2e4);
-  let AmbientAfternoon = new Vec4(0.7, 0.65, 0.55, 26e3);
-  let AmbientSunset = new Vec4(0.47, 0.3, 0.25, 29e3);
-  let AmbientNightStart = new Vec4(0.15, 0.15, 0.25, 14e3);
-  let AmbientMidnight = new Vec4(0.05, 0.05, 0.18, 8e3);
-  let AmbientNightEnd = new Vec4(0.1, 0.1, 0.14, 14e3);
-  let AmbientRain = new Vec4(0.3, 0.35, 0.4, 15e3);
-  if (debugBuffer) {
-    LightSunrise.w *= getFloatSetting("_ShadowLightBrightness");
-    LightMorning.w *= getFloatSetting("_ShadowLightBrightness");
-    LightNoon.w *= getFloatSetting("_ShadowLightBrightness");
-    LightAfternoon.w *= getFloatSetting("_ShadowLightBrightness");
-    LightSunset.w *= getFloatSetting("_ShadowLightBrightness");
-    LightNightStart.w *= getFloatSetting("_ShadowLightBrightness");
-    LightMidnight.w *= getFloatSetting("_ShadowLightBrightness");
-    LightNightEnd.w *= getFloatSetting("_ShadowLightBrightness");
-    LightRain.w *= getFloatSetting("_ShadowLightBrightness");
-    debugBuffer.bool("_DebugEnabled").bool("_DebugStats").bool("_SliceScreen").int("_ShowDepth").int("_ShowRoughness").int("_ShowReflectance").int("_ShowPorosity").int("_ShowEmission").int("_ShowNormals").int("_ShowAmbientOcclusion").int("_ShowHeight").int("_ShowShadowMap").int("_ShowGeometryNormals").int("_ShowLightLevel").bool("_ShowShadows").bool("_ShowShadowCascades").int("_ShadowCascadeIndex").float("_DebugUIScale").bool("_DisplayAtmospheric").bool("_DisplaySunlightColors").bool("_DisplayCameraData").end();
-  }
-  settingsBuffer.float(0, "Rain").float(0, "Wetness").vec4(...LightSunrise.xyzw(), "LightSunrise").vec4(...LightMorning.xyzw(), "LightMorning").vec4(...LightNoon.xyzw(), "LightNoon").vec4(...LightAfternoon.xyzw(), "LightAfternoon").vec4(...LightSunset.xyzw(), "LightSunset").vec4(...LightNightStart.xyzw(), "LightNightStart").vec4(...LightMidnight.xyzw(), "LightMidnight").vec4(...LightNightEnd.xyzw(), "LightNightEnd").vec4(...LightRain.xyzw(), "LightRain").vec4(...AmbientSunrise.xyzw(), "AmbientSunrise").vec4(...AmbientMorning.xyzw(), "AmbientMorning").vec4(...AmbientNoon.xyzw(), "AmbientNoon").vec4(...AmbientAfternoon.xyzw(), "AmbientAfternoon").vec4(...AmbientSunset.xyzw(), "AmbientSunset").vec4(...AmbientNightStart.xyzw(), "AmbientNightStart").vec4(...AmbientMidnight.xyzw(), "AmbientMidnight").vec4(...AmbientNightEnd.xyzw(), "AmbientNightEnd").vec4(...AmbientRain.xyzw(), "AmbientRain").int(renderConfig.shadow.cascades, "ShadowCascadeCount").int(Settings.ShadowSamples, "ShadowSamples").int("ShadowFilter").float("ShadowDistort").float("ShadowSoftness").float(shadowBias, "Initial ShadowBias").float("ShadowThreshold").int(getPixelizationOverride("ShadingPixelization"), "ShadingPixelization").int(getPixelizationOverride("ShadowPixelization"), "ShadowPixelization").int(Settings.PBR, "PBR").int("Specular").float("NormalStrength").int("AutoExposure").float(Math.exp(getFloatSetting("ExposureMult")), "ExposureMult").float("ExposureSpeed").int("Tonemap").bool("CompareTonemaps").ivec4(getIntSetting("Tonemap1"), getIntSetting("Tonemap2"), getIntSetting("Tonemap3"), getIntSetting("Tonemap4")).int("Sky").int("Stars").float("StarAmount").bool("DisableMoonHalo").bool("IsolateCelestials").end();
-}
-function setupTags() {
-}
-function setupTypes() {
-  addType("water", "minecraft:water", "minecraft:flowing_water");
-}
-function setup(pipeline) {
-  let renderConfig = pipeline.getRendererConfig();
-  Settings.setRendererConfig(renderConfig);
-  Tagger.setPipeline(pipeline);
-  FixedBuiltStreamingBuffer.setPipeline(pipeline);
-  defineGlobally("SCENE_FORMAT", "r11f_g11f_b10f");
-  let sceneTexture = pipeline.createImageTexture("sceneTex", "sceneImg").format(Format.R11F_G11F_B10F).mipmap(true).build();
-  defineGlobally("DATA0_FORMAT", "r32ui");
-  let dataTexture0 = pipeline.createImageTexture("dataTex0", "dataImg0").format(Format.R32UI).build();
-  let gbufferTexture;
-  if (Settings.PBREnabled) {
-    let _gbufferTexture = pipeline.createImageTexture("gbufferTex", "gbufferImg");
-    if (Settings.PBR == 1) {
-      defineGlobally("GBUFFER_FORMAT", "r32ui");
-      _gbufferTexture.format(Format.R32UI);
-    } else if (Settings.PBR == 2) {
-      defineGlobally("GBUFFER_FORMAT", "rg32ui");
-      _gbufferTexture.format(Format.RG32UI);
-    }
-    gbufferTexture = _gbufferTexture.build();
-  }
-  autoExposureState = new StateReference();
-  function define(shader, name, defineName) {
-    if (getBoolSetting(name)) {
-      shader.define(defineName != null ? defineName : name, "");
-    }
-    return shader;
-  }
-  function lightingDefines(shader) {
-    define(shader, "ShadowsEnabled");
-    define(shader, "PBR", "PBREnabled");
-    return shader;
-  }
-  function terrainProgram(usage, name, programName) {
-    let program = pipeline.createObjectShader(programName || name, usage);
-    lightingDefines(program);
-    bindSettings(program).vertex(`programs/geometry/${name}.vsh`).fragment(`programs/geometry/${name}.fsh`).target(0, sceneTexture).target(2, dataTexture0);
-    if (gbufferTexture) {
-      program.target(1, gbufferTexture).blendOff(1);
-    }
-    return program;
-  }
-  function bindMetadata(program) {
-    return program.define("INCLUDE_METADATA", "").ssbo(0, metadataBuffer);
-  }
-  function bindSettings(program) {
-    return bindMetadata(program).define("INCLUDE_SETTINGS", "").ubo(0, settingsBuffer.buffer);
-  }
-  function setupResources() {
-    debugBuffer = getBoolSetting("_DebugEnabled") ? new FixedStreamingBuffer().bool().bool().bool().int().int().int().int().int().int().int().int().int().int().int().bool().bool().int().float().bool().bool().bool().build() : null;
-    settingsBuffer = new FixedStreamingBuffer().float().float().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().int().int().int().float().float().float().float().int().int().int().int().float().int().float().float().int().bool().ivec4().int().int().float().bool().bool().build();
-    metadataBuffer = pipeline.createBuffer(72, false);
-  }
-  function setupPrograms() {
-    const init = pipeline.forStage(Stage.PRE_RENDER);
-    bindMetadata(bindSettings(
-      init.createCompute("init_settings").location("programs/pre_render/settings.csh").workGroups(1, 1, 1)
-    )).compile();
-    init.barrier(SSBO_BIT);
-    bindSettings(
-      init.createComposite("clear_textures").vertex(defaultComposite).fragment("programs/pre_render/clear_textures.fsh").target(0, sceneTexture)
-    ).compile();
-    init.end();
-    terrainProgram(Usage.TERRAIN_SOLID, "geometry_main", "terrain_solid").blendOff(0).compile();
-    terrainProgram(Usage.TERRAIN_CUTOUT, "geometry_main", "terrain_cutout").blendOff(0).define("CUTOUT", "").compile();
-    terrainProgram(Usage.TERRAIN_TRANSLUCENT, "geometry_main", "terrain_translucent").define("FORWARD", "").compile();
-    bindSettings(
-      pipeline.createObjectShader("sky_textured", Usage.SKY_TEXTURES).vertex("programs/geometry/sky_textured.vsh").fragment("programs/geometry/sky_textured.fsh").target(0, sceneTexture).blendFunc(0, Func.ONE, Func.ONE, Func.ONE, Func.ONE)
-    ).compile();
-    bindSettings(
-      pipeline.createObjectShader("sky_basic", Usage.SKYBOX).vertex("programs/geometry/sky_basic.vsh").fragment("programs/geometry/sky_basic.fsh").target(0, sceneTexture)
-    ).compile();
-    const preTranslucent = pipeline.forStage(Stage.PRE_TRANSLUCENT);
-    lightingDefines(bindSettings(
-      preTranslucent.createCompute("shade").location("programs/post_opaque/shade.csh").workGroups(Math.ceil(screenWidth / 32), Math.ceil(screenHeight / 8), 1)
-    )).compile();
-    preTranslucent.end();
-    if (Settings.ShadowsEnabled) {
-      bindSettings(
-        pipeline.createObjectShader("shadow", Usage.SHADOW).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`)
-      ).compile();
-      bindSettings(
-        pipeline.createObjectShader("shadow", Usage.SHADOW_TERRAIN_CUTOUT).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`).define("CUTOUT", "")
-      ).compile();
-      bindSettings(
-        pipeline.createObjectShader("shadow", Usage.SHADOW_ENTITY_CUTOUT).vertex(`programs/geometry/shadow.vsh`).fragment(`programs/geometry/shadow.fsh`).define("CUTOUT", "")
-      ).compile();
-    }
-    const postRender = pipeline.forStage(Stage.POST_RENDER);
-    if (Settings.AutoExposureEnabled) {
-      postRender.generateMips(sceneTexture);
-      bindMetadata(bindSettings(
-        postRender.createCompute("auto_exposure").state(autoExposureState).location("programs/post_render/auto_exposure.csh").workGroups(1, 1, 1).define("ExposureSamplesX", Settings.ExposureSamples.x.toString()).define("ExposureSamplesY", Settings.ExposureSamples.y.toString())
-      )).compile();
-    }
-    if (debugBuffer) {
-      bindMetadata(lightingDefines(bindSettings(
-        postRender.createCompute("debug").location("programs/post_render/debug.csh").workGroups(Math.ceil(screenWidth / 16), Math.ceil(screenHeight / 16), 1).ubo(1, debugBuffer.buffer)
-      ))).compile();
-    }
-    postRender.end();
-    bindMetadata(bindSettings(pipeline.createCombinationPass("programs/finalize/final.fsh"))).compile();
-  }
-  setupTags();
-  setupTypes();
-  setupResources();
-  setupPrograms();
-  setupSettings(renderConfig);
-}
-function configureRenderer(renderConfig) {
-  Settings.setRendererConfig(renderConfig);
-  initSettings(renderConfig);
-  if (Settings.ShadowsEnabled) {
-    renderConfig.shadow.resolution = getIntSetting("ShadowResolution") / Settings.ShadowCascadeCount;
-    renderConfig.shadow.cascades = Settings.ShadowCascadeCount;
-    renderConfig.shadow.enabled = true;
-  }
-}
-function configurePipeline(pipeline) {
-  setup(pipeline);
-}
-function onSettingsChanged(state) {
-  setupSettings(state.rendererConfig());
-}
-function getBlockId(block) {
-  return getType(block);
-}
-function beginFrame(state) {
-  autoExposureState.setEnabled(Settings.AutoExposureEnabled);
-  settingsBuffer.uploadData();
-  if (debugBuffer) {
-    debugBuffer.uploadData();
+// modules/pipeline/configFrame.ts
+function configFrame(textures2, buffers2, states2) {
+  states2.autoExposure.setEnabled(Settings.AutoExposureEnabled);
+  buffers2.settings.uploadData();
+  if (buffers2.debug) {
+    buffers2.debug.uploadData();
     if (KeyInput.onKeyDown(Keys.E)) {
       toggleBoolSetting("_DebugEnabled");
       if (getBoolSetting("_DebugEnabled")) {
@@ -1119,10 +1147,23 @@ function beginFrame(state) {
     KeyInput.update();
   }
 }
-function getPixelizationOverride(name) {
-  const basePixelization = getIntSetting("Pixelization");
-  const pixelization = getFloatSetting(name);
-  return Math.floor(pixelization < 0 ? -pixelization * basePixelization : pixelization);
+
+// pack.ts
+var textures, buffers, states;
+function configureRenderer(renderConfig) {
+  configRenderer(renderConfig);
+}
+function configurePipeline(pipeline) {
+  ({ textures, buffers, states } = configPipeline(pipeline));
+}
+function beginFrame(state) {
+  configFrame(textures, buffers, states);
+}
+function onSettingsChanged(state) {
+  configSettings(state.rendererConfig(), textures, buffers, states);
+}
+function getBlockId(block) {
+  return getType(block);
 }
 export {
   beginFrame,
