@@ -41,7 +41,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     }
     vec3 viewDir = normalize(posView);
 
-    vec3 albedo = color.rgb;
+    vec3 albedo = material.albedo;
     vec3 geoNormals = material.baseNormals;
     vec3 normals = material.normals;
     float roughness = material.roughness;
@@ -66,7 +66,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
     }
     float visibility = min(diffuseFactor,1-shadow);
     vec3 diffuse = albedo*(1-metallic) *kD;
-    // vec3 localLight = iris_sampleLightmap(lightLevel).rgb; // TODONOW: AP_ISSUE: Aperture only define this func for fragment, not compute..
+    // vec3 localLight = iris_sampleLightmap(lightLevel).rgb; // TODONOW: AP_ISSUE: Aperture doesnt provide this, yet
     vec3 localLight = lightLevel.x*localLightColor.rgb;
 
     color.rgb = (diffuse + specular)*visibility*LightColor.rgb + 
@@ -100,7 +100,7 @@ bool shade(inout vec4 color, inout Material material, vec2 lightLevel, vec3 posV
         editGBuffers = true;
     }
     #endif
-
+    
     return editGBuffers;
 }
 

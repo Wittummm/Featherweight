@@ -71,3 +71,6 @@ Major.Minor.Revision.Patch.Tag, pre v1 versions are highly volatile.
   - Edited to use new aperture command lists
   - Added Reduced Pbr mode(32 bit instead of 64)
   - Changed to better pack.ts organization inspired by @sixthsurge, thanks!
+- v0.9.2.1 Porting to Aperture #2a
+  - Fixed vanilla sky lower horizon being wrong color. Cause: had to clear to srgb instead of linear color.
+  - Fixed Auto Exposure being brokey. Now it works maybe, its doesnt really change in actual gameplay settings tho, at least not that noticeable.

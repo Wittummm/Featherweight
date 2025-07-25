@@ -21,7 +21,9 @@ in vec3 vertNormal;
 #ifdef FORWARD
 uniform sampler2D solidDepthTex;
 in vec3 posView;
+#ifdef TERRAIN
 flat in uint blockId;
+#endif
 #include "/includes/func/shading/calcWater.glsl"
 #endif
 
@@ -42,7 +44,7 @@ void iris_emitFragment() {
     vec4 gbuffer0 = gbuffer0Default; vec4 gbuffer1 = gbuffer1Default;
     #ifdef PBREnabled
         vec3 normalsPlayer = tbn[2];
-        
+
         if (PBR != 0) {
             gbuffer0 = iris_sampleSpecularMap(texCoord);
             gbuffer1 = iris_sampleNormalMap(texCoord);
@@ -62,6 +64,7 @@ void iris_emitFragment() {
         if (shouldUpdate) {writeMaterial(material, gbuffer0, gbuffer1);} 
         #endif
         
+        #ifdef TERRAIN
         if (ap.camera.fluid != 1 && iris_getCustomId(blockId) == TYPE_WATER) {
             vec2 fragCoord = gl_FragCoord.xy/ap.game.screenSize;
             
@@ -69,6 +72,7 @@ void iris_emitFragment() {
             float LdotV = dot(normalize(ap.celestial.pos), normalize(posView));
             Color.rgb = calcWater(Color.rgb, (1-shadow) * LightColor, waterDepth, LdotV);
         }
+        #endif
     #endif  
 
     Color = writeScene(Color);

@@ -794,9 +794,12 @@ function createPrograms(pipeline, textures2, buffers2, states2) {
     init.createComposite("clear_textures").vertex(defaultComposite).fragment("programs/pre_render/clear_textures.fsh").target(0, textures2.scene)
   ).compile();
   init.end();
-  terrainProgram(Usage.TERRAIN_SOLID, "geometry_main", "terrain_solid").blendOff(0).compile();
-  terrainProgram(Usage.TERRAIN_CUTOUT, "geometry_main", "terrain_cutout").blendOff(0).define("CUTOUT", "").compile();
-  terrainProgram(Usage.TERRAIN_TRANSLUCENT, "geometry_main", "terrain_translucent").define("FORWARD", "").compile();
+  gbuffersProgram(Usage.TERRAIN_SOLID, "geometry_main", "terrain_solid").define("TERRAIN", "").blendOff(0).compile();
+  gbuffersProgram(Usage.TERRAIN_CUTOUT, "geometry_main", "terrain_cutout").define("TERRAIN", "").blendOff(0).define("CUTOUT", "").compile();
+  gbuffersProgram(Usage.TERRAIN_TRANSLUCENT, "geometry_main", "terrain_translucent").define("TERRAIN", "").define("FORWARD", "").compile();
+  gbuffersProgram(Usage.ENTITY_SOLID, "geometry_main", "entity_solid").blendOff(0).compile();
+  gbuffersProgram(Usage.ENTITY_CUTOUT, "geometry_main", "entity_cutout").blendOff(0).define("CUTOUT", "").compile();
+  gbuffersProgram(Usage.ENTITY_TRANSLUCENT, "geometry_main", "entity_translucent").define("FORWARD", "").compile();
   bindSettings(
     pipeline.createObjectShader("sky_textured", Usage.SKY_TEXTURES).vertex("programs/geometry/sky_textured.vsh").fragment("programs/geometry/sky_textured.fsh").target(0, textures2.scene).blendFunc(0, Func.ONE, Func.ONE, Func.ONE, Func.ONE)
   ).compile();
@@ -833,7 +836,7 @@ function createPrograms(pipeline, textures2, buffers2, states2) {
   }
   postRender.end();
   bindMetadata(bindSettings(pipeline.createCombinationPass("programs/finalize/final.fsh"))).compile();
-  function terrainProgram(usage, name, programName) {
+  function gbuffersProgram(usage, name, programName) {
     let program = pipeline.createObjectShader(programName || name, usage);
     lightingDefines(program);
     bindSettings(program).vertex(`programs/geometry/${name}.vsh`).fragment(`programs/geometry/${name}.fsh`).target(0, textures2.scene).target(2, textures2.data0);

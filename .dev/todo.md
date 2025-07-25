@@ -22,7 +22,9 @@
   - Actually non CSM(1 cascade) is presumbly broken(you have to manually set near/far planes) and this shader is currently developed for 1 cascade thus causing CSM to not match
   - Maybe distort shadow in View Space instead of Clip Space as the latter is not consistent across cascades(?)
 - Auto Exposure will get brighter as fps gets higher, it should be constant no matter the fps.
-- MEDIUM: TRIVIAL: Vanilla sky has visual issues, like a line on the horizon
+- Boats seem to have 2 shadows, one is disconnected from the boat itself and just following the player..
+- `entities_translucent` also gets deferredly shaded even when it should only be shaded forwardly, i presume because `entities_translucent` runs before `pre_translucent`
+  - > causes them to be white/very bright
 
 ## Codes
 - CODE: sadi1n, Requires more flexible reloading features from Aperturegg

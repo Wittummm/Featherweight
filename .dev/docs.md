@@ -58,6 +58,7 @@ Search for these keywords to see what extra features you can toggle, most are di
  - ~~`DISTANT_HORIZONS_SHADER`~~ dh is currently not supported on aperture
  - `CUTOUT`
  - `FORWARD` forward rendered
+ - `TERRAIN` is terrain, not entites or block entities.
  - `INCLUDE_NORMALS_WRITE` `encodeNormals.glsl`
  - ~~`EXCLUDE_STARS`~~ not ported yet
  - `ShadowsEnabled` on shaders that uses any shadow functions(calcShadow)

@@ -1,9 +1,9 @@
 // Allows for intercepting values written to fbo, if it is not used for a long time then REMOVE: it, 2025/21/7
 vec3 readScene(vec3 compressed) {
-    return compressed;
+    return compressed*2.5;
 }
 vec3 writeScene(vec3 linear) {
-    return linear;
+    return linear/2.5;
 }
 
 vec4 readScene(vec4 compressed) {

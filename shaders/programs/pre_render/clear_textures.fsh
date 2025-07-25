@@ -8,5 +8,5 @@
 layout(location = 0) out vec4 Color;
 
 void main() {
-    Color = Sky == 0 ? ap.world.fogColor : vec4(0);
+    Color = Sky == 0 ? ap.world.fogColor*ap.world.fogColor : vec4(0);
 }

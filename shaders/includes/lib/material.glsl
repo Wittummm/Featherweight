@@ -1,6 +1,7 @@
 #include "/includes/lib/pbr.glsl"
 
 struct Material {
+    vec3 albedo;
     float roughness;
     vec3 baseNormals; // NOTE!: This is in viewSpace where as gbuffers store normals in playerSpace
     vec3 normals; // NOTE!: This is in viewSpace where as gbuffers store normals in playerSpace
@@ -22,7 +23,7 @@ Material Mat(vec3 albedo, vec3 baseNormals, vec4 gbuffer0, vec4 gbuffer1) {
     float emission = emissionRead(gbuffer0.a);
     vec3 normals = mat3(ap.camera.view) * (gbuffer1.r <= -1 ? baseNormals : normalsRead(gbuffer1.rg));
 
-    return Material(roughness, mat3(ap.camera.view)*baseNormals, normals, isPorosity ? porosity : -1, !isPorosity ? porosity : -1, emission,0,0.0, reflectanceRead(reflectance, albedo), getMetallic(reflectance));
+    return Material(albedo, roughness, mat3(ap.camera.view)*baseNormals, normals, isPorosity ? porosity : -1, !isPorosity ? porosity : -1, emission,0,0.0, reflectanceRead(reflectance, albedo), getMetallic(reflectance));
 }
 
 #ifdef PBREnabled

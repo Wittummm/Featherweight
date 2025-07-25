@@ -34,14 +34,28 @@ export default function createPrograms(pipeline: PipelineConfig, textures: Textu
     init.end();
 
     // Terrain
-    terrainProgram(Usage.TERRAIN_SOLID, "geometry_main", "terrain_solid")
+    gbuffersProgram(Usage.TERRAIN_SOLID, "geometry_main", "terrain_solid")
+        .define("TERRAIN", "")
         .blendOff(0).compile()
 
-    terrainProgram(Usage.TERRAIN_CUTOUT, "geometry_main", "terrain_cutout")
+    gbuffersProgram(Usage.TERRAIN_CUTOUT, "geometry_main", "terrain_cutout")
+        .define("TERRAIN", "")
         .blendOff(0)
         .define("CUTOUT", "").compile()
 
-    terrainProgram(Usage.TERRAIN_TRANSLUCENT, "geometry_main", "terrain_translucent")
+    gbuffersProgram(Usage.TERRAIN_TRANSLUCENT, "geometry_main", "terrain_translucent")
+        .define("TERRAIN", "")
+        .define("FORWARD", "").compile()
+
+    // Entities
+    gbuffersProgram(Usage.ENTITY_SOLID, "geometry_main", "entity_solid")
+        .blendOff(0).compile()
+
+    gbuffersProgram(Usage.ENTITY_CUTOUT, "geometry_main", "entity_cutout")
+        .blendOff(0)
+        .define("CUTOUT", "").compile()
+
+    gbuffersProgram(Usage.ENTITY_TRANSLUCENT, "geometry_main", "entity_translucent")
         .define("FORWARD", "").compile()
 
     // Sky
@@ -123,7 +137,7 @@ export default function createPrograms(pipeline: PipelineConfig, textures: Textu
 
     /// Helper Functions ///
 
-    function terrainProgram(usage: ProgramUsage, name: string, programName?: string): ObjectShader {
+    function gbuffersProgram(usage: ProgramUsage, name: string, programName?: string): ObjectShader {
         let program = pipeline.createObjectShader(programName || name, usage);
         lightingDefines(program);
 

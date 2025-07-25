@@ -73,7 +73,7 @@ const float padding = 0.5;
 
 #define BASE_LUX 7000
 #define EMISSION_LUX 15000
-const vec3 localLightColor = vec3(0.96, 0.85, 0.6)*EMISSION_LUX;
+const vec3 localLightColor = vec3(0.96, 0.85, 0.8)*EMISSION_LUX;
 
 const vec4 gbuffer0Default = vec4(0.2, 0.03, 0.7, 0); // spec
 const vec4 gbuffer1Default = vec4(-1, -1, 1, 0.25); // norm

@@ -3,7 +3,7 @@
 
 int getCascade(vec3 shadowView) {
     for(int cascade = 0; cascade < ShadowCascadeCount; cascade++){
-        vec3 clip = (ap.celestial.projection[cascade] * vec4(shadowView, 1)).xyz;
+        vec3 clip = mat3(ap.celestial.projection[cascade]) * shadowView  + ap.celestial.projection[cascade][3].xyz;
 
         if(all(lessThan(clip.xyz, vec3(1))) && all(greaterThan(clip.xyz, vec3(-1)))) {
             return cascade;

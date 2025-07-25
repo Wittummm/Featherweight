@@ -61,7 +61,7 @@ export function setupOptions() {
         .add(shadowPixelization)
         .add(asFloatRange("ShadowDistort", 3, 0, 6, 0.05, false).name().desc("Allocate more resolution closer to the player.\n When using Shadow Cascades, this value should generally be lowered."))
         .add(asIntRange("ShadowCascadeCount", 0, 0, 8, 1, true).name().values("Auto"))
-        .add(asFloatRange("ShadowBias", 0.4, 0, 1, 0.025, false).name().desc("Increase to reduce shadow acne at the cost of increasing peter panning."))
+        .add(asFloatRange("ShadowBias", 0.6, 0, 1, 0.025, false).name().desc("Increase to reduce shadow acne at the cost of increasing peter panning."))
         .add(asFloatRange("ShadowThreshold", 0, 0, 1, 0.05, false).name().desc("How shadowed the shadow needs to be to be considered shadowed, higher will \"shrink\" shadows."))
         .build()
     )

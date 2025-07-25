@@ -47,7 +47,7 @@ float calcShadow(vec3 posPlayer, vec3 normalsView) {
     fadeShadows(posPlayer, shadowStrength);
     if (shadowStrength > 0) {
 
-        vec3 shadowView = (ap.celestial.view * vec4(posPlayer, 1)).xyz;
+        vec3 shadowView = mat3(ap.celestial.view) * posPlayer + ap.celestial.view[3].xyz;
         int cascade = getCascade(shadowView);
         if (cascade == -1) return 0;
 
@@ -60,11 +60,9 @@ float calcShadow(vec3 posPlayer, vec3 normalsView) {
         zBias *= distortFac*(cascade+1.0); // CREDIT: @builderb0y https://discord.com/channels/237199950235041794/1100010778133794827/1114276461856174121
 
         vec3 lightDir = normalize(ap.celestial.pos);
-        vec2 lightDirWorld = abs(normalize((mat3(ap.camera.viewInv) * lightDir).xz));
        
         float d = abs(dot(normalsView, lightDir));
         zBias *= pow(15, d); // NOTE: Biasing along normals, instead of depending on normals is probably better as it require less sharp pushing, but we dont have access to geometry normals so this isnst possible currently
-        zBias *= 1+pow((1.0-max(lightDirWorld.x, lightDirWorld.y))*2.0, 1.5)*18; // If light is diagonal, then bias more as it aliases
 
         shadowClip.z -= zBias;
         ////////////////

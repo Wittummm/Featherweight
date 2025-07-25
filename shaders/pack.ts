@@ -7,6 +7,8 @@ import configFrame from './modules/pipeline/configFrame';
 
 let textures, buffers, states;
 
+// temp text to change ts hash:ssad
+
 // Runs once on shader setup
 export function configureRenderer(renderConfig: RendererConfig) {
     configRenderer(renderConfig);

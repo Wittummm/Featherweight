@@ -14,7 +14,9 @@ out vec3 vertNormal;
 
 #ifdef FORWARD
 out vec3 posView;
+#ifdef TERRAIN
 flat out uint blockId;
+#endif
 #endif
 
 mat3 tbnNormalTangent(vec3 normal, vec4 tangent) {
@@ -36,18 +38,16 @@ void iris_emitVertex(inout VertexData data) {
 
 void iris_sendParameters(VertexData data) {
 	/*immut*/ vec2 lightLevel = data.light;
-	/*immut*/ vec3 light = iris_sampleLightmap(lightLevel).rgb;
 
 	texCoord = data.uv;
 	lightmapCoord = lightLevel;
-	// vertColor = srgbToLinear(data.ao*light * data.color.rgb);
 	vertColor = srgbToLinear(data.ao * data.color.rgb);
 	#ifdef PBREnabled
 	tbn = tbnNormalTangent(data.normal, data.tangent);
 	#else
 	vertNormal = data.normal;
 	#endif
-	#ifdef FORWARD
+	#if defined FORWARD && TERRAIN
 	blockId = data.blockId;
 	#endif
 }

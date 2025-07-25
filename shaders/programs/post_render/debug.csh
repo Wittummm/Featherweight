@@ -46,6 +46,17 @@ layout(std430, binding = 1) buffer _histogram {
     uint histogram[];
 };
 
+float calcExposure() {
+    // CREDIT: SOURCE: https://bruop.github.io/exposure/
+    const float sensorSensitivity = 100;
+    const float lightMeterCalibration = 12.5;
+    const float vignetteAttenuation = 0.65;
+    float ev100 = log2((sensorSensitivity/lightMeterCalibration)*AverageLuminance);
+    float maxLuminance = (78.0/(vignetteAttenuation*sensorSensitivity)) * exp2(ev100);
+
+    return 1.0/maxLuminance;
+}
+
 uniform sampler2D sceneTex;
 uniform sampler2D mainDepthTex;
 uniform usampler2D dataTex0;
@@ -261,8 +272,13 @@ void main() {
 	}
 	if (_DisplayCameraData) {
 		newStat(uiCoord, line);
-		printString((_A,_v,_g,_space,_L,_u,_m,_space,_colon)); 
+		printString((_A,_v,_g,_space,_L,_u,_m,_colon)); 
 		printFloat(AverageLuminance);
+		endText(color.rgb);
+
+		newStat(uiCoord, line);
+		printString((_C,_e,_n,_t,_e,_r,_space,_R,_G,_B,_colon)); 
+		printVec3(readScene(texture(sceneTex, vec2(0.5)).rgb));
 		endText(color.rgb);
 	}
 	if (_DisplaySunlightColors) {
