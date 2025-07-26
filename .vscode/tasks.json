@@ -4,7 +4,7 @@
     {
       "label": "Generate lang file",
       "type": "shell",
-      "command": "npx ts-node build/comment.ts; npx ts-node shaders/options.ts; npx ts-node build/uncomment.ts",
+      "command": "npx ts-node build/comment.ts; npx ts-node shaders/modules/pipeline/createOptions.ts; npx ts-node build/uncomment.ts",
       "problemMatcher": []
     }
   ]

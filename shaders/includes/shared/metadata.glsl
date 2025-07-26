@@ -11,7 +11,9 @@ layout(std430, binding = 0) buffer metadata {
 
     vec4 AmbientColor;
     vec4 LightColor;
+    vec4 SunraysColor;
 };
+
 #endif
 
 #endif

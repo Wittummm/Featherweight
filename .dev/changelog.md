@@ -74,3 +74,6 @@ Major.Minor.Revision.Patch.Tag, pre v1 versions are highly volatile.
 - v0.9.2.1 Porting to Aperture #2a
   - Fixed vanilla sky lower horizon being wrong color. Cause: had to clear to srgb instead of linear color.
   - Fixed Auto Exposure being brokey. Now it works maybe, its doesnt really change in actual gameplay settings tho, at least not that noticeable.
+  - PS: Probably fixed auto exposure being brighter with higher fps. Likely cause: not clearing the average.
+- v0.9.3.0 Porting to Aperture #3
+  - Ported over Sunrays, DOES NOT INCLUDE sunrays mode as i consider it unacceptable to be implemented rn.

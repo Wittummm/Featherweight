@@ -108,6 +108,15 @@ export default function createPrograms(pipeline: PipelineConfig, textures: Textu
     }
 
     const postRender = pipeline.forStage(Stage.POST_RENDER);
+
+    if (getBoolSetting("SunraysEnabled")) {
+        bindMetadata(bindSettings(
+            postRender.createCompute("sunrays").state(states.sunrays)
+                .location("programs/post_render/sunrays.csh")
+                .workGroups(Math.ceil(screenWidth / 32), Math.ceil(screenHeight / 8), 1)
+        )).compile();
+    }
+
     /// Auto Exposure ///
     if (Settings.AutoExposureEnabled) {
         postRender.generateMips(textures.scene);
@@ -124,7 +133,7 @@ export default function createPrograms(pipeline: PipelineConfig, textures: Textu
 
     if (buffers.debug) {
         bindMetadata(lightingDefines(bindSettings(
-            postRender.createCompute("debug")
+            postRender.createCompute("debug").state(states.debug)
                 .location("programs/post_render/debug.csh")
                 .workGroups(Math.ceil(screenWidth / 16), Math.ceil(screenHeight / 16), 1)
                 .ubo(1, buffers.debug.buffer)

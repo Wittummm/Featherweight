@@ -65,7 +65,6 @@ export default function configSettings(renderConfig: RendererConfig, textures: T
         LightRain.w *= getFloatSetting("_ShadowLightBrightness")
 
         buffers.debug
-        .bool("_DebugEnabled")
         .bool("_DebugStats")
         .bool("_SliceScreen")
         .int("_ShowDepth")
@@ -143,6 +142,15 @@ export default function configSettings(renderConfig: RendererConfig, textures: T
     .float("StarAmount")
     .bool("DisableMoonHalo")
     .bool("IsolateCelestials")
+
+    /// Sunrays
+    .float(getFloatSetting("SunraysStrength")/getFloatSetting("SunraysOriginSize") * 0.25, "SunraysStrength")
+    .float("SunraysSpread")
+    .float("SunraysOriginSize")
+    .int(getIntSetting("SunraysSamplesOverride") == -1 ?
+        getFloatSetting("SunraysSpread")*getFloatSetting("SunraysSamples")*25
+        : getIntSetting("SunraysSamplesOverride"), "SunraysSamples")
+    .float("SunraysFakeSamples")
     
     .end()
 }

@@ -1,11 +1,11 @@
 import { dumpTags, Tagger } from "../BlockTag";
 import { FixedBuiltStreamingBuffer } from "../FixedStreamingBuffer";
 import { Settings } from "../Settings";
-import createPrograms from "./programs";
+import createPrograms from "./createPrograms";
 import createObjects from "./resources/objects";
 import configSettings from "./configSettings";
-import createTags from "./tags";
-import createTypes from "./types";
+import createTags from "./createTags";
+import createTypes from "./createTypes";
 
 export default function configPipeline(pipeline: PipelineConfig) { // Initialized once on shader setup
     let renderConfig = pipeline.getRendererConfig();

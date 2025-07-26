@@ -1,4 +1,4 @@
-# Auto generated using `/build/generateLang.ts` (Featherweight); Sat, 12 Jul 2025 09:55:05 GMT 
+# Auto generated using `/build/generateLang.ts` (Featherweight); Sat, 26 Jul 2025 10:51:45 GMT 
 
 option.ShadowPixelization = Shadow Pixelization
 value.ShadowPixelization.-0.25 = 25 %
@@ -31,10 +31,6 @@ value.ShadowFilter.0 = Nearest
 value.ShadowFilter.1 = Linear
 value.ShadowFilter.2 = Uniform Soft
 
-option.ShadowSamples = Shadow Samples
-
-option.ShadowSoftness = Shadow Softness
-
 screen.Page_ShadowsExtra = Shadows Extra
 
 option.ShadowDistort = Shadow Distort
@@ -49,6 +45,10 @@ option.ShadowBias.comment = Increase to reduce shadow acne at the cost of increa
 
 option.ShadowThreshold = Shadow Threshold
 option.ShadowThreshold.comment = How shadowed the shadow needs to be to be considered shadowed, higher will "shrink" shadows.
+
+option.ShadowSamples = Shadow Samples
+
+option.ShadowSoftness = Shadow Softness
 
 screen.Page_Shading = Shading
 
@@ -71,6 +71,27 @@ value.Stars.2 = Medium
 
 option.StarAmount = Star Amount
 
+screen.Page_LightShafts = Light Shafts
+
+screen.Page_Sunrays = Sunrays
+
+option.SunraysEnabled = §oEnable Sunrays§r
+
+option.SunraysStrength = Sunrays Strength
+
+option.SunraysSpread = Sunrays Spread
+
+option.SunraysOriginSize = Sunrays Origin Size
+
+option.SunraysSamples = Sunrays Samples
+
+option.SunraysFakeSamples = Sunrays Fake Samples
+
+screen.Page_SunraysExtra = Sunrays Extra
+
+option.SunraysSamplesOverride = Sunrays Samples Override
+value.SunraysSamplesOverride.-1 = Off
+
 option.DisableMoonHalo = Disable Moon Halo
 
 option.IsolateCelestials = Isolate Celestials
@@ -79,11 +100,11 @@ screen.Page_CameraAndColors = Camera And Colors
 
 option.ExposureMult = Exposure Mult
 
-option.ExposureSpeed = Exposure Speed
-
 option.AutoExposure = §oAuto Exposure§r
 value.AutoExposure.0 = Off
 value.AutoExposure.1 = Low
+
+option.ExposureSpeed = Exposure Speed
 
 option.ExposureSamplesX = §oExposure Samples X§r
 

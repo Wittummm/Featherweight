@@ -589,6 +589,7 @@ function configRenderer(renderConfig) {
   renderConfig.shadow.distance = getIntSetting("ShadowDistance");
   renderConfig.render.stars = true;
   renderConfig.render.horizon = false;
+  renderConfig.render.clouds = false;
   if (Settings.ShadowsEnabled) {
     renderConfig.shadow.resolution = getIntSetting("ShadowResolution") / Settings.ShadowCascadeCount;
     renderConfig.shadow.cascades = Settings.ShadowCascadeCount;
@@ -771,7 +772,7 @@ var _FixedBuiltStreamingBuffer = class _FixedBuiltStreamingBuffer {
 __publicField(_FixedBuiltStreamingBuffer, "pipeline");
 var FixedBuiltStreamingBuffer = _FixedBuiltStreamingBuffer;
 
-// modules/pipeline/programs.ts
+// modules/pipeline/createPrograms.ts
 var defaultComposite = "programs/template/composite.vsh";
 function define(shader, name, defineName) {
   if (getBoolSetting(name)) {
@@ -823,6 +824,11 @@ function createPrograms(pipeline, textures2, buffers2, states2) {
     ).compile();
   }
   const postRender = pipeline.forStage(Stage.POST_RENDER);
+  if (getBoolSetting("SunraysEnabled")) {
+    bindMetadata(bindSettings(
+      postRender.createCompute("sunrays").state(states2.sunrays).location("programs/post_render/sunrays.csh").workGroups(Math.ceil(screenWidth / 32), Math.ceil(screenHeight / 8), 1)
+    )).compile();
+  }
   if (Settings.AutoExposureEnabled) {
     postRender.generateMips(textures2.scene);
     bindMetadata(bindSettings(
@@ -831,7 +837,7 @@ function createPrograms(pipeline, textures2, buffers2, states2) {
   }
   if (buffers2.debug) {
     bindMetadata(lightingDefines(bindSettings(
-      postRender.createCompute("debug").location("programs/post_render/debug.csh").workGroups(Math.ceil(screenWidth / 16), Math.ceil(screenHeight / 16), 1).ubo(1, buffers2.debug.buffer)
+      postRender.createCompute("debug").state(states2.debug).location("programs/post_render/debug.csh").workGroups(Math.ceil(screenWidth / 16), Math.ceil(screenHeight / 16), 1).ubo(1, buffers2.debug.buffer)
     ))).compile();
   }
   postRender.end();
@@ -856,8 +862,8 @@ function createPrograms(pipeline, textures2, buffers2, states2) {
 // modules/pipeline/resources/buffers.ts
 function createBuffers(pipeline) {
   let debugBuffer = getBoolSetting("_DebugEnabled") ? new FixedStreamingBuffer().bool().bool().bool().int().int().int().int().int().int().int().int().int().int().int().bool().bool().int().float().bool().bool().bool().build() : null;
-  let settingsBuffer = new FixedStreamingBuffer().float().float().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().int().int().int().float().float().float().float().int().int().int().int().float().int().float().float().int().bool().ivec4().int().int().float().bool().bool().build();
-  let metadataBuffer = pipeline.createBuffer(72, false);
+  let settingsBuffer = new FixedStreamingBuffer().float().float().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().vec4().int().int().int().float().float().float().float().int().int().int().int().float().int().float().float().int().bool().ivec4().int().int().float().bool().bool().float().float().float().int().int().build();
+  let metadataBuffer = pipeline.createBuffer(56, false);
   return {
     ["debug"]: debugBuffer,
     ["settings"]: settingsBuffer,
@@ -893,7 +899,9 @@ function createTextures(pipeline) {
 // modules/pipeline/resources/objects.ts
 function createStates(pipeline) {
   return {
-    ["autoExposure"]: new StateReference()
+    ["autoExposure"]: new StateReference(),
+    ["sunrays"]: new StateReference(),
+    ["debug"]: new StateReference()
   };
 }
 function createObjects(pipeline) {
@@ -952,16 +960,16 @@ function configSettings(renderConfig, textures2, buffers2, states2) {
     LightMidnight.w *= getFloatSetting("_ShadowLightBrightness");
     LightNightEnd.w *= getFloatSetting("_ShadowLightBrightness");
     LightRain.w *= getFloatSetting("_ShadowLightBrightness");
-    buffers2.debug.bool("_DebugEnabled").bool("_DebugStats").bool("_SliceScreen").int("_ShowDepth").int("_ShowRoughness").int("_ShowReflectance").int("_ShowPorosity").int("_ShowEmission").int("_ShowNormals").int("_ShowAmbientOcclusion").int("_ShowHeight").int("_ShowShadowMap").int("_ShowGeometryNormals").int("_ShowLightLevel").bool("_ShowShadows").bool("_ShowShadowCascades").int("_ShadowCascadeIndex").float("_DebugUIScale").bool("_DisplayAtmospheric").bool("_DisplaySunlightColors").bool("_DisplayCameraData").end();
+    buffers2.debug.bool("_DebugStats").bool("_SliceScreen").int("_ShowDepth").int("_ShowRoughness").int("_ShowReflectance").int("_ShowPorosity").int("_ShowEmission").int("_ShowNormals").int("_ShowAmbientOcclusion").int("_ShowHeight").int("_ShowShadowMap").int("_ShowGeometryNormals").int("_ShowLightLevel").bool("_ShowShadows").bool("_ShowShadowCascades").int("_ShadowCascadeIndex").float("_DebugUIScale").bool("_DisplayAtmospheric").bool("_DisplaySunlightColors").bool("_DisplayCameraData").end();
   }
-  buffers2.settings.float(0, "Rain").float(0, "Wetness").vec4(...LightSunrise.xyzw(), "LightSunrise").vec4(...LightMorning.xyzw(), "LightMorning").vec4(...LightNoon.xyzw(), "LightNoon").vec4(...LightAfternoon.xyzw(), "LightAfternoon").vec4(...LightSunset.xyzw(), "LightSunset").vec4(...LightNightStart.xyzw(), "LightNightStart").vec4(...LightMidnight.xyzw(), "LightMidnight").vec4(...LightNightEnd.xyzw(), "LightNightEnd").vec4(...LightRain.xyzw(), "LightRain").vec4(...AmbientSunrise.xyzw(), "AmbientSunrise").vec4(...AmbientMorning.xyzw(), "AmbientMorning").vec4(...AmbientNoon.xyzw(), "AmbientNoon").vec4(...AmbientAfternoon.xyzw(), "AmbientAfternoon").vec4(...AmbientSunset.xyzw(), "AmbientSunset").vec4(...AmbientNightStart.xyzw(), "AmbientNightStart").vec4(...AmbientMidnight.xyzw(), "AmbientMidnight").vec4(...AmbientNightEnd.xyzw(), "AmbientNightEnd").vec4(...AmbientRain.xyzw(), "AmbientRain").int(renderConfig.shadow.cascades, "ShadowCascadeCount").int(Settings.ShadowSamples, "ShadowSamples").int("ShadowFilter").float("ShadowDistort").float("ShadowSoftness").float(shadowBias, "Initial ShadowBias").float("ShadowThreshold").int(getPixelizationOverride("ShadingPixelization"), "ShadingPixelization").int(getPixelizationOverride("ShadowPixelization"), "ShadowPixelization").int(Settings.PBR, "PBR").int("Specular").float("NormalStrength").int("AutoExposure").float(Math.exp(getFloatSetting("ExposureMult")), "ExposureMult").float("ExposureSpeed").int("Tonemap").bool("CompareTonemaps").ivec4(getIntSetting("Tonemap1"), getIntSetting("Tonemap2"), getIntSetting("Tonemap3"), getIntSetting("Tonemap4")).int("Sky").int("Stars").float("StarAmount").bool("DisableMoonHalo").bool("IsolateCelestials").end();
+  buffers2.settings.float(0, "Rain").float(0, "Wetness").vec4(...LightSunrise.xyzw(), "LightSunrise").vec4(...LightMorning.xyzw(), "LightMorning").vec4(...LightNoon.xyzw(), "LightNoon").vec4(...LightAfternoon.xyzw(), "LightAfternoon").vec4(...LightSunset.xyzw(), "LightSunset").vec4(...LightNightStart.xyzw(), "LightNightStart").vec4(...LightMidnight.xyzw(), "LightMidnight").vec4(...LightNightEnd.xyzw(), "LightNightEnd").vec4(...LightRain.xyzw(), "LightRain").vec4(...AmbientSunrise.xyzw(), "AmbientSunrise").vec4(...AmbientMorning.xyzw(), "AmbientMorning").vec4(...AmbientNoon.xyzw(), "AmbientNoon").vec4(...AmbientAfternoon.xyzw(), "AmbientAfternoon").vec4(...AmbientSunset.xyzw(), "AmbientSunset").vec4(...AmbientNightStart.xyzw(), "AmbientNightStart").vec4(...AmbientMidnight.xyzw(), "AmbientMidnight").vec4(...AmbientNightEnd.xyzw(), "AmbientNightEnd").vec4(...AmbientRain.xyzw(), "AmbientRain").int(renderConfig.shadow.cascades, "ShadowCascadeCount").int(Settings.ShadowSamples, "ShadowSamples").int("ShadowFilter").float("ShadowDistort").float("ShadowSoftness").float(shadowBias, "Initial ShadowBias").float("ShadowThreshold").int(getPixelizationOverride("ShadingPixelization"), "ShadingPixelization").int(getPixelizationOverride("ShadowPixelization"), "ShadowPixelization").int(Settings.PBR, "PBR").int("Specular").float("NormalStrength").int("AutoExposure").float(Math.exp(getFloatSetting("ExposureMult")), "ExposureMult").float("ExposureSpeed").int("Tonemap").bool("CompareTonemaps").ivec4(getIntSetting("Tonemap1"), getIntSetting("Tonemap2"), getIntSetting("Tonemap3"), getIntSetting("Tonemap4")).int("Sky").int("Stars").float("StarAmount").bool("DisableMoonHalo").bool("IsolateCelestials").float(getFloatSetting("SunraysStrength") / getFloatSetting("SunraysOriginSize") * 0.25, "SunraysStrength").float("SunraysSpread").float("SunraysOriginSize").int(getIntSetting("SunraysSamplesOverride") == -1 ? getFloatSetting("SunraysSpread") * getFloatSetting("SunraysSamples") * 25 : getIntSetting("SunraysSamplesOverride"), "SunraysSamples").float("SunraysFakeSamples").end();
 }
 
-// modules/pipeline/tags.ts
+// modules/pipeline/createTags.ts
 function createTags(pipeline) {
 }
 
-// modules/pipeline/types.ts
+// modules/pipeline/createTypes.ts
 function createTypes() {
   addType("water", "minecraft:water", "minecraft:flowing_water");
 }
@@ -1124,6 +1132,8 @@ var KeyInput = class {
 // modules/pipeline/configFrame.ts
 function configFrame(textures2, buffers2, states2) {
   states2.autoExposure.setEnabled(Settings.AutoExposureEnabled);
+  states2.sunrays.setEnabled(getBoolSetting("SunraysEnabled"));
+  states2.debug.setEnabled(getBoolSetting("_DebugEnabled"));
   buffers2.settings.uploadData();
   if (buffers2.debug) {
     buffers2.debug.uploadData();

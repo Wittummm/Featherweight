@@ -1,3 +1,5 @@
+// NOTE: VERY NAIVE, super simple, i should really implement a better auto exposure :P
+
 #version 460 core
 
 layout (local_size_x = ExposureSamplesX, local_size_y = ExposureSamplesY) in;
@@ -15,7 +17,7 @@ const int sampleCount = ExposureSamplesX*ExposureSamplesY;
 vec2 tileSize = vec2(1.0/ExposureSamplesX, 1.0/ExposureSamplesY);
 
 const float minLogLum      = 13;
-const float maxLogLum      = 23;
+const float maxLogLum      = 30;
 const float logLumRange    = maxLogLum - minLogLum;
 const float rcpLogLumRange = 1.0 / logLumRange;
 
@@ -27,7 +29,7 @@ void main() {
 	groupMemoryBarrier();
 
 	vec2 center = gl_GlobalInvocationID.xy*tileSize + tileSize*0.5;
-	float brightness = luminance(readScene(textureLod(sceneTex, center, 4).rgb)); // TODONOW: why does using mipmap brighten it up :/
+	float brightness = luminance(readScene(textureLod(sceneTex, center, 4).rgb)); 
 	
 	float toMiddle = distance(center, vec2(0.5))+1; // Very naive weight
 	atomicAdd(data[0], uint(((log2(1e-4 + brightness) - minLogLum)*rcpLogLumRange*s)/toMiddle) );

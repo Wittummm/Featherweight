@@ -6,6 +6,8 @@ import createTextures from "./textures";
 function createStates(pipeline: PipelineConfig) {
     return {
         ["autoExposure"]: new StateReference(),
+        ["sunrays"]: new StateReference(),
+        ["debug"]: new StateReference(),
     };
 }
 

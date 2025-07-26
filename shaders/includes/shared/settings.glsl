@@ -61,6 +61,13 @@ layout(std140, binding = 0) uniform settings {
     float StarAmount;
     bool DisableMoonHalo;
     bool IsolateCelestials;
+
+    //// Sunrays
+    float SunraysStrength;
+    float SunraysSpread;
+    float SunraysOriginSize;
+    int SunraysSamples;
+    float SunraysFakeSamples;
 };
 
 #define STAR_INTENSITY_MIN 0.08

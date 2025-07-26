@@ -3,7 +3,7 @@ import configRenderer from './modules/pipeline/configRenderer';
 import configPipeline from './modules/pipeline/configPipeline';
 import configSettings from './modules/pipeline/configSettings';
 import configFrame from './modules/pipeline/configFrame';
-///////////////////////////////////////
+////////////////////////////////////////
 
 let textures, buffers, states;
 

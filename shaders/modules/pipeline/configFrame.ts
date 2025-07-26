@@ -5,6 +5,8 @@ import { Buffers, States, Textures } from "./resources/objects";
 
 export default function configFrame(textures: Textures, buffers: Buffers, states: States) {
     states.autoExposure.setEnabled(Settings.AutoExposureEnabled);
+    states.sunrays.setEnabled(getBoolSetting("SunraysEnabled"));
+    states.debug.setEnabled(getBoolSetting("_DebugEnabled"));
 
     buffers.settings.uploadData();
     if (buffers.debug) {

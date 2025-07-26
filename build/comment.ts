@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-const filePath = './shaders/options.ts'; // change to your target file
+const filePath = './shaders/modules/pipeline/createOptions.ts'; // change to your target file
 
 const content = fs.readFileSync(filePath, 'utf8');
 const lines = content.split('\n');

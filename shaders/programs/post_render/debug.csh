@@ -18,7 +18,6 @@ uniform usampler2D gbufferTex;
 #include "/includes/func/color/srgb.glsl"
 
 layout(binding = 1) uniform debugConfig {
-	bool _DebugEnabled;
 	bool _DebugStats;
 	bool _SliceScreen;
 	int _ShowDepth;
@@ -137,11 +136,6 @@ void main() {
 	vec3 posView = depthToViewPos(vec2(coord)/vec2(ap.game.screenSize), depth);
 	vec3 posPlayer = (ap.camera.viewInv * vec4(posView,1)).xyz;
 
-	if (!_DebugEnabled) {
-		color = readScene(texelFetch(sceneTex, coord, 0));
-		imageStore(sceneImg, coord, writeScene(color));
-		return;
-	}
 	ivec2 t;
 
 	vec3 shadowView = (ap.celestial.view * vec4(posPlayer, 1)).xyz;

@@ -9,6 +9,7 @@ export default function configRenderer(renderConfig: RendererConfig) { // Initia
     renderConfig.shadow.distance = getIntSetting("ShadowDistance");
     renderConfig.render.stars = true;
     renderConfig.render.horizon = false;
+    renderConfig.render.clouds = false;
 
     if (Settings.ShadowsEnabled) {
         renderConfig.shadow.resolution = getIntSetting("ShadowResolution")/Settings.ShadowCascadeCount;

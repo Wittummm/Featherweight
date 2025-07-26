@@ -1,3 +1,21 @@
+// modules/pipeline/configureOptions.ts
+function configureOptions() {
+  setHidden("_ShowShadowMap", getBool("ShadowsEnabled"));
+  setHidden("LabelSoftShadows", getInt("ShadowFilter") != 2);
+  setHidden("ShadowSoftness", getInt("ShadowFilter") != 2);
+  setHidden("ShadowSamples", getInt("ShadowFilter") != 2);
+  setHidden("Tonemap1", !getBool("CompareTonemaps"));
+  setHidden("Tonemap2", !getBool("CompareTonemaps"));
+  setHidden("Tonemap3", !getBool("CompareTonemaps"));
+  setHidden("Tonemap4", !getBool("CompareTonemaps"));
+  setHidden("StarAmount", getInt("Stars") == 0);
+  setHidden("AtmosphereExtra", getInt("Sky") == 0);
+  setHidden("ExposureSpeed", getInt("AutoExposure") == 0);
+  setHidden("ExposureSamplesX", getInt("AutoExposure") == 0);
+  setHidden("SunraysSamples", getInt("SunraysSamplesOverride") != -1);
+  setHidden("SunraysFakeSamples", getInt("SunraysSamplesOverride") != -1);
+}
+
 // ../build/generateLangDummy.ts
 Object.prototype.name = function() {
   return this;
@@ -15,7 +33,7 @@ Object.prototype.desc = function() {
   return this;
 };
 
-// options.ts
+// modules/pipeline/createOptions.ts
 var canReload = true;
 var shouldReload = true;
 function toneMapPicker(name, def) {
@@ -31,7 +49,7 @@ function texIsolates(...names) {
   }
   return objs;
 }
-function setupOptions() {
+function createOptions() {
   const shadowPixelization = asPixelizationOverride("ShadowPixelization").name();
   const shadingPixelization = asPixelizationOverride("ShadingPixelization").name();
   const general = new Page("Page_General").name().add(asIntRange("SunPathRotation", 0, -120, 120, 1, false).name()).add(
@@ -50,6 +68,12 @@ function setupOptions() {
   ).add(asFloatRange("ShadowSoftness", 0.7, 0, 6, 0.05, false).name()).build();
   const shading = new Page("Page_Shading").name().add(asBool("PBR", true, shouldReload).name()).add(asIntRange("PBRMode", 0, 0, 1, 1, true).name().values("Reduced PBR", "Full PBR")).add(asInt("Specular", 0, 1).needsReload(false).build(1)).add(asFloatRange("NormalStrength", 1, 0, 1, 0.05, false)).add(shadingPixelization).build();
   const atmosphere = new Page("Page_Atmosphere").name().add(asIntRange("Sky", 1, 0, 1, 1, false).name().values("Vanilla", "Shader's")).add(asIntRange("Stars", 2, 0, 2, 1, false).name().values("Vanilla", "Low", "Medium")).add(asFloatRange("StarAmount", 0.03, 0, 1, 0.01, false).name()).add(
+    new Page("Page_LightShafts").name().add(
+      new Page("Page_Sunrays").name().add(asBool("SunraysEnabled", true, canReload).name()).add(asFloatRange("SunraysStrength", 0.5, 0, 2, 0.05, false).name()).add(asFloatRange("SunraysSpread", 0.75, 0.05, 1, 0.01, false).name()).add(asFloatRange("SunraysOriginSize", 0.3, 0, 1, 0.05, false).name()).add(asFloatRange("SunraysSamples", 1, 0.5, 6, 0.05, false).name()).add(asFloatRange("SunraysFakeSamples", 1, 0, 5, 0.5, false).name()).add(
+        new Page("Page_SunraysExtra").name().add(asInt("SunraysSamplesOverride", -1, 10, 20, 30, 40, 50).needsReload(false).build(-1).name().values("Off")).build()
+      ).build()
+    ).build()
+  ).add(
     new Page("AtmosphereExtra").add(asBool("DisableMoonHalo", false, false).name()).add(asBool("IsolateCelestials", false, false).name()).build()
   ).build();
   const cameraAndColors = new Page("Page_CameraAndColors").name().add(
@@ -78,20 +102,6 @@ function setupOptions() {
   ).build();
   return new Page("Featherweight").add(general).add(shadow).add(shading).add(atmosphere).add(cameraAndColors).add(debug).build();
 }
-function onSettingsChanged() {
-  setHidden("_ShowShadowMap", getBool("ShadowsEnabled"));
-  setHidden("LabelSoftShadows", getInt("ShadowFilter") != 2);
-  setHidden("ShadowSoftness", getInt("ShadowFilter") != 2);
-  setHidden("ShadowSamples", getInt("ShadowFilter") != 2);
-  setHidden("Tonemap1", !getBool("CompareTonemaps"));
-  setHidden("Tonemap2", !getBool("CompareTonemaps"));
-  setHidden("Tonemap3", !getBool("CompareTonemaps"));
-  setHidden("Tonemap4", !getBool("CompareTonemaps"));
-  setHidden("StarAmount", getInt("Stars") == 0);
-  setHidden("AtmosphereExtra", getInt("Sky") == 0);
-  setHidden("ExposureSpeed", getInt("AutoExposure") == 0);
-  setHidden("ExposureSamplesX", getInt("AutoExposure") == 0);
-}
 function asPixelizationOverride(name) {
   return asFloat(name, -0.25, -0.5, -1, 0, 8, 16, 32, 64, 128, 256).needsReload(false).build(-1).values("25 %", "50 %", "100 %");
 }
@@ -109,6 +119,14 @@ function getValueRange(valueMin, valueMax, interval) {
     values.push(value);
   }
   return values;
+}
+
+// options.ts
+function setupOptions() {
+  return createOptions();
+}
+function onSettingsChanged() {
+  configureOptions();
 }
 export {
   onSettingsChanged,
